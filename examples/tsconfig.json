@@ -1,8 +1,13 @@
 {
     "include": [
-        "./src/**/*"
+        "./src/**/*",
+        "../src/"
     ],
     "compilerOptions": {
+        "baseUrl": ".",
+        "paths": {
+            "@basestacks/data-grid": ["../src"]
+        },
         "strict": true,
         "esModuleInterop": true,
         "lib": [

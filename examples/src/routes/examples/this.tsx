@@ -1,4 +1,7 @@
+
+import { useState } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
+import { DataGridColumn, useDataGrid } from '@basestacks/data-grid';
 
 export const Route = createFileRoute('/examples/this')({
     component: RouteComponent,
@@ -16,6 +19,24 @@ function RouteComponent() {
             <p className="mt-6 text-base/7 text-gray-700 dark:text-gray-300">
                 Lorem ipsum dolor sit amet, consectetur adipiscing elit.
             </p>
+            <div>
+                <DataGridExample />
+            </div>
         </main>
     );
 }
+
+function DataGridExample() {
+    const [columns] = useState<DataGridColumn[]>([]);
+    const [data, setData] = useState([]);
+
+    const dataGrid = useDataGrid({
+        data,
+        columns,
+        onChange: setData
+    });
+
+    console.log(dataGrid);
+    
+    return null;
+};
