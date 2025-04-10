@@ -1,0 +1,96 @@
+{
+    "name": "@basestacks/package-template",
+    "version": "0.1.0",
+    "description": "A template for creating packages with TypeScript, Rollup, and Jest",
+    "author": "BaseStacks",
+    "keywords": [],
+    "homepage": "https://github.com/BaseStacks/package-template",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/BaseStacks/package-template"
+    },
+    "license": "MIT",
+    "sideEffects": false,
+    "exports": {
+        "./package.json": "./package.json",
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.esm.mjs",
+            "require": "./dist/index.cjs.js"
+        }
+    },
+    "main": "dist/index.cjs.js",
+    "umd:main": "dist/index.umd.js",
+    "jsdelivr": "dist/index.umd.js",
+    "unpkg": "dist/index.umd.js",
+    "module": "dist/index.esm.mjs",
+    "source": "src/index.ts",
+    "jsnext:main": "dist/index.esm.mjs",
+    "types": "dist/index.d.ts",
+    "files": [
+        "dist",
+        "src",
+        "!**/*.test.ts",
+        "!**/*.test.tsx"
+    ],
+    "scripts": {
+        "api-extractor": "api-extractor run --local",
+        "api-extractor:build": "pnpm build:esm && bun run api-extractor",
+        "api-extractor:ci": "node scripts/apiExtractor.js",
+        "prebuild": "pnpm clean",
+        "build": "pnpm build:modern",
+        "postbuild": "rimraf dist/**/*/__tests__ && node ./scripts/rollup/assert-esm-exports.mjs && node ./scripts/rollup/assert-cjs-exports.cjs",
+        "build:esm": "rollup --bundleConfigAsCjs -c ./scripts/rollup/rollup.esm.config.js",
+        "build:modern": "rollup --bundleConfigAsCjs -c ./scripts/rollup/rollup.config.js",
+        "build:watch": "pnpm build:modern -w",
+        "clean": "rimraf dist",
+        "e2e": "cypress run",
+        "lint": "eslint **/*.{ts,tsx} --no-warn-ignored",
+        "lint:fix": "pnpm lint --fix",
+        "start": "pnpm build:esm && cd ./examples && pnpm install && pnpm dev",
+        "test": "jest --config ./scripts/jest/jest.config.ts",
+        "test:coverage": "pnpm test --coverage",
+        "test:watch": "pnpm test--onlyChanged --watch",
+        "type": "tsc --noEmit",
+        "prerelease": "sh ./scripts/pre-release.sh"
+    },
+    "dependencies": {
+    },
+    "devDependencies": {
+        "@eslint/js": "^9.20.0",
+        "@microsoft/api-extractor": "^7.51.0",
+        "@rollup/plugin-commonjs": "^26.0.3",
+        "@rollup/plugin-terser": "^0.4.4",
+        "@testing-library/jest-dom": "^6.6.3",
+        "@testing-library/react": "^16.2.0",
+        "@types/jest": "^29.5.14",
+        "@types/node": "^22.13.10",
+        "@types/object-path": "^0.11.4",
+        "@types/react": "^19.0.10",
+        "@typescript-eslint/parser": "^8.24.1",
+        "cross-env": "^7.0.3",
+        "cypress": "^14.2.1",
+        "eslint": "^9.20.1",
+        "eslint-plugin-cypress": "^3.6.0",
+        "eslint-plugin-only-warn": "^1.1.0",
+        "eslint-plugin-react-hooks": "^5.1.0",
+        "eslint-plugin-react-refresh": "^0.4.19",
+        "globals": "^16.0.0",
+        "jest": "^29.7.0",
+        "jest-environment-jsdom": "^29.7.0",
+        "react": "^19.0.0",
+        "rimraf": "^3.0.2",
+        "rollup": "^4.34.8",
+        "rollup-plugin-typescript2": "^0.36.0",
+        "ts-jest": "^29.2.6",
+        "ts-node": "^10.9.2",
+        "typescript": "^5.8.2",
+        "typescript-eslint": "^8.24.1"
+    },
+    "peerDependencies": {
+        "react": "^17 || ^18 || ^19"
+    },
+    "engines": {
+        "node": ">=18.0.0"
+    }
+}

@@ -1,0 +1,39 @@
+{
+    "compilerOptions": {
+        "sourceMap": true,
+        "module": "es2015",
+        "target": "es2018",
+        "moduleResolution": "node",
+        "outDir": "./dist",
+        "jsx": "react-jsx",
+        "skipLibCheck": true,
+        "declaration": true,
+        "declarationMap": true,
+        "noEmit": true,
+        "esModuleInterop": true,
+        "lib": [
+            "dom",
+            "dom.iterable",
+            "esnext"
+        ],
+        "strict": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "noFallthroughCasesInSwitch": true,
+        "forceConsistentCasingInFileNames": true,
+        "types": [
+            "node",
+            "jest",
+            "@testing-library/jest-dom"
+        ],
+    },
+    "include": [
+        "src/**/*.ts",
+        "src/**/*.tsx"
+    ],
+    "exclude": [
+        "node_modules",
+        "story",
+        "dist"
+    ]
+}
