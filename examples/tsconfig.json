@@ -6,6 +6,7 @@
     "compilerOptions": {
         "baseUrl": ".",
         "paths": {
+            "@/*": ["./src/*"],
             "@basestacks/data-grid": ["../src"]
         },
         "strict": true,

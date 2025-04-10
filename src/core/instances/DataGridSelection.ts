@@ -29,11 +29,11 @@ export class DataGridSelection<TRow extends RowData> {
         };
     };
 
+    private state: DataGridStates<TRow>;
+
     constructor(state: DataGridStates<TRow>) {
         this.state = state;
     }
-
-    public state: DataGridStates<TRow>;
 
     public isCellDisabled = (rowIndex: number, columnIndex: number) => {
         const { options } = this.state;

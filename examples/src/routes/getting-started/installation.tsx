@@ -44,22 +44,22 @@ function RouteComponent() {
                         </TabsTrigger>
                     </TabsList>
                     <TabsContent value="npm">
-                        <CodeBlock language="bash" title="terminal">
+                        <CodeBlock language="bash" header="terminal">
                             npm install your-package-name
                         </CodeBlock>
                     </TabsContent>
                     <TabsContent value="yarn">
-                        <CodeBlock language="bash" title="terminal">
+                        <CodeBlock language="bash" header="terminal">
                             yarn add your-package-name
                         </CodeBlock>
                     </TabsContent>
                     <TabsContent value="pnpm">
-                        <CodeBlock language="bash" title="terminal">
+                        <CodeBlock language="bash" header="terminal">
                             pnpm add your-package-name
                         </CodeBlock>
                     </TabsContent>
                     <TabsContent value="bun">
-                        <CodeBlock language="bash" title="terminal">
+                        <CodeBlock language="bash" header="terminal">
                             bun add your-package-name
                         </CodeBlock>
                     </TabsContent>

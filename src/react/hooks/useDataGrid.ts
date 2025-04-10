@@ -14,9 +14,9 @@ export const useDataGrid = <TRow extends RowData>(props: DataGridProps<TRow>) =>
 
     const dataGrid = useMemo(() => {
         return {
-            state: dataGridStates.current,
-            controller: dataGridController.current,
-            selection: dataGridSelection.current,
+            ...dataGridStates.current!,
+            ...dataGridController.current!,
+            ...dataGridSelection.current!,
         };
     }, []);
 

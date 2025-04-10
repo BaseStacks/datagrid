@@ -31,11 +31,35 @@ export interface CellProps<TValue> {
   readonly setValue: (value: TValue) => void;
 }
 
-export interface ColumnDefinition<TValue = any> {
+
+export interface Cell<TValue = any> {
+  readonly cellIndex: number
+  readonly render: () => TValue;
+}
+
+export interface HeaderCell {
+  readonly index: number
+  readonly column: Column
+  readonly render: () => string | React.ReactNode;
+}
+
+export interface Column<TValue = any> {
   readonly dataKey?: string;
   readonly header?: string | (() => any);
   readonly cell?: (opts: CellProps<TValue>) => React.ReactNode
   readonly footer?: string | (() => any);
+  readonly disabled?: boolean | ((opts: { rowData: RowData; rowIndex: number }) => boolean);
+  readonly prePasteValues?: (values: string[]) => TValue[];
+  readonly pasteValue?: (opts: { value: TValue; rowData: RowData; rowIndex: number }) => TValue | Promise<TValue>;
+  readonly isCellEmpty?: (opts: { rowData: RowData; rowIndex: number }) => boolean;
+  readonly deleteValue?: (opts: { rowData: RowData; rowIndex: number }) => TValue | Promise<TValue>;
+}
+
+
+export interface Row<TData extends RowData = RowData> {
+  readonly index: number
+  readonly data: TData
+  readonly cells: Cell[]
 }
 
 export interface RowOperation {
@@ -46,9 +70,9 @@ export interface RowOperation {
 
 export interface DataGridProps<TRow extends RowData = RowData> {
   readonly data: TRow[]
-  readonly columns: ColumnDefinition[]
+  readonly columns: Column[]
 
-  readonly stickyRightColumn?: ColumnDefinition;
+  readonly stickyRightColumn?: Column;
   readonly rowKey?: RowKey<TRow>;
   readonly maxHeight?: number;
   readonly rowHeight?: number | ((opt: { rowData: TRow; rowIndex: number }) => number);

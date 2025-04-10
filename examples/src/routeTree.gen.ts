@@ -13,8 +13,8 @@
 import { Route as rootRoute } from './routes/__root'
 import { Route as IndexImport } from './routes/index'
 import { Route as GettingStartedInstallationImport } from './routes/getting-started/installation'
-import { Route as ExamplesThisImport } from './routes/examples/this'
 import { Route as ExamplesThatImport } from './routes/examples/that'
+import { Route as ExamplesBasicImport } from './routes/examples/basic'
 
 // Create/Update Routes
 
@@ -32,15 +32,15 @@ const GettingStartedInstallationRoute = GettingStartedInstallationImport.update(
   } as any,
 )
 
-const ExamplesThisRoute = ExamplesThisImport.update({
-  id: '/examples/this',
-  path: '/examples/this',
-  getParentRoute: () => rootRoute,
-} as any)
-
 const ExamplesThatRoute = ExamplesThatImport.update({
   id: '/examples/that',
   path: '/examples/that',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const ExamplesBasicRoute = ExamplesBasicImport.update({
+  id: '/examples/basic',
+  path: '/examples/basic',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -55,18 +55,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
+    '/examples/basic': {
+      id: '/examples/basic'
+      path: '/examples/basic'
+      fullPath: '/examples/basic'
+      preLoaderRoute: typeof ExamplesBasicImport
+      parentRoute: typeof rootRoute
+    }
     '/examples/that': {
       id: '/examples/that'
       path: '/examples/that'
       fullPath: '/examples/that'
       preLoaderRoute: typeof ExamplesThatImport
-      parentRoute: typeof rootRoute
-    }
-    '/examples/this': {
-      id: '/examples/this'
-      path: '/examples/this'
-      fullPath: '/examples/this'
-      preLoaderRoute: typeof ExamplesThisImport
       parentRoute: typeof rootRoute
     }
     '/getting-started/installation': {
@@ -83,23 +83,23 @@ declare module '@tanstack/react-router' {
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/examples/basic': typeof ExamplesBasicRoute
   '/examples/that': typeof ExamplesThatRoute
-  '/examples/this': typeof ExamplesThisRoute
   '/getting-started/installation': typeof GettingStartedInstallationRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/examples/basic': typeof ExamplesBasicRoute
   '/examples/that': typeof ExamplesThatRoute
-  '/examples/this': typeof ExamplesThisRoute
   '/getting-started/installation': typeof GettingStartedInstallationRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
+  '/examples/basic': typeof ExamplesBasicRoute
   '/examples/that': typeof ExamplesThatRoute
-  '/examples/this': typeof ExamplesThisRoute
   '/getting-started/installation': typeof GettingStartedInstallationRoute
 }
 
@@ -107,35 +107,35 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/examples/basic'
     | '/examples/that'
-    | '/examples/this'
     | '/getting-started/installation'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/examples/basic'
     | '/examples/that'
-    | '/examples/this'
     | '/getting-started/installation'
   id:
     | '__root__'
     | '/'
+    | '/examples/basic'
     | '/examples/that'
-    | '/examples/this'
     | '/getting-started/installation'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ExamplesBasicRoute: typeof ExamplesBasicRoute
   ExamplesThatRoute: typeof ExamplesThatRoute
-  ExamplesThisRoute: typeof ExamplesThisRoute
   GettingStartedInstallationRoute: typeof GettingStartedInstallationRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ExamplesBasicRoute: ExamplesBasicRoute,
   ExamplesThatRoute: ExamplesThatRoute,
-  ExamplesThisRoute: ExamplesThisRoute,
   GettingStartedInstallationRoute: GettingStartedInstallationRoute,
 }
 
@@ -150,19 +150,19 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
+        "/examples/basic",
         "/examples/that",
-        "/examples/this",
         "/getting-started/installation"
       ]
     },
     "/": {
       "filePath": "index.tsx"
     },
+    "/examples/basic": {
+      "filePath": "examples/basic.tsx"
+    },
     "/examples/that": {
       "filePath": "examples/that.tsx"
-    },
-    "/examples/this": {
-      "filePath": "examples/this.tsx"
     },
     "/getting-started/installation": {
       "filePath": "getting-started/installation.tsx"

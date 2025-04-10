@@ -13,11 +13,17 @@ const gettingStartedRoutes = [{
 }];
 
 const exampleRoutes = [{
-    path: '/examples/this',
-    title: 'This example',
+    path: '/examples/basic',
+    title: 'Basic',
 }, {
-    path: '/examples/that',
-    title: 'That example',
+    path: '/examples/selectable',
+    title: 'Selectable',
+}, {
+    path: '/examples/editable',
+    title: 'Editable',
+}, {
+    path: '/examples/keybindings',
+    title: 'Key bindings',
 }];
 
 
@@ -32,7 +38,7 @@ export function Navbar() {
                                 <Link
                                     to={route.path}
                                     className="group inline-flex items-center gap-3 text-base/8 text-gray-600 sm:text-sm/7 dark:text-gray-300 **:data-outline:stroke-gray-400 dark:**:data-outline:stroke-gray-500 **:[svg]:first:size-5 **:[svg]:first:sm:size-4 hover:text-gray-950 hover:**:data-highlight:fill-gray-300 hover:**:data-outline:stroke-gray-950 dark:hover:text-white dark:hover:**:data-highlight:fill-gray-600 dark:hover:**:data-outline:stroke-white aria-[current]:font-semibold aria-[current]:text-gray-950 aria-[current]:**:data-highlight:fill-gray-300 aria-[current]:**:data-outline:stroke-gray-950 dark:aria-[current]:text-white dark:aria-[current]:**:data-highlight:fill-gray-600 dark:aria-[current]:**:data-outline:stroke-white"
-                                    activeProps={{ 'aria-current': 'page'}}
+                                    activeProps={{ 'aria-current': 'page' }}
                                 >
                                     {<route.icon size={30} strokeWidth={2} absoluteStrokeWidth />} {route.title}
                                 </Link>
@@ -49,7 +55,7 @@ export function Navbar() {
                                     <Link
                                         to={route.path}
                                         className="inline-block border-l border-transparent text-base/8 text-gray-600 hover:border-gray-950/25 hover:text-gray-950 sm:text-sm/6 dark:text-gray-300 dark:hover:border-white/25 dark:hover:text-white aria-[current]:border-gray-950 aria-[current]:font-semibold aria-[current]:text-gray-950 dark:aria-[current]:border-white dark:aria-[current]:text-white pl-5 sm:pl-4"
-                                        activeProps={{ 'aria-current': 'page'}}
+                                        activeProps={{ 'aria-current': 'page' }}
                                     >
                                         {route.title}
                                     </Link>

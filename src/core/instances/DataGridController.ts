@@ -4,12 +4,11 @@ import { DataGridStates } from './DataGridStates';
 
 export class DataGridController<TRow extends RowData = RowData> {
     private calculatedHeights: RowSize[] = [];
+    private state: DataGridStates<TRow>;
 
     constructor(state: DataGridStates<TRow>) {
         this.state = state;
     }
-
-    public state: DataGridStates<TRow>;
 
     public isCellDisabled = (rowIndex: number, columnIndex: number) => {
         const { columns } = this.state.options;
@@ -253,8 +252,9 @@ export class DataGridController<TRow extends RowData = RowData> {
         for (let row = min.row; row <= max.row; ++row) {
             for (let col = min.col; col <= max.col; ++col) {
                 if (!this.isCellDisabled(row, col)) {
-                    const { deleteValue = ({ rowData }) => rowData } =
-                        columns[col + 1];
+                    const {
+                        deleteValue = ({ rowData }) => rowData
+                    } = columns[col + 1];
                     newData[row] = deleteValue({
                         rowData: newData[row],
                         rowIndex: row,
