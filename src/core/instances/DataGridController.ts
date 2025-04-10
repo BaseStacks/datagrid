@@ -1,4 +1,4 @@
-import { CellCoordinates, RowData, Operation, RowSize } from '../types';
+import { CellCoordinates, RowData, RowOperation, RowSize } from '../types';
 import deepEqual from 'fast-deep-equal';
 import { DataGridStates } from './DataGridStates';
 
@@ -159,7 +159,7 @@ export class DataGridController<TRow extends RowData = RowData> {
                     }
                 }
 
-                const operations: Operation[] = [
+                const operations: RowOperation[] = [
                     {
                         type: 'UPDATE',
                         fromRowIndex: min.row,

@@ -18,4 +18,13 @@ export class DataGridStates<TRow extends RowData> {
         active: false,
     });
     public editing = createDataGridState(false);
+
+    public getHeaders() {
+        return this.options.columns.map((column) => {
+            if (typeof column.header === 'function') {
+                return column.header();
+            }
+            return column.header;
+        });
+    }
 };

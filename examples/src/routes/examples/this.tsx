@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
-import { DataGridColumn, useDataGrid } from '@basestacks/data-grid';
+import { ColumnDefinition, useDataGrid } from '@basestacks/data-grid';
 
 export const Route = createFileRoute('/examples/this')({
     component: RouteComponent,
@@ -27,8 +27,16 @@ function RouteComponent() {
 }
 
 function DataGridExample() {
-    const [columns] = useState<DataGridColumn[]>([]);
-    const [data, setData] = useState([]);
+    const [columns] = useState<ColumnDefinition[]>([
+        { dataKey: 'id', header: 'ID' },
+        { dataKey: 'name', header: 'Name' },
+        { dataKey: 'age', header: 'Age' },
+    ]);
+    const [data, setData] = useState([
+        { id: 1, name: 'John Doe', age: 30 },
+        { id: 2, name: 'Jane Smith', age: 25 },
+        { id: 3, name: 'Alice Johnson', age: 28 },
+    ]);
 
     const dataGrid = useDataGrid({
         data,
@@ -36,7 +44,33 @@ function DataGridExample() {
         onChange: setData
     });
 
-    console.log(dataGrid);
-    
-    return null;
+    return (
+        <div>
+            <div>
+                {dataGrid.state?.getHeaders().map((header, index) => (
+                    <div key={index} className="p-2 border-b">
+                        {header.render()}
+                    </div>
+                ))}
+            </div>
+            <div>
+                {dataGrid.state?.getRows().map((row, index) => (
+                    <div key={index} className="p-2 border-b">
+                        {row.cells.map((cell, cellIndex) => (
+                            <div key={cellIndex} className="p-2">
+                                {cell.render()}
+                            </div>
+                        ))}
+                    </div>
+                ))}
+            </div>
+            <div>
+                {dataGrid.state?.getFooters().map((footer, index) => (
+                    <div key={index} className="p-2 border-b">
+                        {footer.render()}
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
 };
