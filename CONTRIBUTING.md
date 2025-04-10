@@ -1,6 +1,6 @@
 # Contributing to `React Hook Form`
 
-As the creators and maintainers of this project, we want to ensure that `@basestacks/package-template` lives and continues to grow and evolve. We would like to encourage everyone to help and support this library by contributing.
+As the creators and maintainers of this project, we want to ensure that `@basestacks/data-grid` lives and continues to grow and evolve. We would like to encourage everyone to help and support this library by contributing.
 
 ## Code contributions
 
@@ -65,4 +65,4 @@ Please follow the coding style of the project. React Hook Form uses **eslint**. 
 
 ## License
 
-By contributing your code to the `@basestacks/package-template` GitHub repository, you agree to license your contribution under the MIT license.
+By contributing your code to the `@basestacks/data-grid` GitHub repository, you agree to license your contribution under the MIT license.
