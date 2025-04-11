@@ -1,5 +1,6 @@
 import { createDataGridState } from '../helpers/datagridHelpers';
 import { CellCoordinates, DataGridProps, HeaderCell, RangeSelection, Row, RowData, ScrollBehavior, SelectionMode } from '../types';
+import { getCellId } from '../utils/cellUtils';
 
 export class DataGridStates<TRow extends RowData> {
 
@@ -14,11 +15,15 @@ export class DataGridStates<TRow extends RowData> {
 
     private getRows = (): Row[] => {
         const { columns, data } = this.options;
-        return data.map((row, index) => ({
-            index,
+        return data.map((row, rowIndex) => ({
+            index: rowIndex,
             data,
-            cells: columns.map((column, cellIndex) => ({
-                cellIndex,
+            cells: columns.map((column, columnIndex) => ({
+                id: getCellId(rowIndex, columnIndex),
+                coordinates: {
+                    row: rowIndex,
+                    col: columnIndex,
+                },
                 render: () => {
                     const cellValue = row[column.dataKey as keyof TRow] ?? null;
                     if (typeof column.cell === 'function') {
@@ -44,6 +49,29 @@ export class DataGridStates<TRow extends RowData> {
 
         this.rows = this.getRows();
         this.headers = this.getHeaders();
+
+        this.selectedCell.watch((selectedCell) => {
+            // Active cell and Selected cell are two corner points of the selection
+            if(!selectedCell || !this.activeCell.value) {
+                if(this.selectedRange.value) {
+                    this.selectedRange.set(null);
+                }
+                return;
+            }
+
+            const nextRange: RangeSelection = {
+                min: {
+                    col: Math.min(this.activeCell.value.col, selectedCell.col),
+                    row: Math.min(this.activeCell.value.row, selectedCell.row),
+                },
+                max: {
+                    col: Math.max(this.activeCell.value.col, selectedCell.col),
+                    row: Math.max(this.activeCell.value.row, selectedCell.row),
+                },
+            };
+            // Update the selected range
+            this.selectedRange.set(nextRange);
+        });
     }
 
     public options: DataGridProps<TRow>;

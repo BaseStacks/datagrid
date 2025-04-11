@@ -12,18 +12,15 @@ const gettingStartedRoutes = [{
     title: 'Installation',
 }];
 
-const exampleRoutes = [{
-    path: '/examples/basic',
+const guidesRoutes = [{
+    path: '/guides/basic',
     title: 'Basic',
 }, {
-    path: '/examples/selectable',
-    title: 'Selectable',
+    path: '/guides/cell-selection',
+    title: 'Cell selection',
 }, {
-    path: '/examples/editable',
-    title: 'Editable',
-}, {
-    path: '/examples/keybindings',
-    title: 'Key bindings',
+    path: '/guides/multiple-cell-selection',
+    title: 'Multiple cell selection',
 }];
 
 
@@ -47,10 +44,10 @@ export function Navbar() {
                     </ul>
                     <div className="flex flex-col gap-3">
                         <h3 className="font-mono text-sm/6 font-medium tracking-widest text-gray-500 uppercase sm:text-xs/6 dark:text-gray-400">
-                            Examples
+                            guides
                         </h3>
                         <ul className="flex flex-col gap-2 border-l dark:border-[color-mix(in_oklab,_var(--color-gray-950),white_20%)] border-[color-mix(in_oklab,_var(--color-gray-950),white_90%)]">
-                            {exampleRoutes.map((route) => (
+                            {guidesRoutes.map((route) => (
                                 <li key={route.path} className="-ml-px flex flex-col items-start gap-2">
                                     <Link
                                         to={route.path}

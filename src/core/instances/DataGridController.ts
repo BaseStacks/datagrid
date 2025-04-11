@@ -1,6 +1,7 @@
 import { CellCoordinates, RowData, RowOperation, RowSize } from '../types';
 import deepEqual from 'fast-deep-equal';
 import { DataGridStates } from './DataGridStates';
+import { getCellId } from '../utils/cellUtils';
 
 export class DataGridController<TRow extends RowData = RowData> {
     private calculatedHeights: RowSize[] = [];
@@ -45,6 +46,7 @@ export class DataGridController<TRow extends RowData = RowData> {
                 },
             ]
         );
+
         activeCell.set({ col: 0, row: rowMax + 1, doNotScrollX: true });
         selectedCell.set({
             col: columns.length - (hasStickyRightColumn ? 3 : 2),
@@ -60,8 +62,8 @@ export class DataGridController<TRow extends RowData = RowData> {
         const hasStickyRightColumn = Boolean(stickyRightColumn);
 
         if (!editing.value && activeCell.value) {
-            const min: CellCoordinates = selectedRange.value?.min || activeCell.value;
-            const max: CellCoordinates = selectedRange.value?.max || activeCell.value;
+            const min: CellCoordinates = selectedRange.value?.min || activeCell?.value;
+            const max: CellCoordinates = selectedRange.value?.max || activeCell?.value;
 
             const results = await Promise.all(
                 pasteData[0].map((_, columnIndex) => {

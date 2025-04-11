@@ -33,7 +33,8 @@ export interface CellProps<TValue> {
 
 
 export interface Cell<TValue = any> {
-  readonly cellIndex: number
+  readonly id: string;
+  readonly coordinates: CellCoordinates;
   readonly render: () => TValue;
 }
 

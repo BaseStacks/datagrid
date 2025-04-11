@@ -1,4 +1,4 @@
-import { CellCoordinates, RowData, SelectionMode } from '../types';
+import { Cell, CellCoordinates, RowData, SelectionMode } from '../types';
 import { DataGridStates } from './DataGridStates';
 
 export class DataGridSelection<TRow extends RowData> {
@@ -48,12 +48,21 @@ export class DataGridSelection<TRow extends RowData> {
         return false;
     };
 
-    public existFocus = () => {
+    public cleanSelection = (maintainActive = false) => {
         const { selectedCell, editing, activeCell, selectedRange } = this.state;
 
+        if (!maintainActive) {
+            activeCell.set(null);
+        }
         selectedCell.set(null);
         editing.set(false);
-        activeCell.set(null);
+        selectedRange.set(null);
+    };
+
+    public active = (cell: Cell) => {
+        const { activeCell, selectedCell, selectedRange } = this.state;
+        activeCell.set(cell.coordinates);
+        selectedCell.set(null);
         selectedRange.set(null);
     };
 
@@ -170,6 +179,58 @@ export class DataGridSelection<TRow extends RowData> {
             row: data.length - 1,
             doNotScrollY: true,
             doNotScrollX: true,
+        });
+    };
+
+    private isRangeSelection = false;
+
+    public startRangeSelection = (cell: Cell) => {
+        const delay = 150;
+        this.isRangeSelection = true;
+
+        setTimeout(() => {
+            if (!this.isRangeSelection) {
+                return;
+            }
+            const dragging = {
+                columns: cell.coordinates.col !== -1,
+                rows: cell.coordinates.row !== -1,
+                active: true,
+            };
+
+            this.state.dragging.set(dragging);
+        }, delay);
+    };
+
+    public updateRangeSelection = (cell: Cell) => {
+        if (!this.state.dragging.value.active) {
+            return;
+        }
+
+        const { dragging, selectedCell } = this.state;
+        const { data, columns } = this.state.options;
+
+        const lastColumnIndex = columns.length - 1;
+
+        selectedCell.set({
+            col: dragging.value.columns
+                ? Math.max(0, Math.min(lastColumnIndex, cell.coordinates.col))
+                : lastColumnIndex,
+            row: dragging.value.rows
+                ? Math.max(0, cell.coordinates.row)
+                : data.length - 1,
+            doNotScrollX: !dragging.value.columns,
+            doNotScrollY: !dragging.value.rows,
+        });
+        // implementation
+    };
+
+    public stopRangeSelection = () => {
+        this.isRangeSelection = false;
+        this.state.dragging.set({
+            columns: false,
+            rows: false,
+            active: false,
         });
     };
 

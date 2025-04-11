@@ -2,6 +2,8 @@ import { useMemo, useRef } from 'react';
 import type { DataGridProps, RowData } from '../../core';
 import { DataGridStates, DataGridController, DataGridSelection } from '../../core';
 
+export type UseDataGridReturn<TRow extends RowData> = ReturnType<typeof useDataGrid<TRow>>;
+
 export const useDataGrid = <TRow extends RowData>(props: DataGridProps<TRow>) => {
     const dataGridStates = useRef<DataGridStates<TRow>>(null);
     dataGridStates.current = dataGridStates.current ?? new DataGridStates<TRow>(props);
