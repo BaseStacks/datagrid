@@ -12,7 +12,7 @@
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as IndexImport } from './routes/index'
-import { Route as GuidesMultipleCellSelectionImport } from './routes/guides/multiple-cell-selection'
+import { Route as GuidesEditableDataImport } from './routes/guides/editable-data'
 import { Route as GuidesCellSelectionImport } from './routes/guides/cell-selection'
 import { Route as GuidesBasicImport } from './routes/guides/basic'
 import { Route as GettingStartedInstallationImport } from './routes/getting-started/installation'
@@ -25,12 +25,11 @@ const IndexRoute = IndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const GuidesMultipleCellSelectionRoute =
-  GuidesMultipleCellSelectionImport.update({
-    id: '/guides/multiple-cell-selection',
-    path: '/guides/multiple-cell-selection',
-    getParentRoute: () => rootRoute,
-  } as any)
+const GuidesEditableDataRoute = GuidesEditableDataImport.update({
+  id: '/guides/editable-data',
+  path: '/guides/editable-data',
+  getParentRoute: () => rootRoute,
+} as any)
 
 const GuidesCellSelectionRoute = GuidesCellSelectionImport.update({
   id: '/guides/cell-selection',
@@ -84,11 +83,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GuidesCellSelectionImport
       parentRoute: typeof rootRoute
     }
-    '/guides/multiple-cell-selection': {
-      id: '/guides/multiple-cell-selection'
-      path: '/guides/multiple-cell-selection'
-      fullPath: '/guides/multiple-cell-selection'
-      preLoaderRoute: typeof GuidesMultipleCellSelectionImport
+    '/guides/editable-data': {
+      id: '/guides/editable-data'
+      path: '/guides/editable-data'
+      fullPath: '/guides/editable-data'
+      preLoaderRoute: typeof GuidesEditableDataImport
       parentRoute: typeof rootRoute
     }
   }
@@ -101,7 +100,7 @@ export interface FileRoutesByFullPath {
   '/getting-started/installation': typeof GettingStartedInstallationRoute
   '/guides/basic': typeof GuidesBasicRoute
   '/guides/cell-selection': typeof GuidesCellSelectionRoute
-  '/guides/multiple-cell-selection': typeof GuidesMultipleCellSelectionRoute
+  '/guides/editable-data': typeof GuidesEditableDataRoute
 }
 
 export interface FileRoutesByTo {
@@ -109,7 +108,7 @@ export interface FileRoutesByTo {
   '/getting-started/installation': typeof GettingStartedInstallationRoute
   '/guides/basic': typeof GuidesBasicRoute
   '/guides/cell-selection': typeof GuidesCellSelectionRoute
-  '/guides/multiple-cell-selection': typeof GuidesMultipleCellSelectionRoute
+  '/guides/editable-data': typeof GuidesEditableDataRoute
 }
 
 export interface FileRoutesById {
@@ -118,7 +117,7 @@ export interface FileRoutesById {
   '/getting-started/installation': typeof GettingStartedInstallationRoute
   '/guides/basic': typeof GuidesBasicRoute
   '/guides/cell-selection': typeof GuidesCellSelectionRoute
-  '/guides/multiple-cell-selection': typeof GuidesMultipleCellSelectionRoute
+  '/guides/editable-data': typeof GuidesEditableDataRoute
 }
 
 export interface FileRouteTypes {
@@ -128,21 +127,21 @@ export interface FileRouteTypes {
     | '/getting-started/installation'
     | '/guides/basic'
     | '/guides/cell-selection'
-    | '/guides/multiple-cell-selection'
+    | '/guides/editable-data'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/getting-started/installation'
     | '/guides/basic'
     | '/guides/cell-selection'
-    | '/guides/multiple-cell-selection'
+    | '/guides/editable-data'
   id:
     | '__root__'
     | '/'
     | '/getting-started/installation'
     | '/guides/basic'
     | '/guides/cell-selection'
-    | '/guides/multiple-cell-selection'
+    | '/guides/editable-data'
   fileRoutesById: FileRoutesById
 }
 
@@ -151,7 +150,7 @@ export interface RootRouteChildren {
   GettingStartedInstallationRoute: typeof GettingStartedInstallationRoute
   GuidesBasicRoute: typeof GuidesBasicRoute
   GuidesCellSelectionRoute: typeof GuidesCellSelectionRoute
-  GuidesMultipleCellSelectionRoute: typeof GuidesMultipleCellSelectionRoute
+  GuidesEditableDataRoute: typeof GuidesEditableDataRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
@@ -159,7 +158,7 @@ const rootRouteChildren: RootRouteChildren = {
   GettingStartedInstallationRoute: GettingStartedInstallationRoute,
   GuidesBasicRoute: GuidesBasicRoute,
   GuidesCellSelectionRoute: GuidesCellSelectionRoute,
-  GuidesMultipleCellSelectionRoute: GuidesMultipleCellSelectionRoute,
+  GuidesEditableDataRoute: GuidesEditableDataRoute,
 }
 
 export const routeTree = rootRoute
@@ -176,7 +175,7 @@ export const routeTree = rootRoute
         "/getting-started/installation",
         "/guides/basic",
         "/guides/cell-selection",
-        "/guides/multiple-cell-selection"
+        "/guides/editable-data"
       ]
     },
     "/": {
@@ -191,8 +190,8 @@ export const routeTree = rootRoute
     "/guides/cell-selection": {
       "filePath": "guides/cell-selection.tsx"
     },
-    "/guides/multiple-cell-selection": {
-      "filePath": "guides/multiple-cell-selection.tsx"
+    "/guides/editable-data": {
+      "filePath": "guides/editable-data.tsx"
     }
   }
 }

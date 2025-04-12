@@ -1,10 +1,10 @@
 import { createDataGridState } from '../helpers/datagridHelpers';
-import { CellCoordinates, DataGridProps, HeaderCell, RangeSelection, Row, RowData, ScrollBehavior, SelectionMode } from '../types';
+import { CellCoordinates, CellProps, Column, DataGridOptions, HeaderCell, RangeSelection, Row, RowData, ScrollBehavior, SelectionMode } from '../types';
 import { getCellId } from '../utils/cellUtils';
+import { setRowData } from '../utils/rowUtils';
 
 export class DataGridStates<TRow extends RowData> {
-
-    private getHeaders = (): HeaderCell[] => {
+    private createHeaders = (): HeaderCell[] => {
         const { columns } = this.options;
         return columns.map((column, index) => ({
             index,
@@ -13,47 +13,95 @@ export class DataGridStates<TRow extends RowData> {
         }));
     };
 
-    private getRows = (): Row[] => {
-        const { columns, data } = this.options;
-        return data.map((row, rowIndex) => ({
-            index: rowIndex,
-            data,
-            cells: columns.map((column, columnIndex) => ({
-                id: getCellId(rowIndex, columnIndex),
-                coordinates: {
-                    row: rowIndex,
-                    col: columnIndex,
-                },
-                render: () => {
-                    const cellValue = row[column.dataKey as keyof TRow] ?? null;
-                    if (typeof column.cell === 'function') {
-                        return column.cell({
-                            value: cellValue,
-                            active: false,
-                            focused: false,
-                            disabled: false,
-                            setValue: () => {
-                                // Handle cell value change
-                            },
-                        });
-                    }
+    private createRows = (data: TRow[], columns: Column[]): Row<TRow>[] => {
+        return data.map((newRowData, rowIndex) => {
+            const oldRow = this.rows.value[rowIndex];
+            if (oldRow?.data === newRowData) {
+                return oldRow;
+            }
 
-                    return cellValue;
-                },
-            })),
-        }));
+            return {
+                index: rowIndex,
+                data: newRowData,
+                cells: columns.map((column, columnIndex) => {
+                    const cellInfo = {
+                        id: getCellId(rowIndex, columnIndex),
+                        coordinates: {
+                            row: rowIndex,
+                            col: columnIndex,
+                        }
+                    };
+
+                    const cellValue = newRowData[column.dataKey as keyof TRow] ?? null;
+
+                    const renderProps: CellProps = {
+                        ...cellInfo,
+                        value: cellValue,
+                        active: false,
+                        focused: false,
+                        disabled: false,
+                        setValue: (nextValue) => {
+                            if (!this.options.onChange) {
+                                return;
+                            }
+
+                            const newRowData = setRowData({
+                                data: this.options.data,
+                                columns: this.options.columns,
+                                rowIndex,
+                                columnIndex,
+                                cellValue: nextValue,
+                            });
+
+                            const nextData = [...this.options.data];
+                            nextData.splice(rowIndex, 1, newRowData);
+
+                            this.options.onChange(nextData, [{ type: 'UPDATE', fromRowIndex: rowIndex, toRowIndex: rowIndex }]);
+                        },
+                        onFocus: (callback) => {
+                            return this.editing.watch((editing) => {
+                                const activeCell = this.activeCell.value;
+                                const isEditing = editing && activeCell?.row === rowIndex && activeCell?.col === columnIndex;
+                                if (isEditing) {
+                                    callback();
+                                }
+                            });
+                        },
+                        onBlur: (callback) => {
+                            return this.activeCell.watch((activeCell) => {
+                                const isEditing = this.editing.value && activeCell?.row === rowIndex && activeCell?.col === columnIndex;
+                                if (!isEditing) {
+                                    callback();
+                                }
+                            });
+                        },
+                    };
+
+                    return {
+                        ...cellInfo,
+                        render: () => {
+                            if (typeof column.cell === 'function') {
+                                return column.cell(renderProps);
+                            }
+
+                            return cellValue;
+                        },
+                    };
+                }),
+            };
+        });
     };
 
-    constructor(options: DataGridProps<TRow>) {
+    constructor(options: DataGridOptions<TRow>) {
         this.options = options;
 
-        this.rows = this.getRows();
-        this.headers = this.getHeaders();
+        this.rows.set(this.createRows(options.data, options.columns));
+        this.headers.set(this.createHeaders());
 
         this.selectedCell.watch((selectedCell) => {
             // Active cell and Selected cell are two corner points of the selection
-            if(!selectedCell || !this.activeCell.value) {
-                if(this.selectedRange.value) {
+            if (!selectedCell || !this.activeCell.value) {
+                if (this.selectedRange.value) {
                     this.selectedRange.set(null);
                 }
                 return;
@@ -74,7 +122,7 @@ export class DataGridStates<TRow extends RowData> {
         });
     }
 
-    public options: DataGridProps<TRow>;
+    public options: DataGridOptions<TRow>;
 
     public editing = createDataGridState(false);
     public activeCell = createDataGridState<(CellCoordinates & ScrollBehavior) | null>(null);
@@ -87,7 +135,18 @@ export class DataGridStates<TRow extends RowData> {
         active: false,
     });
 
-    public rows: Row[] = [];
-    public headers: HeaderCell[] = [];
+    public rows = createDataGridState<Row<TRow>[]>([]);
+    public headers = createDataGridState<HeaderCell[]>([]);
 
+    public updateOptions = (newOptions: DataGridOptions<TRow>) => {
+        if (newOptions.data !== this.options.data) {
+            this.rows.set(this.createRows(this.options.data, newOptions.columns));
+        }
+
+        if (newOptions.columns !== this.options.columns) {
+            this.headers.set(this.createHeaders());
+        }
+
+        this.options = newOptions;
+    };
 };

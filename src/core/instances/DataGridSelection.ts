@@ -48,14 +48,19 @@ export class DataGridSelection<TRow extends RowData> {
         return false;
     };
 
-    public cleanSelection = (maintainActive = false) => {
+    public cleanSelection = ({
+        maintainActiveCell = false,
+        maintainEditing = false,
+    } = {}) => {
         const { selectedCell, editing, activeCell, selectedRange } = this.state;
 
-        if (!maintainActive) {
+        if (!maintainActiveCell) {
             activeCell.set(null);
         }
+        if(!maintainEditing) {
+            editing.set(false);
+        }
         selectedCell.set(null);
-        editing.set(false);
         selectedRange.set(null);
     };
 

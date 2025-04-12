@@ -1,8 +1,6 @@
 import React, { useEffect } from 'react';
 import { transformerNotationHighlight } from '@shikijs/transformers';
-import {
-    codeToHtml,
-} from 'shiki';
+import { codeToHtml } from 'shiki';
 
 interface CodeBlockProps {
     readonly example?: React.ReactNode;

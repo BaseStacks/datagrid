@@ -1,4 +1,4 @@
-import { useDataGrid } from '@basestacks/data-grid';
+import { useDataGrid, useStateWatch } from '@basestacks/data-grid';
 import { useMemo, useState } from 'react';
 
 export function BasicExample() {
@@ -16,11 +16,14 @@ export function BasicExample() {
 
     const dataGrid = useDataGrid({ data, columns });
 
+    const headers = useStateWatch(dataGrid.state.headers);
+    const rows = useStateWatch(dataGrid.state.rows);
+
     return (
         <table className={clxs.table}>
             <thead>
                 <tr>
-                    {dataGrid.headers.map((header, index) => (
+                    {headers.map((header, index) => (
                         <th key={index} className={clxs.header}>
                             {header.render()}
                         </th>
@@ -28,7 +31,7 @@ export function BasicExample() {
                 </tr>
             </thead>
             <tbody>
-                {dataGrid.rows.map((row, index) => (
+                {rows.map((row, index) => (
                     <tr key={index} className={clxs.row}>
                         {row.cells.map((cell, cellIndex) => (
                             <td key={cellIndex} className={clxs.cell}>

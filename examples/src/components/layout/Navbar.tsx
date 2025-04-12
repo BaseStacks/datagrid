@@ -19,10 +19,9 @@ const guidesRoutes = [{
     path: '/guides/cell-selection',
     title: 'Cell selection',
 }, {
-    path: '/guides/multiple-cell-selection',
-    title: 'Multiple cell selection',
+    path: '/guides/editable-data',
+    title: 'Editable data',
 }];
-
 
 export function Navbar() {
     return (

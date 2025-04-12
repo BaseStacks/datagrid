@@ -1,12 +1,12 @@
-import { useMemo, useRef } from 'react';
-import type { DataGridProps, RowData } from '../../core';
+import { useEffect, useMemo, useRef } from 'react';
+import type { DataGridOptions, RowData } from '../../core';
 import { DataGridStates, DataGridController, DataGridSelection } from '../../core';
 
 export type UseDataGridReturn<TRow extends RowData> = ReturnType<typeof useDataGrid<TRow>>;
 
-export const useDataGrid = <TRow extends RowData>(props: DataGridProps<TRow>) => {
+export const useDataGrid = <TRow extends RowData>(options: DataGridOptions<TRow>) => {
     const dataGridStates = useRef<DataGridStates<TRow>>(null);
-    dataGridStates.current = dataGridStates.current ?? new DataGridStates<TRow>(props);
+    dataGridStates.current = dataGridStates.current ?? new DataGridStates<TRow>(options);
 
     const dataGridController = useRef<DataGridController<TRow>>(null);
     dataGridController.current = dataGridController.current ?? new DataGridController<TRow>(dataGridStates.current);
@@ -16,11 +16,15 @@ export const useDataGrid = <TRow extends RowData>(props: DataGridProps<TRow>) =>
 
     const dataGrid = useMemo(() => {
         return {
-            ...dataGridStates.current!,
             ...dataGridController.current!,
             ...dataGridSelection.current!,
+            state: dataGridStates.current!,
         };
     }, []);
+
+    useEffect(() => {
+        dataGridStates.current!.updateOptions(options);
+    }, [options]);
 
     return dataGrid;
 };

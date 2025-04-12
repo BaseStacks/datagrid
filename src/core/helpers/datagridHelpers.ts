@@ -42,7 +42,12 @@ export const createDataGridState = <T>(defaultValue: T): DataGridState<T> => ({
         return this.events.on('update_value', listener);
     },
     set(nextValue: ((oldValue: T) => T) | T) {
-        this.value = typeof nextValue === 'function' ? (nextValue as (oldValue: T) => T)(this.value) : nextValue;
+        const _nextValue = typeof nextValue === 'function' ? (nextValue as (oldValue: T) => T)(this.value) : nextValue;
+        if (_nextValue === this.value) {
+            return;
+        }
+
+        this.value = _nextValue;
         this.events.emit('update_value', this.value);
     }
 } as DataGridStateWithEvents<T>);

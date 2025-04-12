@@ -2,7 +2,7 @@ import React from 'react';
 
 export type RowData = Record<string, any>;
 export type RowKey<TRow extends RowData> = keyof TRow | ((opts: { rowData: TRow; rowIndex: number }) => TRow[keyof TRow])
-
+export type Unsubscribe = () => void;
 export interface CellCoordinates {
   readonly col: number
   readonly row: number
@@ -23,12 +23,16 @@ export interface RowSize {
   readonly top: number
 }
 
-export interface CellProps<TValue> {
+export interface CellProps<TValue = any> {
+  readonly id: string;
+  readonly coordinates: CellCoordinates;
   readonly value?: TValue;
   readonly active: boolean;
   readonly focused: boolean;
   readonly disabled: boolean;
   readonly setValue: (value: TValue) => void;
+  readonly onFocus: (callback: () => void) => Unsubscribe;
+  readonly onBlur: (callback: () => void) => Unsubscribe;
 }
 
 
@@ -57,10 +61,10 @@ export interface Column<TValue = any> {
 }
 
 
-export interface Row<TData extends RowData = RowData> {
-  readonly index: number
-  readonly data: TData
-  readonly cells: Cell[]
+export interface Row<TRow extends RowData = RowData> {
+  readonly index: number;
+  readonly data: TRow;
+  readonly cells: Cell[];
 }
 
 export interface RowOperation {
@@ -69,18 +73,12 @@ export interface RowOperation {
   readonly toRowIndex: number
 }
 
-export interface DataGridProps<TRow extends RowData = RowData> {
+export interface DataGridOptions<TRow extends RowData = RowData> {
   readonly data: TRow[]
   readonly columns: Column[]
 
-  readonly stickyRightColumn?: Column;
   readonly rowKey?: RowKey<TRow>;
-  readonly maxHeight?: number;
-  readonly rowHeight?: number | ((opt: { rowData: TRow; rowIndex: number }) => number);
-  readonly headerRowHeight?: number;
-  readonly autoAddRow?: boolean
-  readonly lockRows?: boolean
-  readonly disableSmartDelete?: boolean
+  readonly stickyRightColumn?: Column;
 
   // Row operations
   readonly createRow?: () => TRow;
@@ -88,10 +86,6 @@ export interface DataGridProps<TRow extends RowData = RowData> {
 
   // Callbacks
   readonly onChange?: (value: TRow[], operations: RowOperation[]) => void
-  readonly onFocus?: (opts: { cell: CellWithId }) => void
-  readonly onBlur?: (opts: { cell: CellWithId }) => void
-  readonly onActiveCellChange?: (opts: { cell: CellWithId | null }) => void
-  readonly onSelectionChange?: (opts: { selection: SelectionWithId | null }) => void
 }
 
 export interface CellWithId {
