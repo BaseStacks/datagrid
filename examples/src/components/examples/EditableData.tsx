@@ -22,15 +22,13 @@ export function EditableData() {
         onChange: setData // [!code highlight]
     });
 
-    useWhatChanged('EditableData', { data });
-
     const headers = useStateWatch(dataGrid.state.headers);
     const rows = useStateWatch(dataGrid.state.rows);
 
     const selection = useSelection(dataGrid);
 
     return (
-        <div ref={selection.getContainerRef} className="relative select-none">
+        <div ref={selection.containerRef} className="relative select-none">
             <table className={clxs.table}>
                 <thead>
                     <tr>

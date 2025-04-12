@@ -16,13 +16,13 @@ export function CellSelection() {
 
     const dataGrid = useDataGrid({ data, columns });
 
+    const selection = useSelection(dataGrid); // [!code highlight]
+
     const headers = useStateWatch(dataGrid.state.headers);
     const rows = useStateWatch(dataGrid.state.rows);
 
-    const selection = useSelection(dataGrid); // [!code highlight]
-
     return (
-        <div ref={selection.getContainerRef} className="relative">
+        <div ref={selection.containerRef} className="relative">
             <table className={clxs.table}>
                 <thead>
                     <tr>

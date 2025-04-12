@@ -1,7 +1,7 @@
 import { Column, RowData } from '../types';
 import { setAsClone } from './objectUtils';
 
-export const setRowData = <TRow extends RowData>(options: {
+export const updateRowData = <TRow extends RowData>(options: {
     data: TRow[],
     columns: Column[],
     rowIndex: number,

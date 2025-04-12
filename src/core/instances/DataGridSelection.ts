@@ -1,52 +1,37 @@
-import { Cell, CellCoordinates, RowData, SelectionMode } from '../types';
+import { Cell, CellCoordinates, RowData } from '../types';
 import { DataGridStates } from './DataGridStates';
 
-export class DataGridSelection<TRow extends RowData> {
-    private getCellCoordinates = (cell: CellCoordinates | null, offset: [number, number]): CellCoordinates | null => {
-        const { options } = this.state;
-        const { columns, data, stickyRightColumn } = options;
-        const hasStickyRightColumn = Boolean(stickyRightColumn);
+const getCellCoordinates = (maxRow: number, maxCol: number, cell: CellCoordinates | null, offset: [number, number]): CellCoordinates | null => {
+    // Return null if cell is null
+    if (!cell) return null;
 
-        // Return null if cell is null
-        if (!cell) return null;
+    const [deltaX, deltaY] = offset;
 
-        const columnLength = columns.length;
-        const maxRow = data.length - 1;
+    // Calculate column boundaries
+    const minCol = 0;
+    // Calculate row boundaries
+    const minRow = 0;
 
-        const [deltaX, deltaY] = offset;
-
-        // Calculate column boundaries
-        const minCol = 0;
-        const maxCol = columnLength - (hasStickyRightColumn ? 3 : 2);
-
-        // Calculate row boundaries
-        const minRow = 0;
-
-        // Create new cell with position clamped within boundaries
-        return {
-            col: Math.max(minCol, Math.min(maxCol, cell.col + deltaX)),
-            row: Math.max(minRow, Math.min(maxRow, cell.row + deltaY)),
-        };
+    return {
+        col: Math.max(minCol, Math.min(maxCol, cell.col + deltaX)),
+        row: Math.max(minRow, Math.min(maxRow, cell.row + deltaY)),
     };
+};
 
+export class DataGridSelection<TRow extends RowData> {
     private state: DataGridStates<TRow>;
+
+    get maxRow() {
+        return this.state.rows.value.length - 1;
+    }
+
+    get maxCol() {
+        return this.state.headers.value.length - 1;
+    }
 
     constructor(state: DataGridStates<TRow>) {
         this.state = state;
     }
-
-    public isCellDisabled = (rowIndex: number, columnIndex: number) => {
-        const { options } = this.state;
-        const { columns } = options;
-
-        const column = columns[columnIndex];
-
-        if (column) {
-            const disabled = column.disabled;
-            return typeof disabled === 'function' ? disabled({ rowData: {}, rowIndex }) : disabled;
-        }
-        return false;
-    };
 
     public cleanSelection = ({
         maintainActiveCell = false,
@@ -57,7 +42,7 @@ export class DataGridSelection<TRow extends RowData> {
         if (!maintainActiveCell) {
             activeCell.set(null);
         }
-        if(!maintainEditing) {
+        if (!maintainEditing) {
             editing.set(false);
         }
         selectedCell.set(null);
@@ -71,106 +56,100 @@ export class DataGridSelection<TRow extends RowData> {
         selectedRange.set(null);
     };
 
-    public goRight = () => {
+    public moveRight = () => {
         const { selectedCell, editing, activeCell } = this.state;
         const direction: [number, number] = [1, 0];
         editing.set(false);
-        activeCell.set((cell) => this.getCellCoordinates(cell, direction));
+        activeCell.set((cell) => getCellCoordinates(this.maxRow, this.maxCol, cell, direction));
         selectedCell.set(null);
     };
 
-    public goLeft = () => {
+    public moveLeft = () => {
         const { selectedCell, editing, activeCell } = this.state;
         const direction: [number, number] = [-1, 0];
         selectedCell.set(null);
         editing.set(false);
-        activeCell.set((cell) => this.getCellCoordinates(cell, direction));
+        activeCell.set((cell) => getCellCoordinates(this.maxRow, this.maxCol, cell, direction));
     };
 
-    public goDown = () => {
+    public moveDown = () => {
         const { selectedCell, editing, activeCell } = this.state;
         const direction: [number, number] = [0, 1];
         editing.set(false);
-        activeCell.set((cell) => this.getCellCoordinates(cell, direction));
+        activeCell.set((cell) => getCellCoordinates(this.maxRow, this.maxCol, cell, direction));
         selectedCell.set(null);
     };
 
-    public goUp = () => {
+    public moveUp = () => {
         const { selectedCell, editing, activeCell } = this.state;
         const direction: [number, number] = [0, -1];
         editing.set(false);
-        activeCell.set((cell) => this.getCellCoordinates(cell, direction));
+        activeCell.set((cell) => getCellCoordinates(this.maxRow, this.maxCol, cell, direction));
         selectedCell.set(null);
     };
 
     public jumpRight = () => {
-        const { selectedCell, editing, activeCell } = this.state;
-        const { columns } = this.state.options;
+        const { selectedCell, editing, activeCell, headers } = this.state;
 
-        const direction: [number, number] = [columns.length, 0];
-        activeCell.set((cell) => this.getCellCoordinates(cell, direction));
+        const direction: [number, number] = [headers.value.length, 0];
+        activeCell.set((cell) => getCellCoordinates(this.maxRow, this.maxCol, cell, direction));
         selectedCell.set(null);
         editing.set(false);
     };
 
     public jumpLeft = () => {
-        const { selectedCell, editing, activeCell } = this.state;
-        const { columns } = this.state.options;
+        const { selectedCell, editing, activeCell, headers } = this.state;
 
-        const direction: [number, number] = [-columns.length, 0];
-        activeCell.set((cell) => this.getCellCoordinates(cell, direction));
+        const direction: [number, number] = [-headers.value.length, 0];
+        activeCell.set((cell) => getCellCoordinates(this.maxRow, this.maxCol, cell, direction));
         selectedCell.set(null);
         editing.set(false);
     };
 
-    public jumpDown = () => {
-        const { selectedCell, editing, activeCell } = this.state;
-        const { data } = this.state.options;
+    public jumpBottom = () => {
+        const { selectedCell, editing, activeCell, rows } = this.state;
 
-        const direction: [number, number] = [0, data.length];
-        activeCell.set((cell) => this.getCellCoordinates(cell, direction));
+        const direction: [number, number] = [0, rows.value.length];
+        activeCell.set((cell) => getCellCoordinates(this.maxRow, this.maxCol, cell, direction));
         selectedCell.set(null);
         editing.set(false);
     };
 
-    public jumpUp = () => {
-        const { selectedCell, editing, activeCell } = this.state;
-        const { data } = this.state.options;
+    public jumpTop = () => {
+        const { selectedCell, editing, activeCell, rows } = this.state;
 
-        const direction: [number, number] = [0, -data.length];
-        activeCell.set((cell) => this.getCellCoordinates(cell, direction));
+        const direction: [number, number] = [0, -rows.value.length];
+        activeCell.set((cell) => getCellCoordinates(this.maxRow, this.maxCol, cell, direction));
         selectedCell.set(null);
         editing.set(false);
     };
 
-    public selectLeft = () => {
+    public expandLeft = () => {
         const { selectedCell } = this.state;
         const direction: [number, number] = [-1, 0];
-        selectedCell.set((cell) => this.getCellCoordinates(cell, direction));
+        selectedCell.set((cell) => getCellCoordinates(this.maxRow, this.maxCol, cell, direction));
     };
 
-    public selectRight = () => {
+    public expandRight = () => {
         const { selectedCell } = this.state;
         const direction: [number, number] = [1, 0];
-        selectedCell.set((cell) => this.getCellCoordinates(cell, direction));
+        selectedCell.set((cell) => getCellCoordinates(this.maxRow, this.maxCol, cell, direction));
     };
 
-    public selectDown = () => {
+    public expandDown = () => {
         const { selectedCell } = this.state;
         const direction: [number, number] = [0, 1];
-        selectedCell.set((cell) => this.getCellCoordinates(cell, direction));
+        selectedCell.set((cell) => getCellCoordinates(this.maxRow, this.maxCol, cell, direction));
     };
 
-    public selectUp = () => {
+    public expandUp = () => {
         const { selectedCell } = this.state;
         const direction: [number, number] = [0, -1];
-        selectedCell.set((cell) => this.getCellCoordinates(cell, direction));
+        selectedCell.set((cell) => getCellCoordinates(this.maxRow, this.maxCol, cell, direction));
     };
 
     public selectAll = () => {
-        const { selectedCell, editing, activeCell } = this.state;
-        const { columns, data } = this.state.options;
-        const hasStickyRightColumn = Boolean(this.state.options.stickyRightColumn);
+        const { selectedCell, editing, activeCell, rows, headers } = this.state;
 
         editing.set(false);
         activeCell.set({
@@ -180,81 +159,10 @@ export class DataGridSelection<TRow extends RowData> {
             doNotScrollX: true,
         });
         selectedCell.set({
-            col: columns.length - (hasStickyRightColumn ? 3 : 2),
-            row: data.length - 1,
+            col: headers.value.length - 1,
+            row: rows.value.length - 1,
             doNotScrollY: true,
             doNotScrollX: true,
-        });
-    };
-
-    private isRangeSelection = false;
-
-    public startRangeSelection = (cell: Cell) => {
-        const delay = 150;
-        this.isRangeSelection = true;
-
-        setTimeout(() => {
-            if (!this.isRangeSelection) {
-                return;
-            }
-            const dragging = {
-                columns: cell.coordinates.col !== -1,
-                rows: cell.coordinates.row !== -1,
-                active: true,
-            };
-
-            this.state.dragging.set(dragging);
-        }, delay);
-    };
-
-    public updateRangeSelection = (cell: Cell) => {
-        if (!this.state.dragging.value.active) {
-            return;
-        }
-
-        const { dragging, selectedCell } = this.state;
-        const { data, columns } = this.state.options;
-
-        const lastColumnIndex = columns.length - 1;
-
-        selectedCell.set({
-            col: dragging.value.columns
-                ? Math.max(0, Math.min(lastColumnIndex, cell.coordinates.col))
-                : lastColumnIndex,
-            row: dragging.value.rows
-                ? Math.max(0, cell.coordinates.row)
-                : data.length - 1,
-            doNotScrollX: !dragging.value.columns,
-            doNotScrollY: !dragging.value.rows,
-        });
-        // implementation
-    };
-
-    public stopRangeSelection = () => {
-        this.isRangeSelection = false;
-        this.state.dragging.set({
-            columns: false,
-            rows: false,
-            active: false,
-        });
-    };
-
-    public startDragging = (dragSelect: Omit<SelectionMode, 'active'>) => {
-        const { dragging } = this.state;
-
-        dragging.set({
-            ...dragSelect,
-            active: true,
-        });
-    };
-
-    public stopDragging = () => {
-        const { dragging } = this.state;
-
-        dragging.set({
-            columns: false,
-            rows: false,
-            active: false,
         });
     };
 };

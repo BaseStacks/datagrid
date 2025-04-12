@@ -42,7 +42,7 @@ export interface Cell<TValue = any> {
   readonly render: () => TValue;
 }
 
-export interface HeaderCell {
+export interface ColumnHeader {
   readonly index: number
   readonly column: Column
   readonly render: () => string | React.ReactNode;
@@ -53,11 +53,11 @@ export interface Column<TValue = any> {
   readonly header?: string | (() => any);
   readonly cell?: (opts: CellProps<TValue>) => React.ReactNode
   readonly footer?: string | (() => any);
-  readonly disabled?: boolean | ((opts: { rowData: RowData; rowIndex: number }) => boolean);
+  readonly disabled?: boolean | ((opts: { value: RowData; rowIndex: number }) => boolean);
   readonly prePasteValues?: (values: string[]) => TValue[];
   readonly pasteValue?: (opts: { value: TValue; rowData: RowData; rowIndex: number }) => TValue | Promise<TValue>;
-  readonly isCellEmpty?: (opts: { rowData: RowData; rowIndex: number }) => boolean;
-  readonly deleteValue?: (opts: { rowData: RowData; rowIndex: number }) => TValue | Promise<TValue>;
+  readonly isCellEmpty?: (opts: { value: RowData; rowIndex: number }) => boolean;
+  readonly deleteValue?: (opts: { value: RowData; rowIndex: number }) => TValue | Promise<TValue>;
 }
 
 
@@ -76,10 +76,15 @@ export interface RowOperation {
 export interface DataGridOptions<TRow extends RowData = RowData> {
   readonly data: TRow[]
   readonly columns: Column[]
-
-  readonly rowKey?: RowKey<TRow>;
   readonly stickyRightColumn?: Column;
 
+  readonly rowKey?: RowKey<TRow>;
+  readonly lockRows?: boolean;
+
+  // Deleting an empty cell of an empty row will actually remove the row. 
+  // This behavior is auto-disabled if the lockRows is enabled.
+  readonly disableSmartDelete?: boolean;
+  
   // Row operations
   readonly createRow?: () => TRow;
   readonly duplicateRow?: (opts: { rowData: TRow; rowIndex: number }) => TRow;

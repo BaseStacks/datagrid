@@ -16,3 +16,27 @@ export const setAsClone = <T>(obj: T, path: string, value: any): T => {
     const newObj = recursiveSet(obj, keys, value);
     return newObj;
 };
+
+export const deepEqual = (a: any, b: any): boolean => {
+    if (a === b) return true;
+
+    if (a == null || b == null) return false;
+
+    if (typeof a !== typeof b) return false;
+
+    if (typeof a === 'object') {
+        const keysA = Object.keys(a);
+        const keysB = Object.keys(b);
+
+        if (keysA.length !== keysB.length) return false;
+
+        for (const key of keysA) {
+            if (!keysB.includes(key)) return false;
+            if (!deepEqual(a[key], b[key])) return false;
+        }
+
+        return true;
+    }
+
+    return false;
+};

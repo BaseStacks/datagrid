@@ -1,12 +1,17 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { compareCoordinates, type Cell, type CellCoordinates, type RowData } from '../../core';
+import { RefObject, useCallback, useEffect, useRef, useState } from 'react';
+import { compareCoordinates, DataGridSelection, type Cell, type CellCoordinates, type RowData } from '../../core';
 import { buildRectMap, findCoordByRect, findFromRectMap, findRect, getCursorOffset, mergeRects, RectType } from '../utils/domRectUtils';
 import { useDocumentEventListener } from './dom/useDocumentEventListener';
 import type { UseDataGridReturn } from './useDataGrid';
 
-export const useSelection = <TRow extends RowData>(dataGrid: UseDataGridReturn<TRow>) => {
-    const { cleanSelection } = dataGrid;
+export const useSelection = <TRow extends RowData = RowData>(dataGrid: UseDataGridReturn<TRow>) => {
     const { editing, dragging, activeCell, selectedCell, selectedRange } = dataGrid.state;
+
+    const [selection] = useState(() => {
+        return new DataGridSelection(dataGrid.state);
+    });
+
+    const { cleanSelection } = selection;
 
     const containerRef = useRef<HTMLElement>(null);
     const isDraggingRef = useRef(false);
@@ -150,7 +155,7 @@ export const useSelection = <TRow extends RowData>(dataGrid: UseDataGridReturn<T
         }
 
         const clickedOnActiveCell = activeCell.value && event.target === coordElementMap.current.get(activeCell.value);
-        if(clickedOnActiveCell) {
+        if (clickedOnActiveCell) {
             return;
         }
 
@@ -167,9 +172,7 @@ export const useSelection = <TRow extends RowData>(dataGrid: UseDataGridReturn<T
     useDocumentEventListener('dblclick', doubleClick.current);
 
     return {
-        getContainerRef: useCallback((node: HTMLElement | null) => {
-            containerRef.current = node;
-        }, []),
+        containerRef: containerRef as RefObject<any>,
         rect: selectionRect,
         activeRect,
         registerCellRef: registerCell
