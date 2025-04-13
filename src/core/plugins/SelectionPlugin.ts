@@ -140,8 +140,8 @@ export class SelectionPlugin<TRow extends RowData> {
     public isActive = false;
 
     public state = {
-        selectionRect: createDataGridState<RectType | null>(null),
-        activeRect: createDataGridState<RectType | null>(null),
+        selectedAreaRect: createDataGridState<RectType | null>(null),
+        activeCellRect: createDataGridState<RectType | null>(null),
     };
 
     public registerCell = (cell: CellCoordinates, element: HTMLElement | null) => {
@@ -162,10 +162,10 @@ export class SelectionPlugin<TRow extends RowData> {
         this.container.addEventListener('mousemove', this.onMouseMove);
         this.container.addEventListener('dblclick', this.startFocus);
 
-        const { activeCell, selectedCell, selectedRange } = this.dataGrid.state;
-        const { selectionRect, activeRect } = this.state;
+        const { activeCell, selectedCell, selectedArea } = this.dataGrid.state;
+        const { selectedAreaRect: selectionRect, activeCellRect: activeRect } = this.state;
 
-        const unwatchSelectRange = selectedRange.watch((nextSelectedRange) => {
+        const unwatchSelectRange = selectedArea.watch((nextSelectedRange) => {
             selectionRect.set(() => {
                 if (!nextSelectedRange) {
                     return null;

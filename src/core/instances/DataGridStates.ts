@@ -6,7 +6,7 @@ export class DataGridStates<TRow extends RowData> {
         this.activeCell.watch(() => {
             // Clear the selected cell and range when the active cell changes
             this.selectedCell.set(null);
-            this.selectedRange.set(null);
+            this.selectedArea.set(null);
             this.editing.set(false);
             this.dragging.set({
                 active: false,
@@ -19,7 +19,7 @@ export class DataGridStates<TRow extends RowData> {
             // Active cell and Selected cell are two corner points of the selection
             // If one of them is not set, we clear the SelectedRange
             if (!selectedCellValue || !this.activeCell.value) {
-                this.selectedRange.set(null);
+                this.selectedArea.set(null);
                 return;
             }
 
@@ -34,7 +34,7 @@ export class DataGridStates<TRow extends RowData> {
                     row: Math.max(this.activeCell.value.row, selectedCellValue.row),
                 },
             };
-            this.selectedRange.set(nextRange);
+            this.selectedArea.set(nextRange);
         });
     }
 
@@ -42,7 +42,7 @@ export class DataGridStates<TRow extends RowData> {
     public activeCell = createDataGridState<(CellCoordinates & ScrollBehavior) | null>(null);
     public lastEditingCell = createDataGridState<CellCoordinates | null>(null);
     public selectedCell = createDataGridState<(CellCoordinates & ScrollBehavior) | null>(null);
-    public selectedRange = createDataGridState<RangeSelection | null>(null);
+    public selectedArea = createDataGridState<RangeSelection | null>(null);
     public dragging = createDataGridState<SelectionMode>({
         columns: false,
         rows: false,

@@ -37,7 +37,7 @@ export class DataGridSelection<TRow extends RowData> {
         maintainActiveCell = false,
         maintainEditing = false,
     } = {}) => {
-        const { selectedCell, editing, activeCell, selectedRange } = this.state;
+        const { selectedCell, editing, activeCell, selectedArea } = this.state;
 
         if (!maintainActiveCell) {
             activeCell.set(null);
@@ -46,7 +46,7 @@ export class DataGridSelection<TRow extends RowData> {
             editing.set(false);
         }
         selectedCell.set(null);
-        selectedRange.set(null);
+        selectedArea.set(null);
     };
 
     public focus = () => {

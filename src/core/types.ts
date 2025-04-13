@@ -23,6 +23,12 @@ export interface RowSize {
   readonly top: number
 }
 
+interface SetValueOptions {
+  readonly finish?: boolean;
+  readonly activeNext?: 'lower' | 'upper' | 'left' | 'right';
+  readonly focusNext?: true;
+}
+
 export interface CellProps<TValue = any> {
   readonly id: string;
   readonly coordinates: CellCoordinates;
@@ -30,7 +36,8 @@ export interface CellProps<TValue = any> {
   readonly active: boolean;
   readonly focused: boolean;
   readonly disabled: boolean;
-  readonly setValue: (value: TValue) => void;
+  readonly blur: () => void;
+  readonly setValue: (value: TValue, options?: SetValueOptions) => void;
   readonly onFocus: (callback: () => void) => Unsubscribe;
   readonly onBlur: (callback: () => void) => Unsubscribe;
 }

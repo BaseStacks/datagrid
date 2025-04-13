@@ -1,4 +1,4 @@
-import { Column, useDataGrid, useKeyBindings, useSelection, useStateWatch } from '@basestacks/data-grid';
+import { Column, DataGridProvider, useDataGrid, useKeyBindings, useSelection, useStateWatch } from '@basestacks/data-grid';
 import { useMemo, useState } from 'react';
 import { TextInput } from './controls/TextInput';
 
@@ -30,40 +30,42 @@ export function KeyBindings() {
     useKeyBindings(dataGrid); // [!code highlight]
 
     return (
-        <div ref={selection.registerContainer} className="relative select-none">
-            <table className={clxs.table}>
-                <thead>
-                    <tr>
-                        {headers.map((header, index) => (
-                            <th key={index} className={clxs.header}>
-                                {header.render()}
-                            </th>
-                        ))}
-                    </tr>
-                </thead>
-                <tbody>
-                    {rows.map((row, index) => (
-                        <tr key={index} className={clxs.row}>
-                            {row.cells.map((cell) => (
-                                <td
-                                    key={cell.id}
-                                    className={clxs.cell}
-                                    ref={selection.registerCell(cell)}
-                                >
-                                    {cell.render()}
-                                </td>
+        <DataGridProvider dataGrid={dataGrid}>
+            <div ref={selection.registerContainer} className="relative select-none">
+                <table className={clxs.table}>
+                    <thead>
+                        <tr>
+                            {headers.map((header, index) => (
+                                <th key={index} className={clxs.header}>
+                                    {header.render()}
+                                </th>
                             ))}
                         </tr>
-                    ))}
-                </tbody>
-            </table>
-            {selection.rect && (
-                <div className={clxs.selectionRect} style={selection.rect} />
-            )}
-            {selection.activeRect && (
-                <div className={clxs.selectionRect} style={selection.activeRect} />
-            )}
-        </div>
+                    </thead>
+                    <tbody>
+                        {rows.map((row, index) => (
+                            <tr key={index} className={clxs.row}>
+                                {row.cells.map((cell) => (
+                                    <td
+                                        key={cell.id}
+                                        className={clxs.cell}
+                                        ref={selection.registerCell(cell)}
+                                    >
+                                        {cell.render()}
+                                    </td>
+                                ))}
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+                {selection.areaRect && (
+                    <div className={clxs.selectionRect} style={selection.areaRect} />
+                )}
+                {selection.activeRect && (
+                    <div className={clxs.selectionRect} style={selection.activeRect} />
+                )}
+            </div>
+        </DataGridProvider>
     );
 };
 

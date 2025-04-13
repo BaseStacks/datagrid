@@ -1,4 +1,4 @@
-import { CellProps } from '@basestacks/data-grid';
+import { CellProps, useDataGridContext } from '@basestacks/data-grid';
 import React from 'react';
 import { useEffect, useRef } from 'react';
 
@@ -7,20 +7,25 @@ interface TextInputProps extends React.HTMLProps<HTMLInputElement> {
 }
 
 function TextInputImpl({ cell, ...props }: TextInputProps) {
+    const { selection } = useDataGridContext();
+
     const { value, setValue, onFocus, onBlur } = cell;
     const ref = useRef<HTMLInputElement>(null);
 
     const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+        event.stopPropagation();
+
         if (event.key === 'Enter') {
-            event.preventDefault();
             ref.current?.blur();
-            setValue(ref.current?.value || '');
+            const nextValue = ref.current?.value || '';
+            setValue(nextValue);
+            selection.moveDown();
         }
 
         if (event.key === 'Escape') {
-            event.preventDefault();
             ref.current!.value = value ?? '';
             ref.current!.blur();
+            selection.blur();
         }
     };
 

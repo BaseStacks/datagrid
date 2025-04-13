@@ -1,5 +1,5 @@
 import { useDataGrid, useSelection, useStateWatch } from '@basestacks/data-grid';
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 export function CellSelection() {
     const columns = useMemo(() => [
@@ -53,10 +53,10 @@ export function CellSelection() {
                 </tbody>
             </table>
             {/* [!code highlight:12] */}
-            {selection.rect && (
+            {selection.areaRect && (
                 <div
                     className="absolute outline-2 outline-blue-600"
-                    style={selection.rect}
+                    style={selection.areaRect}
                 />
             )}
             {selection.activeRect && (

@@ -41,7 +41,9 @@ export class DataGrid<TRow extends RowData = RowData> {
                         active: false,
                         focused: false,
                         disabled: false,
-                        setValue: (nextValue) => {
+                        blur: this.selection.blur,
+                        setValue: (nextValue, options = {}) => {
+                            const { finish = true } = options;
                             if (!this.options.onChange) {
                                 return;
                             }
@@ -55,6 +57,10 @@ export class DataGrid<TRow extends RowData = RowData> {
                             });
 
                             this.updateData(rowIndex, newRowData);
+
+                            if (finish) {
+                                this.selection.blur();
+                            }
                         },
                         onFocus: (callback) => {
                             return this.state.editing.watch((editing) => {
@@ -108,10 +114,10 @@ export class DataGrid<TRow extends RowData = RowData> {
 
     public updateOptions = (newOptions: DataGridOptions<TRow>) => {
         const { columns, data } = newOptions;
-        if(data !== this.options.data) {
+        if (data !== this.options.data) {
             this.state.rows.set(this.createRows(data, columns));
         }
-        if(columns !== this.options.columns) {
+        if (columns !== this.options.columns) {
             this.state.headers.set(this.createHeaders());
         }
 
@@ -148,7 +154,7 @@ export class DataGrid<TRow extends RowData = RowData> {
     };
 
     public deleteSelection = () => {
-        const { activeCell, selectedRange } = this.state;
+        const { activeCell, selectedArea } = this.state;
         const { onChange, columns, data } = this.options;
         if (!onChange) {
             return;
@@ -158,8 +164,8 @@ export class DataGrid<TRow extends RowData = RowData> {
             return;
         }
 
-        const min: CellCoordinates = selectedRange.value?.min || activeCell.value;
-        const max: CellCoordinates = selectedRange.value?.max || activeCell.value;
+        const min: CellCoordinates = selectedArea.value?.min || activeCell.value;
+        const max: CellCoordinates = selectedArea.value?.max || activeCell.value;
 
         const newData = [...data];
 
@@ -243,15 +249,15 @@ export class DataGrid<TRow extends RowData = RowData> {
     };
 
     public applyPasteData = async (pasteData: string[][]) => {
-        const { activeCell, selectedRange, editing } = this.state;
+        const { activeCell, selectedArea, editing } = this.state;
         const { createRow, onChange, columns, data, lockRows } = this.options;
 
         if (!activeCell.value || !editing.value) {
             return;
         }
 
-        const min: CellCoordinates = selectedRange.value?.min || activeCell?.value;
-        const max: CellCoordinates = selectedRange.value?.max || activeCell?.value;
+        const min: CellCoordinates = selectedArea.value?.min || activeCell?.value;
+        const max: CellCoordinates = selectedArea.value?.max || activeCell?.value;
 
         const results = await Promise.all(
             pasteData[0].map((_, columnIndex) => {

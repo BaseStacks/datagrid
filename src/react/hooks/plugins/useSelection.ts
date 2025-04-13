@@ -3,13 +3,8 @@ import { SelectionPlugin, type Cell, type RowData } from '../../../core';
 import type { UseDataGridReturn } from '../useDataGrid';
 import { useStateWatch } from '../atomic/useStateWatch';
 
-interface UseSelectionOptions<TElement extends HTMLElement = HTMLElement> {
-    readonly containerRef?: React.RefObject<TElement | null>;
-}
-
 export const useSelection = <TRow extends RowData = RowData>(
     dataGrid: UseDataGridReturn<TRow>,
-    options: UseSelectionOptions = {}
 ) => {
     const [selectionPlugin] = useState(() => new SelectionPlugin(dataGrid));
 
@@ -31,8 +26,8 @@ export const useSelection = <TRow extends RowData = RowData>(
         selectionPlugin.registerCell(cell.coordinates, element);
     }, [selectionPlugin]);
 
-    const activeRect = useStateWatch(selectionPlugin.state.activeRect);
-    const selectionRect = useStateWatch(selectionPlugin.state.selectionRect);
+    const activeRect = useStateWatch(selectionPlugin.state.activeCellRect);
+    const areaRect = useStateWatch(selectionPlugin.state.selectedAreaRect);
 
     useEffect(() => {
         return () => {
@@ -41,7 +36,7 @@ export const useSelection = <TRow extends RowData = RowData>(
     }, [selectionPlugin]);
 
     return {
-        rect: selectionRect,
+        areaRect,
         activeRect,
         registerContainer,
         registerCell

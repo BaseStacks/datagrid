@@ -13,16 +13,10 @@ export class KeybindingPlugin<TRow extends RowData> {
     private cleanKeyBindings?: () => void;
 
     private preProcessEvent = (event: KeyboardEvent): boolean => {
-        const { activeCell, editing } = this.dataGrid.state;
+        const { activeCell } = this.dataGrid.state;
 
         if (!activeCell.value || event.isComposing) {
             return false;
-        }
-
-        if (editing.value && event.key.startsWith('Arrow')) {
-            if (['ArrowLeft', 'ArrowRight'].includes(event.key)) {
-                return false;
-            }
         }
 
         return true;;
