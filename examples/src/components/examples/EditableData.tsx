@@ -1,6 +1,7 @@
-import { Column, useDataGrid, useSelection, useStateWatch, useWhatChanged } from '@basestacks/data-grid';
+import { Column, useDataGrid, useSelection, useStateWatch } from '@basestacks/data-grid';
 import { useMemo, useState } from 'react';
 import { TextInput } from './controls/TextInput';
+import { useRef } from 'react';
 
 export function EditableData() {
     const columns = useMemo((): Column[] => [
@@ -28,15 +29,12 @@ export function EditableData() {
     const selection = useSelection(dataGrid);
 
     return (
-        <div ref={selection.containerRef} className="relative select-none">
+        <div ref={selection.registerContainer} className="relative select-none">
             <table className={clxs.table}>
                 <thead>
                     <tr>
                         {headers.map((header, index) => (
-                            <th
-                                key={index}
-                                className={clxs.header}
-                            >
+                            <th key={index} className={clxs.header}>
                                 {header.render()}
                             </th>
                         ))}
@@ -49,7 +47,7 @@ export function EditableData() {
                                 <td
                                     key={cell.id}
                                     className={clxs.cell}
-                                    ref={selection.registerCellRef(cell)}
+                                    ref={selection.registerCell(cell)}
                                 >
                                     {cell.render()}
                                 </td>

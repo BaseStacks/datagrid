@@ -1,25 +1,33 @@
-import { useDataGrid, useSelection, useStateWatch } from '@basestacks/data-grid';
-import { useMemo, useRef, useState } from 'react';
+import { Column, useDataGrid, useKeyBindings, useSelection, useStateWatch } from '@basestacks/data-grid';
+import { useMemo, useState } from 'react';
+import { TextInput } from './controls/TextInput';
 
-export function CellSelection() {
-    const columns = useMemo(() => [
+export function KeyBindings() {
+    const columns = useMemo((): Column[] => [
         { dataKey: 'id', header: 'ID' },
-        { dataKey: 'name', header: 'Name' },
-        { dataKey: 'age', header: 'Age' },
+        { dataKey: 'firstName', header: 'First Name', cell: (cell) => <TextInput cell={cell} /> },
+        { dataKey: 'lastName', header: 'Last Name', cell: (cell) => <TextInput cell={cell} /> },
+        { dataKey: 'age', header: 'Age', cell: (cell) => <TextInput cell={cell} type="number" /> },
     ], []);
 
-    const [data] = useState([
-        { id: 1, name: 'John Doe', age: 30 },
-        { id: 2, name: 'Jane Smith', age: 25 },
-        { id: 3, name: 'Alice Johnson', age: 28 },
+    const [data, setData] = useState([
+        { id: 1, firstName: 'John', lastName: 'Doe', age: 30 },
+        { id: 2, firstName: 'Jane', lastName: 'Smith', age: 25 },
+        { id: 3, firstName: 'Alice', lastName: 'Johnson', age: 28 },
     ]);
 
-    const dataGrid = useDataGrid({ data, columns });
-
-    const selection = useSelection(dataGrid); // [!code highlight]
+    const dataGrid = useDataGrid({
+        data,
+        columns,
+        onChange: setData
+    });
 
     const headers = useStateWatch(dataGrid.state.headers);
     const rows = useStateWatch(dataGrid.state.rows);
+
+    const selection = useSelection(dataGrid);
+
+    useKeyBindings(dataGrid); // [!code highlight]
 
     return (
         <div ref={selection.registerContainer} className="relative select-none">
@@ -27,10 +35,7 @@ export function CellSelection() {
                 <thead>
                     <tr>
                         {headers.map((header, index) => (
-                            <th
-                                key={index}
-                                className={clxs.header}
-                            >
+                            <th key={index} className={clxs.header}>
                                 {header.render()}
                             </th>
                         ))}
@@ -52,18 +57,11 @@ export function CellSelection() {
                     ))}
                 </tbody>
             </table>
-            {/* [!code highlight:12] */}
             {selection.rect && (
-                <div
-                    className="absolute outline-2 outline-blue-600"
-                    style={selection.rect}
-                />
+                <div className={clxs.selectionRect} style={selection.rect} />
             )}
             {selection.activeRect && (
-                <div
-                    className="absolute outline outline-blue-600"
-                    style={selection.activeRect}
-                />
+                <div className={clxs.selectionRect} style={selection.activeRect} />
             )}
         </div>
     );
@@ -75,4 +73,5 @@ const clxs = {
     row: 'bg-white dark:bg-gray-800',
     cell: 'border-b border-gray-100 p-4 pl-8 text-gray-500 dark:border-gray-700 dark:text-gray-400',
     activeCell: 'outline outline-blue-500',
+    selectionRect: 'absolute pointer-events-none outline-2 outline-offset-[-2px] outline-blue-600',
 };

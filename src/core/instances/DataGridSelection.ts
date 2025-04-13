@@ -49,109 +49,100 @@ export class DataGridSelection<TRow extends RowData> {
         selectedRange.set(null);
     };
 
+    public focus = () => {
+        const { activeCell, editing } = this.state;
+        if (!activeCell.value) {
+            return;
+        }
+        editing.set(true);
+    };
+
+    public blur = () => {
+        const { editing } = this.state;
+        editing.set(false);
+    };
+
     public active = (cell: Cell) => {
-        const { activeCell, selectedCell, selectedRange } = this.state;
+        const { activeCell } = this.state;
         activeCell.set(cell.coordinates);
-        selectedCell.set(null);
-        selectedRange.set(null);
     };
 
     public moveRight = () => {
-        const { selectedCell, editing, activeCell } = this.state;
+        const { activeCell } = this.state;
         const direction: [number, number] = [1, 0];
-        editing.set(false);
         activeCell.set((cell) => getCellCoordinates(this.maxRow, this.maxCol, cell, direction));
-        selectedCell.set(null);
     };
 
     public moveLeft = () => {
-        const { selectedCell, editing, activeCell } = this.state;
+        const { activeCell } = this.state;
         const direction: [number, number] = [-1, 0];
-        selectedCell.set(null);
-        editing.set(false);
         activeCell.set((cell) => getCellCoordinates(this.maxRow, this.maxCol, cell, direction));
     };
 
     public moveDown = () => {
-        const { selectedCell, editing, activeCell } = this.state;
+        const { activeCell } = this.state;
         const direction: [number, number] = [0, 1];
-        editing.set(false);
         activeCell.set((cell) => getCellCoordinates(this.maxRow, this.maxCol, cell, direction));
-        selectedCell.set(null);
     };
 
     public moveUp = () => {
-        const { selectedCell, editing, activeCell } = this.state;
+        const { activeCell } = this.state;
         const direction: [number, number] = [0, -1];
-        editing.set(false);
         activeCell.set((cell) => getCellCoordinates(this.maxRow, this.maxCol, cell, direction));
-        selectedCell.set(null);
     };
 
     public jumpRight = () => {
-        const { selectedCell, editing, activeCell, headers } = this.state;
+        const { activeCell, headers } = this.state;
 
         const direction: [number, number] = [headers.value.length, 0];
         activeCell.set((cell) => getCellCoordinates(this.maxRow, this.maxCol, cell, direction));
-        selectedCell.set(null);
-        editing.set(false);
     };
 
     public jumpLeft = () => {
-        const { selectedCell, editing, activeCell, headers } = this.state;
-
+        const { activeCell, headers } = this.state;
         const direction: [number, number] = [-headers.value.length, 0];
         activeCell.set((cell) => getCellCoordinates(this.maxRow, this.maxCol, cell, direction));
-        selectedCell.set(null);
-        editing.set(false);
     };
 
     public jumpBottom = () => {
-        const { selectedCell, editing, activeCell, rows } = this.state;
-
+        const { activeCell, rows } = this.state;
         const direction: [number, number] = [0, rows.value.length];
         activeCell.set((cell) => getCellCoordinates(this.maxRow, this.maxCol, cell, direction));
-        selectedCell.set(null);
-        editing.set(false);
     };
 
     public jumpTop = () => {
-        const { selectedCell, editing, activeCell, rows } = this.state;
-
+        const { activeCell, rows } = this.state;
         const direction: [number, number] = [0, -rows.value.length];
         activeCell.set((cell) => getCellCoordinates(this.maxRow, this.maxCol, cell, direction));
-        selectedCell.set(null);
-        editing.set(false);
     };
 
     public expandLeft = () => {
-        const { selectedCell } = this.state;
+        const { selectedCell, activeCell } = this.state;
         const direction: [number, number] = [-1, 0];
-        selectedCell.set((cell) => getCellCoordinates(this.maxRow, this.maxCol, cell, direction));
+        selectedCell.set((cell) => getCellCoordinates(this.maxRow, this.maxCol, cell || activeCell.value, direction));
     };
 
     public expandRight = () => {
-        const { selectedCell } = this.state;
+        const { selectedCell, activeCell } = this.state;
         const direction: [number, number] = [1, 0];
-        selectedCell.set((cell) => getCellCoordinates(this.maxRow, this.maxCol, cell, direction));
+        selectedCell.set((cell) => getCellCoordinates(this.maxRow, this.maxCol, cell || activeCell.value, direction));
     };
 
-    public expandDown = () => {
-        const { selectedCell } = this.state;
-        const direction: [number, number] = [0, 1];
-        selectedCell.set((cell) => getCellCoordinates(this.maxRow, this.maxCol, cell, direction));
-    };
-
-    public expandUp = () => {
-        const { selectedCell } = this.state;
+    public expandLower = () => {
+        const { selectedCell, activeCell } = this.state;
         const direction: [number, number] = [0, -1];
-        selectedCell.set((cell) => getCellCoordinates(this.maxRow, this.maxCol, cell, direction));
+        selectedCell.set((cell) => getCellCoordinates(this.maxRow, this.maxCol, cell || activeCell.value, direction));
+    };
+
+    public expandUpper = () => {
+        const { selectedCell, activeCell } = this.state;
+        const direction: [number, number] = [0, 1];
+        selectedCell.set((cell) => getCellCoordinates(this.maxRow, this.maxCol, cell || activeCell.value, direction));
     };
 
     public selectAll = () => {
-        const { selectedCell, editing, activeCell, rows, headers } = this.state;
+        const { selectedCell, activeCell, rows, headers } = this.state;
 
-        editing.set(false);
         activeCell.set({
             col: 0,
             row: 0,

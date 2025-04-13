@@ -12,6 +12,7 @@
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as IndexImport } from './routes/index'
+import { Route as GuidesKeyBindingsImport } from './routes/guides/key-bindings'
 import { Route as GuidesEditableDataImport } from './routes/guides/editable-data'
 import { Route as GuidesCellSelectionImport } from './routes/guides/cell-selection'
 import { Route as GuidesBasicImport } from './routes/guides/basic'
@@ -22,6 +23,12 @@ import { Route as GettingStartedInstallationImport } from './routes/getting-star
 const IndexRoute = IndexImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const GuidesKeyBindingsRoute = GuidesKeyBindingsImport.update({
+  id: '/guides/key-bindings',
+  path: '/guides/key-bindings',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -90,6 +97,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GuidesEditableDataImport
       parentRoute: typeof rootRoute
     }
+    '/guides/key-bindings': {
+      id: '/guides/key-bindings'
+      path: '/guides/key-bindings'
+      fullPath: '/guides/key-bindings'
+      preLoaderRoute: typeof GuidesKeyBindingsImport
+      parentRoute: typeof rootRoute
+    }
   }
 }
 
@@ -101,6 +115,7 @@ export interface FileRoutesByFullPath {
   '/guides/basic': typeof GuidesBasicRoute
   '/guides/cell-selection': typeof GuidesCellSelectionRoute
   '/guides/editable-data': typeof GuidesEditableDataRoute
+  '/guides/key-bindings': typeof GuidesKeyBindingsRoute
 }
 
 export interface FileRoutesByTo {
@@ -109,6 +124,7 @@ export interface FileRoutesByTo {
   '/guides/basic': typeof GuidesBasicRoute
   '/guides/cell-selection': typeof GuidesCellSelectionRoute
   '/guides/editable-data': typeof GuidesEditableDataRoute
+  '/guides/key-bindings': typeof GuidesKeyBindingsRoute
 }
 
 export interface FileRoutesById {
@@ -118,6 +134,7 @@ export interface FileRoutesById {
   '/guides/basic': typeof GuidesBasicRoute
   '/guides/cell-selection': typeof GuidesCellSelectionRoute
   '/guides/editable-data': typeof GuidesEditableDataRoute
+  '/guides/key-bindings': typeof GuidesKeyBindingsRoute
 }
 
 export interface FileRouteTypes {
@@ -128,6 +145,7 @@ export interface FileRouteTypes {
     | '/guides/basic'
     | '/guides/cell-selection'
     | '/guides/editable-data'
+    | '/guides/key-bindings'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -135,6 +153,7 @@ export interface FileRouteTypes {
     | '/guides/basic'
     | '/guides/cell-selection'
     | '/guides/editable-data'
+    | '/guides/key-bindings'
   id:
     | '__root__'
     | '/'
@@ -142,6 +161,7 @@ export interface FileRouteTypes {
     | '/guides/basic'
     | '/guides/cell-selection'
     | '/guides/editable-data'
+    | '/guides/key-bindings'
   fileRoutesById: FileRoutesById
 }
 
@@ -151,6 +171,7 @@ export interface RootRouteChildren {
   GuidesBasicRoute: typeof GuidesBasicRoute
   GuidesCellSelectionRoute: typeof GuidesCellSelectionRoute
   GuidesEditableDataRoute: typeof GuidesEditableDataRoute
+  GuidesKeyBindingsRoute: typeof GuidesKeyBindingsRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
@@ -159,6 +180,7 @@ const rootRouteChildren: RootRouteChildren = {
   GuidesBasicRoute: GuidesBasicRoute,
   GuidesCellSelectionRoute: GuidesCellSelectionRoute,
   GuidesEditableDataRoute: GuidesEditableDataRoute,
+  GuidesKeyBindingsRoute: GuidesKeyBindingsRoute,
 }
 
 export const routeTree = rootRoute
@@ -175,7 +197,8 @@ export const routeTree = rootRoute
         "/getting-started/installation",
         "/guides/basic",
         "/guides/cell-selection",
-        "/guides/editable-data"
+        "/guides/editable-data",
+        "/guides/key-bindings"
       ]
     },
     "/": {
@@ -192,6 +215,9 @@ export const routeTree = rootRoute
     },
     "/guides/editable-data": {
       "filePath": "guides/editable-data.tsx"
+    },
+    "/guides/key-bindings": {
+      "filePath": "guides/key-bindings.tsx"
     }
   }
 }

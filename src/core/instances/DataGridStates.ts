@@ -3,26 +3,37 @@ import { CellCoordinates, ColumnHeader, RangeSelection, Row, RowData, ScrollBeha
 
 export class DataGridStates<TRow extends RowData> {
     constructor() {
-        this.selectedCell.watch((selectedCell) => {
+        this.activeCell.watch(() => {
+            // Clear the selected cell and range when the active cell changes
+            this.selectedCell.set(null);
+            this.selectedRange.set(null);
+            this.editing.set(false);
+            this.dragging.set({
+                active: false,
+                columns: false,
+                rows: false
+            });
+        });
+
+        this.selectedCell.watch((selectedCellValue) => {
             // Active cell and Selected cell are two corner points of the selection
-            if (!selectedCell || !this.activeCell.value) {
-                if (this.selectedRange.value) {
-                    this.selectedRange.set(null);
-                }
+            // If one of them is not set, we clear the SelectedRange
+            if (!selectedCellValue || !this.activeCell.value) {
+                this.selectedRange.set(null);
                 return;
             }
 
+            // If both are set, we calculate the SelectedRange
             const nextRange: RangeSelection = {
                 min: {
-                    col: Math.min(this.activeCell.value.col, selectedCell.col),
-                    row: Math.min(this.activeCell.value.row, selectedCell.row),
+                    col: Math.min(this.activeCell.value.col, selectedCellValue.col),
+                    row: Math.min(this.activeCell.value.row, selectedCellValue.row),
                 },
                 max: {
-                    col: Math.max(this.activeCell.value.col, selectedCell.col),
-                    row: Math.max(this.activeCell.value.row, selectedCell.row),
+                    col: Math.max(this.activeCell.value.col, selectedCellValue.col),
+                    row: Math.max(this.activeCell.value.row, selectedCellValue.row),
                 },
             };
-            // Update the selected range
             this.selectedRange.set(nextRange);
         });
     }

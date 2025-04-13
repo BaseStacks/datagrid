@@ -84,7 +84,7 @@ export interface DataGridOptions<TRow extends RowData = RowData> {
   // Deleting an empty cell of an empty row will actually remove the row. 
   // This behavior is auto-disabled if the lockRows is enabled.
   readonly disableSmartDelete?: boolean;
-  
+
   // Row operations
   readonly createRow?: () => TRow;
   readonly duplicateRow?: (opts: { rowData: TRow; rowIndex: number }) => TRow;
@@ -106,3 +106,31 @@ export interface SelectionMode {
   readonly rows: boolean;
   readonly active: boolean;
 }
+
+export type DataGridAction =
+  | 'activeLower'
+  | 'activeUpper'
+  | 'activeLeft'
+  | 'activeRight'
+
+  | 'jumpBottom'
+  | 'jumpTop'
+  | 'jumpLeft'
+  | 'jumpRight'
+
+  | 'expandRight'
+  | 'expandLeft'
+  | 'expandLower'
+  | 'expandUpper'
+
+  | 'selectAll'
+  | 'exit'
+  | 'focus'
+
+  // | 'insertRow'
+  // | 'duplicateRow'
+  // | 'delete'
+  ;
+
+export type DataGridKeyMap = Partial<Record<DataGridAction, string | string[]>>;
+

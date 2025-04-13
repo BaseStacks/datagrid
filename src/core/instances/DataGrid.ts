@@ -1,6 +1,7 @@
 import { CellCoordinates, CellProps, Column, ColumnHeader, DataGridOptions, Row, RowData, RowOperation } from '../types';
 import { getCellId } from '../utils/cellUtils';
 import { updateRowData } from '../utils/rowUtils';
+import { DataGridSelection } from './DataGridSelection';
 import { DataGridStates } from './DataGridStates';
 
 export class DataGrid<TRow extends RowData = RowData> {
@@ -97,11 +98,13 @@ export class DataGrid<TRow extends RowData = RowData> {
     constructor(options: DataGridOptions<TRow>) {
         this.options = options;
         this.state = new DataGridStates<TRow>();
+        this.selection = new DataGridSelection(this.state);
         this.initialize();
     }
 
     public options: DataGridOptions<TRow>;
     public state: DataGridStates<TRow>;
+    public selection: DataGridSelection<TRow>;
 
     public updateOptions = (newOptions: DataGridOptions<TRow>) => {
         const { columns, data } = newOptions;

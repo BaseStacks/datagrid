@@ -21,6 +21,9 @@ const guidesRoutes = [{
 }, {
     path: '/guides/editable-data',
     title: 'Editable data',
+}, {
+    path: '/guides/key-bindings',
+    title: 'Key bindings',
 }];
 
 export function Navbar() {

@@ -1,4 +1,4 @@
-import { CellProps, useWhatChanged } from '@basestacks/data-grid';
+import { CellProps } from '@basestacks/data-grid';
 import React from 'react';
 import { useEffect, useRef } from 'react';
 
@@ -45,8 +45,6 @@ function TextInputImpl({ cell, ...props }: TextInputProps) {
             ref.current.value = value ?? '';
         }
     }, [value]);
-
-    useWhatChanged(cell.id, { cell, ...props });
 
     return (
         <input
