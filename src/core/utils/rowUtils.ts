@@ -1,4 +1,4 @@
-import { Column, RowData } from '../types';
+import type { Column, RowData } from '../types';
 import { setAsClone } from './objectUtils';
 
 export const updateRowData = <TRow extends RowData>(options: {

@@ -1,7 +1,7 @@
 import React from 'react';
 import { DataGridContext } from '../contexts';
-import { UseDataGridReturn } from '../hooks/useDataGrid';
-import { RowData } from '../../core';
+import { type UseDataGridReturn } from '../hooks/useDataGrid';
+import { type RowData } from '../../core';
 
 interface DataGridProviderProps<TRow extends RowData> {
     readonly dataGrid: UseDataGridReturn<TRow>;

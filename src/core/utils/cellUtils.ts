@@ -1,4 +1,4 @@
-import { CellCoordinates } from '../types';
+import type { CellCoordinates } from '../types';
 
 export const getCellId = (rowIndex: number, columnIndex: number): string => {
     return `${rowIndex}-${columnIndex}`;

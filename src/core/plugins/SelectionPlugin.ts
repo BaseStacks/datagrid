@@ -1,7 +1,7 @@
-import { buildRectMap, findCoordByRect, findFromRectMap, findRect, getCursorOffset, mergeRects, RectType } from '../../react/utils/domRectUtils';
+import { buildRectMap, findCoordByRect, findFromRectMap, findRect, getCursorOffset, mergeRects, type RectType } from '../../react/utils/domRectUtils';
 import { createDataGridState } from '../helpers/datagridHelpers';
 import { DataGrid } from '../instances/DataGrid';
-import { CellCoordinates, RowData } from '../types';
+import type { CellCoordinates, RowData } from '../types';
 import { compareCoordinates } from '../utils/cellUtils';
 
 export interface SelectionPluginOptions {

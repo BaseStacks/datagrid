@@ -1,4 +1,4 @@
-import { DataGridKeyMap } from './types';
+import type { DataGridKeyMap } from './types';
 
 export const defaultKeyMap: DataGridKeyMap = {
     // tabNext: 'Tab',

@@ -1,5 +1,5 @@
 import { createDataGridState } from '../helpers/datagridHelpers';
-import { CellCoordinates, ColumnHeader, RangeSelection, Row, RowData, ScrollBehavior, SelectionMode } from '../types';
+import type { CellCoordinates, ColumnHeader, RangeSelection, Row, RowData, ScrollBehavior, SelectionMode } from '../types';
 
 export class DataGridStates<TRow extends RowData> {
     constructor() {

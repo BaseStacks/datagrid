@@ -1,6 +1,6 @@
 import { defaultKeyMap } from '../configs';
 import { DataGrid } from '../instances/DataGrid';
-import { DataGridAction, DataGridKeyMap, RowData } from '../types';
+import type { DataGridAction, DataGridKeyMap, RowData } from '../types';
 import { tinykeys, type KeyBindingMap } from 'tinykeys';
 
 export interface KeybindingPluginOptions {

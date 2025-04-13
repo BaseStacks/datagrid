@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { DataGrid, KeybindingPlugin, KeybindingPluginOptions, RowData } from '../../../core';
+import { DataGrid, KeybindingPlugin, type KeybindingPluginOptions, type RowData } from '../../../core';
 
 export const useKeyBindings = <TRow extends RowData = RowData>(
     dataGrid: DataGrid<TRow>,

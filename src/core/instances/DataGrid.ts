@@ -1,4 +1,4 @@
-import { CellCoordinates, CellProps, Column, ColumnHeader, DataGridOptions, Row, RowData, RowOperation } from '../types';
+import type { CellCoordinates, CellProps, Column, ColumnHeader, DataGridOptions, Row, RowData, RowOperation } from '../types';
 import { getCellId } from '../utils/cellUtils';
 import { updateRowData } from '../utils/rowUtils';
 import { DataGridSelection } from './DataGridSelection';
@@ -42,8 +42,7 @@ export class DataGrid<TRow extends RowData = RowData> {
                         focused: false,
                         disabled: false,
                         blur: this.selection.blur,
-                        setValue: (nextValue, options = {}) => {
-                            const { finish = true } = options;
+                        setValue: (nextValue) => {
                             if (!this.options.onChange) {
                                 return;
                             }
@@ -57,10 +56,6 @@ export class DataGrid<TRow extends RowData = RowData> {
                             });
 
                             this.updateData(rowIndex, newRowData);
-
-                            if (finish) {
-                                this.selection.blur();
-                            }
                         },
                         onFocus: (callback) => {
                             return this.state.editing.watch((editing) => {

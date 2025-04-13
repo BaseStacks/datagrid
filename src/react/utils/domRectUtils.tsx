@@ -1,4 +1,4 @@
-import { CellCoordinates } from '../../core/types';
+import type { CellCoordinates } from '../../core';
 
 export interface RectType {
     readonly width: number;

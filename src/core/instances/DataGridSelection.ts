@@ -1,4 +1,4 @@
-import { Cell, CellCoordinates, RowData } from '../types';
+import type { Cell, CellCoordinates, RowData } from '../types';
 import { DataGridStates } from './DataGridStates';
 
 const getCellCoordinates = (maxRow: number, maxCol: number, cell: CellCoordinates | null, offset: [number, number]): CellCoordinates | null => {
