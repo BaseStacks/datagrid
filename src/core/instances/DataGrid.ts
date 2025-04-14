@@ -1,5 +1,5 @@
-import type { CellCoordinates, CellProps, Column, ColumnHeader, DataGridOptions, Row, RowData, RowOperation } from '../types';
-import { getCellId } from '../utils/cellUtils';
+import type { CellProps, Column, ColumnHeader, DataGridOptions, Row, RowData, RowOperation } from '../types';
+import { calculateAreaBoundary, getCellId } from '../utils/cellUtils';
 import { updateRowData } from '../utils/rowUtils';
 import { DataGridSelection } from './DataGridSelection';
 import { DataGridStates } from './DataGridStates';
@@ -67,8 +67,9 @@ export class DataGrid<TRow extends RowData = RowData> {
                             });
                         },
                         onBlur: (callback) => {
-                            return this.state.activeCell.watch((activeCell) => {
-                                const isEditing = this.state.editing.value && activeCell?.row === rowIndex && activeCell?.col === columnIndex;
+                            return this.state.editing.watch((newEditing) => {
+                                const activeCell = this.state.activeCell.value;
+                                const isEditing = newEditing && activeCell?.row === rowIndex && activeCell?.col === columnIndex;
                                 if (!isEditing) {
                                     callback();
                                 }
@@ -149,7 +150,7 @@ export class DataGrid<TRow extends RowData = RowData> {
     };
 
     public deleteSelection = () => {
-        const { activeCell, selectedArea } = this.state;
+        const { activeCell, selectedAreas } = this.state;
         const { onChange, columns, data } = this.options;
         if (!onChange) {
             return;
@@ -159,50 +160,50 @@ export class DataGrid<TRow extends RowData = RowData> {
             return;
         }
 
-        const min: CellCoordinates = selectedArea.value?.min || activeCell.value;
-        const max: CellCoordinates = selectedArea.value?.max || activeCell.value;
-
         const newData = [...data];
+        const operations: RowOperation[] = [];
 
-        for (let row = min.row; row <= max.row; ++row) {
-            const modifiedRowData = { ...newData[row] };
+        for (const selectedArea of selectedAreas.value) {
+            const { min, max } = calculateAreaBoundary(selectedArea);
 
-            for (let col = min.col; col <= max.col; ++col) {
-                const column = columns[col];
-                if (!column.dataKey) {
-                    continue;
+            for (let row = min.row; row <= max.row; ++row) {
+                const modifiedRowData = { ...newData[row] };
+
+                for (let col = min.col; col <= max.col; ++col) {
+                    const column = columns[col];
+                    if (!column.dataKey) {
+                        continue;
+                    }
+
+                    const cellDisabled = this.isCellDisabled(row, col);
+                    if (cellDisabled) {
+                        continue;
+                    }
+
+                    delete modifiedRowData[column.dataKey];
                 }
 
-                const cellDisabled = this.isCellDisabled(row, col);
-                if (cellDisabled) {
-                    continue;
-                }
-
-                delete modifiedRowData[column.dataKey];
+                newData[row] = modifiedRowData;
             }
 
-            newData[row] = modifiedRowData;
-        }
-
-        onChange(
-            newData,
-            [{
+            operations.push({
                 type: 'UPDATE',
                 fromRowIndex: min.row,
                 toRowIndex: max.row + 1,
-            }]
-        );
+            });
+        }
+
+        onChange(newData, operations);
     };
 
     public insertRowAfter = (rowIndex: number, count = 1) => {
-        const { selectedCell, editing } = this.state;
+        const { editing } = this.state;
         const { createRow, onChange, data, lockRows } = this.options;
 
         if (lockRows) {
             return;
         }
 
-        selectedCell.set(null);
         editing.set(false);
 
         const newRows = new Array(count).fill(0).map(() => createRow ? createRow() : {} as TRow);
@@ -244,15 +245,15 @@ export class DataGrid<TRow extends RowData = RowData> {
     };
 
     public applyPasteData = async (pasteData: string[][]) => {
-        const { activeCell, selectedArea, editing } = this.state;
+        const { selectedAreas, editing } = this.state;
         const { createRow, onChange, columns, data, lockRows } = this.options;
 
-        if (!activeCell.value || !editing.value) {
+        const selectedArea = selectedAreas.value[0];
+        if (!selectedArea || editing.value) {
             return;
         }
 
-        const min: CellCoordinates = selectedArea.value?.min || activeCell?.value;
-        const max: CellCoordinates = selectedArea.value?.max || activeCell?.value;
+        const { min, max } = calculateAreaBoundary(selectedArea);
 
         const results = await Promise.all(
             pasteData[0].map((_, columnIndex) => {

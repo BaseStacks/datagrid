@@ -1,5 +1,4 @@
-import type { Cell, CellCoordinates, RowData } from '../types';
-import { getSelectedArea } from '../utils/cellUtils';
+import type { CellCoordinates, RowData } from '../types';
 import { DataGridStates } from './DataGridStates';
 
 type Offset = [number, number];
@@ -52,37 +51,34 @@ export class DataGridSelection<TRow extends RowData> {
 
     public navigate = (relativeOffset: Offset) => {
         const { activeCell } = this.state;
-        activeCell.set((cell) => getCellCoordinates({
+        const selectionStart = getCellCoordinates({
             maxRow: this.rowLength,
             maxCol: this.columnLength,
-            cell,
+            cell: activeCell.value,
             offset: relativeOffset,
-        }));
+        });
+        this.cleanSelection();
+        this.startSelection(selectionStart!);
     };
 
-    public expand = (relativeOffset: Offset) => {
-        const { selectedCell, activeCell } = this.state;
-        selectedCell.set((cell) => getCellCoordinates({
-            maxRow: this.rowLength,
-            maxCol: this.columnLength,
-            cell: cell || activeCell.value,
-            offset: relativeOffset,
-        }));
-    };
+    public startSelection = (start: CellCoordinates) => {
+        const { activeCell, selectedAreas } = this.state;
+        const newSelectedArea = { start, end: start };
 
-    public selectArea = (from: CellCoordinates, to: CellCoordinates) => {
-        const { selectedCell, activeCell, selectedArea } = this.state;
-        activeCell.set(from, { silent: true });
-        selectedCell.set(to, { silent: true });
-        const area = getSelectedArea(from, to);
-        selectedArea.set(area);
+        activeCell.set(start);
+
+        selectedAreas.set((prevSelectedAreas) => {
+            const selectedAreas = [...prevSelectedAreas];
+            selectedAreas.push(newSelectedArea);
+            return selectedAreas;
+        });
     };
 
     public cleanSelection = ({
         maintainActiveCell = false,
         maintainEditing = false,
     } = {}) => {
-        const { selectedCell, editing, activeCell, selectedArea } = this.state;
+        const { editing, activeCell, selectedAreas } = this.state;
 
         if (!maintainActiveCell) {
             activeCell.set(null);
@@ -90,8 +86,7 @@ export class DataGridSelection<TRow extends RowData> {
         if (!maintainEditing) {
             editing.set(false);
         }
-        selectedCell.set(null);
-        selectedArea.set(null);
+        selectedAreas.set([]);
     };
 
     public focus = () => {
@@ -107,9 +102,9 @@ export class DataGridSelection<TRow extends RowData> {
         editing.set(false);
     };
 
-    public active = (cell: Cell) => {
+    public active = (coord: CellCoordinates) => {
         const { activeCell } = this.state;
-        activeCell.set(cell.coordinates);
+        activeCell.set(coord);
     };
 
     public moveRight = () => this.navigate(directions.right);
@@ -141,10 +136,97 @@ export class DataGridSelection<TRow extends RowData> {
         this.navigate(topOfColumn);
     };
 
-    public expandLeft = () => this.expand(directions.left);
-    public expandRight = () => this.expand(directions.right);
-    public expandLower = () => this.expand(directions.down);
-    public expandUpper = () => this.expand(directions.up);
+    public selectArea = (start: CellCoordinates, end: CellCoordinates) => {
+        const { selectedAreas } = this.state;
+        selectedAreas.set((prevSelectedAreas) => {
+            const newSelectedArea = { start, end };
+            const selectedAreas = [...prevSelectedAreas];
+            selectedAreas.push(newSelectedArea);
+            return selectedAreas;
+        });
+    };
+
+    public updateLastSelectedArea = (endCell: CellCoordinates) => {
+        const { selectedAreas } = this.state;
+        selectedAreas.set((prevSelectedAreas) => {
+            if (prevSelectedAreas.length === 0) {
+                return prevSelectedAreas;
+            }
+            const lastSelectedArea = prevSelectedAreas[prevSelectedAreas.length - 1];
+            const newSelectedArea = { ...lastSelectedArea, end: endCell };
+            const selectedAreas = [...prevSelectedAreas];
+            selectedAreas[selectedAreas.length - 1] = newSelectedArea;
+            return selectedAreas;
+        });
+    };
+
+    public expandLeft = () => {
+        const { selectedAreas } = this.state;
+        const lastSelectedArea = selectedAreas.value[selectedAreas.value.length - 1];
+        if (!lastSelectedArea) {
+            return;
+        }
+
+        const { end } = lastSelectedArea;
+        const newEnd = getCellCoordinates({
+            maxRow: this.rowLength,
+            maxCol: this.columnLength,
+            cell: end,
+            offset: directions.left,
+        });
+        this.updateLastSelectedArea(newEnd!);
+    };
+
+    public expandRight = () => {
+        const { selectedAreas } = this.state;
+        const lastSelectedArea = selectedAreas.value[selectedAreas.value.length - 1];
+        if (!lastSelectedArea) {
+            return;
+        }
+
+        const { end } = lastSelectedArea;
+        const newEnd = getCellCoordinates({
+            maxRow: this.rowLength,
+            maxCol: this.columnLength,
+            cell: end,
+            offset: directions.right,
+        });
+        this.updateLastSelectedArea(newEnd!);
+    };
+
+    public expandUpper = () => {
+        const { selectedAreas } = this.state;
+        const lastSelectedArea = selectedAreas.value[selectedAreas.value.length - 1];
+        if (!lastSelectedArea) {
+            return;
+        }
+
+        const { end } = lastSelectedArea;
+        const newEnd = getCellCoordinates({
+            maxRow: this.rowLength,
+            maxCol: this.columnLength,
+            cell: end,
+            offset: directions.up,
+        });
+        this.updateLastSelectedArea(newEnd!);
+    };
+
+    public expandLower = () => {
+        const { selectedAreas } = this.state;
+        const lastSelectedArea = selectedAreas.value[selectedAreas.value.length - 1];
+        if (!lastSelectedArea) {
+            return;
+        }
+
+        const { end } = lastSelectedArea;
+        const newEnd = getCellCoordinates({
+            maxRow: this.rowLength,
+            maxCol: this.columnLength,
+            cell: end,
+            offset: directions.down,
+        });
+        this.updateLastSelectedArea(newEnd!);
+    };
 
     public selectAll = () => {
         const { rows, headers } = this.state;

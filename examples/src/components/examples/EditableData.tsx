@@ -57,9 +57,9 @@ export function EditableData() {
                     </tbody>
                 </table>
                 {/* [!code highlight:6] */}
-                {selection.areaRect && (
-                    <div className={clxs.selectionRect} style={selection.areaRect} />
-                )}
+                {selection.areaRects.map((rect, index) => (
+                    <div key={index} className={clxs.selectionRect} style={rect} />
+                ))}
                 {selection.activeRect && (
                     <div className={clxs.selectionRect} style={selection.activeRect} />
                 )}

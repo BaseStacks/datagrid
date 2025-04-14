@@ -16,7 +16,6 @@ function TextInputImpl({ cell, ...props }: TextInputProps) {
         event.stopPropagation();
 
         if (event.key === 'Enter') {
-            ref.current?.blur();
             const nextValue = ref.current?.value || '';
             setValue(nextValue);
             selection.moveDown();
@@ -24,19 +23,24 @@ function TextInputImpl({ cell, ...props }: TextInputProps) {
 
         if (event.key === 'Escape') {
             ref.current!.value = value ?? '';
-            ref.current!.blur();
             selection.blur();
         }
     };
 
     useEffect(() => {
         const unsubscribeOnFocus = onFocus(() => {
-            ref.current?.focus();
-            ref.current?.select();
+            if (!ref.current) {
+                return;
+            }
+            ref.current.focus();
+            ref.current.select();
         });
 
         const unsubscribeOnBlur = onBlur(() => {
-            ref.current?.blur();
+            if (!ref.current) {
+                return;
+            }
+            ref.current.blur();
         });
 
         return () => {

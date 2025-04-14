@@ -1,82 +1,132 @@
-import { buildRectMap, findCoordByRect, findFromRectMap, findRect, getCursorOffset, mergeRects, type RectType } from '../../react/utils/domRectUtils';
+import { buildRectMap, findCoordByRect, findFromRectMap, findRect, getCursorOffset, mergeRects, type RectType } from '../utils/domRectUtils';
 import { DataGridState } from '../instances/atomic/DataGridState';
 import { DataGrid } from '../instances/DataGrid';
 import type { CellCoordinates, RowData } from '../types';
 import { compareCoordinates } from '../utils/cellUtils';
+import { clearAllTextSelection } from '../utils/domUtils';
 
 export interface SelectionPluginOptions {
     container: HTMLElement;
 }
 
+type DraggingStatus = 'start' | 'dragging' | false;
+
 export class SelectionPlugin<TRow extends RowData> {
     private readonly dataGrid: DataGrid<TRow>;
 
     private container: HTMLElement | null = null;
-    private isDragging = false;
     private coordRectMap = new Map<CellCoordinates, RectType | null>();
     private coordElementMap = new Map<CellCoordinates, HTMLElement | null>();
 
     private unsubscribes: (() => void)[] = [];
 
-    private startDragSelect = (event: MouseEvent) => {
-        const { activeCell, editing, dragging } = this.dataGrid.state;
-        const { cleanSelection } = this.dataGrid.selection;
+    private handleShiftMouseDown = (event: MouseEvent) => {
+        if (!event.shiftKey) {
+            return;
+        }
 
         const clickOutside = !this.container?.contains(event.target as Node);
         if (clickOutside) {
-            cleanSelection();
             return;
         }
 
         this.coordRectMap = buildRectMap(this.container!, this.coordElementMap);
         const cursorOffset = getCursorOffset(event, this.container!);
-        const cellRect = findRect(cursorOffset, [...this.coordRectMap.values()]);
-        if (!cellRect) {
-            cleanSelection();
+        const clickedRect = findRect(cursorOffset, [...this.coordRectMap.values()]);
+
+        if (!clickedRect) {
             return;
         }
 
-        const cellCoord = findCoordByRect(this.coordRectMap!, cellRect);
-        if (!cellCoord) {
+        const clickedCellCoord = findCoordByRect(this.coordRectMap!, clickedRect);
+        if (!clickedCellCoord) {
             throw new Error('This should never happen!');
         }
 
-        const clickOnActiveCell = compareCoordinates(cellCoord, activeCell.value!);
-        if (!clickOnActiveCell) {
-            activeCell.set(cellCoord);
+        const { selection } = this.dataGrid;
+        const { activeCell } = this.dataGrid.state;
+
+        if (activeCell.value) {
+            selection.updateLastSelectedArea(clickedCellCoord);
+        }
+        else {
+            selection.startSelection(clickedCellCoord);
         }
 
-        const clickedOnEditingCell = clickOnActiveCell && editing.value;
-        if (!clickedOnEditingCell) {
-            event.preventDefault();
-        }
-
-        cleanSelection({
-            maintainActiveCell: true,
-            maintainEditing: true,
-        });
-
-        this.isDragging = true;
-
-        setTimeout(() => {
-            if (!this.isDragging) {
-                return;
-            }
-
-            dragging.set({
-                columns: cellCoord.col !== -1,
-                rows: cellCoord.row !== -1,
-                active: true,
-            });
-        }, 150);
+        event.preventDefault();
     };
 
-    private onMouseMove = (event: MouseEvent) => {
-        if (!this.isDragging) {
+    private handleMouseDown = (event: MouseEvent) => {
+        const { activeCell, editing } = this.dataGrid.state;
+        const { cleanSelection, startSelection, updateLastSelectedArea } = this.dataGrid.selection;
+
+        const clickOutside = !this.container?.contains(event.target as Node);
+        if (clickOutside) {
             return;
         }
 
-        const { selectedCell, dragging } = this.dataGrid.state;
+        this.coordRectMap = buildRectMap(this.container!, this.coordElementMap);
+        const cursorOffset = getCursorOffset(event, this.container!);
+        const clickedRect = findRect(cursorOffset, [...this.coordRectMap.values()]);
+
+        if (!clickedRect) {
+            return;
+        }
+
+        const clickedCellCoord = findCoordByRect(this.coordRectMap!, clickedRect);
+        if (!clickedCellCoord) {
+            throw new Error('This should never happen!');
+        }
+
+        const clickOnActiveCell = compareCoordinates(clickedCellCoord, activeCell.value!);
+        const clickedOnEditingCell = clickOnActiveCell && editing.value;
+        if (clickedOnEditingCell) {
+            cleanSelection({
+                maintainActiveCell: true,
+                maintainEditing: true,
+            });
+            return;
+        }
+
+        const createNewArea = event.ctrlKey;
+        const expandSelection = event.shiftKey;
+
+        if (expandSelection) {
+            if (activeCell.value) {
+                updateLastSelectedArea(clickedCellCoord);
+            }
+            else {
+                startSelection(clickedCellCoord);
+            }
+        }
+        if (createNewArea) {
+            startSelection(clickedCellCoord);
+        }
+        else {
+            cleanSelection();
+            startSelection(clickedCellCoord);
+        }
+
+        this.state.dragging.set('start');
+
+        setTimeout(() => {
+            if (!this.state.dragging.value) {
+                return;
+            }
+
+            this.state.dragging.set('dragging');
+        }, 150);
+
+        event.preventDefault();
+        clearAllTextSelection();
+    };
+
+    private onMouseMove = (event: MouseEvent) => {
+        if (this.state.dragging.value !== 'dragging') {
+            return;
+        }
+
+        const { selection } = this.dataGrid;
 
         const cursorOffset = getCursorOffset(event, this.container!);
         const cellRect = findRect(cursorOffset, [...this.coordRectMap.values()]);
@@ -84,32 +134,17 @@ export class SelectionPlugin<TRow extends RowData> {
             return;
         }
 
-        const coord = findCoordByRect(this.coordRectMap!, cellRect);
-        if (!coord) {
+        const hoveringCoord = findCoordByRect(this.coordRectMap!, cellRect);
+        if (!hoveringCoord) {
             return;
         }
 
-        const nextSelectedCell = {
-            col: coord.col,
-            row: coord.row,
-            doNotScrollX: !dragging.value.columns,
-            doNotScrollY: !dragging.value.rows,
-        };
 
-        selectedCell.set(nextSelectedCell);
+        selection.updateLastSelectedArea(hoveringCoord);
     };
 
     private stopDragSelect = () => {
-        if (this.isDragging) {
-            const { dragging } = this.dataGrid.state;
-            dragging.set({
-                columns: false,
-                rows: false,
-                active: false,
-            });
-        }
-
-        this.isDragging = false;
+        this.state.dragging.set(false);
     };
 
     private startFocus = (event: MouseEvent) => {
@@ -140,8 +175,9 @@ export class SelectionPlugin<TRow extends RowData> {
     public isActive = false;
 
     public state = {
-        selectedAreaRect: new DataGridState<RectType | null>(null),
+        selectedAreaRects: new DataGridState<RectType[]>([]),
         activeCellRect: new DataGridState<RectType | null>(null),
+        dragging: new DataGridState<DraggingStatus>(false),
     };
 
     public registerCell = (cell: CellCoordinates, element: HTMLElement | null) => {
@@ -156,40 +192,45 @@ export class SelectionPlugin<TRow extends RowData> {
         this.isActive = true;
         this.container = container;
 
-        window.addEventListener('mousedown', this.startDragSelect);
+        window.addEventListener('mousedown', this.handleMouseDown);
         window.addEventListener('mouseup', this.stopDragSelect);
 
         this.container.addEventListener('mousemove', this.onMouseMove);
         this.container.addEventListener('dblclick', this.startFocus);
 
-        const { activeCell, selectedCell, selectedArea } = this.dataGrid.state;
-        const { selectedAreaRect: selectionRect, activeCellRect: activeRect } = this.state;
+        const { activeCell, selectedAreas } = this.dataGrid.state;
+        const { selectedAreaRects, activeCellRect } = this.state;
 
-        const unwatchSelectRange = selectedArea.watch((nextSelectedRange) => {
-            selectionRect.set(() => {
-                if (!nextSelectedRange) {
-                    return null;
+        const unwatchSelectedAreas = selectedAreas.watch((newSelectedAreas) => {
+            if (!newSelectedAreas?.length) {
+                selectedAreaRects.set([]);
+                return;
+            }
+
+            const newSelectedAreaRects = newSelectedAreas.map((newSelectedArea) => {
+                const startRect = findFromRectMap(this.coordRectMap, newSelectedArea.start);
+                const endRect = findFromRectMap(this.coordRectMap, newSelectedArea.end);
+                if (!startRect || !endRect) {
+                    throw new Error('This should never happen!');
                 }
 
-                const rectA = findFromRectMap(this.coordRectMap, activeCell.value!)!;
-                const rectB = findFromRectMap(this.coordRectMap, selectedCell.value!)!;
-
-                return mergeRects(rectA, rectB);
+                return mergeRects(startRect, endRect);
             });
+
+            selectedAreaRects.set(newSelectedAreaRects);
         });
 
         const unwatchActiveCell = activeCell.watch((nextActiveCell) => {
-            activeRect.set(() => {
-                if (!nextActiveCell) {
-                    return null;
-                }
+            if (!nextActiveCell) {
+                activeCellRect.set(null);
+                return;
+            }
 
-                const rect = findFromRectMap(this.coordRectMap, nextActiveCell);
-                return rect;
-            });
+            const rect = findFromRectMap(this.coordRectMap, nextActiveCell);
+            activeCellRect.set(rect);
         });
 
-        this.unsubscribes.push(unwatchSelectRange, unwatchActiveCell);
+        this.unsubscribes.push(unwatchSelectedAreas, unwatchActiveCell);
     };
 
     public deactivate = () => {
@@ -198,7 +239,7 @@ export class SelectionPlugin<TRow extends RowData> {
         }
 
         if (this.container) {
-            window.removeEventListener('mousedown', this.startDragSelect);
+            window.removeEventListener('mousedown', this.handleMouseDown);
             window.removeEventListener('mouseup', this.stopDragSelect);
 
             this.container.removeEventListener('mousemove', this.onMouseMove);

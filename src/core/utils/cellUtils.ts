@@ -1,4 +1,4 @@
-import type { CellCoordinates, SelectedArea } from '../types';
+import type { CellCoordinates, SelectedArea, SelectionBoundary } from '../types';
 
 export const getCellId = (rowIndex: number, columnIndex: number): string => {
     return `${rowIndex}-${columnIndex}`;
@@ -8,15 +8,15 @@ export const compareCoordinates = (a?: CellCoordinates | null, b?: CellCoordinat
     return a?.row === b?.row && a?.col === b?.col;
 };
 
-export const getSelectedArea = (from: CellCoordinates, to: CellCoordinates): SelectedArea => {
+export const calculateAreaBoundary = ({ start, end }: SelectedArea): SelectionBoundary => {
     return {
         min: {
-            col: Math.min(from.col, to.col),
-            row: Math.min(from.row, to.row),
+            col: Math.min(start.col, end.col),
+            row: Math.min(start.row, end.row),
         },
         max: {
-            col: Math.max(from.col, to.col),
-            row: Math.max(from.row, to.row),
+            col: Math.max(start.col, end.col),
+            row: Math.max(start.row, end.row),
         },
     };
 };

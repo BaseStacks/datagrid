@@ -11,8 +11,13 @@ export class EventEmitter {
         if (!this.callbacks[event]) this.callbacks[event] = [];
         this.callbacks[event].push(cb);
         return () => {
-            this.callbacks[event] = this.callbacks[event].filter((callback) => callback !== cb);
+            this.off(event, cb);
         };
+    }
+
+    public off(event: string, cb: EventEmitterCallback) {
+        if (!this.callbacks[event]) return;
+        this.callbacks[event] = this.callbacks[event].filter((callback) => callback !== cb);
     }
 
     public emit(event: string, data: unknown) {

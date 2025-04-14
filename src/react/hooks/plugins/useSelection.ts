@@ -27,7 +27,8 @@ export const useSelection = <TRow extends RowData = RowData>(
     }, [selectionPlugin]);
 
     const activeRect = useStateWatch(selectionPlugin.state.activeCellRect);
-    const areaRect = useStateWatch(selectionPlugin.state.selectedAreaRect);
+    const areaRects = useStateWatch(selectionPlugin.state.selectedAreaRects);
+    const dragging = useStateWatch(selectionPlugin.state.dragging);
 
     useEffect(() => {
         return () => {
@@ -36,8 +37,9 @@ export const useSelection = <TRow extends RowData = RowData>(
     }, [selectionPlugin]);
 
     return {
-        areaRect,
+        areaRects,
         activeRect,
+        dragging,
         registerContainer,
         registerCell
     };

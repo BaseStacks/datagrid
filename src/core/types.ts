@@ -14,6 +14,11 @@ export interface ScrollBehavior {
 }
 
 export interface SelectedArea {
+  readonly start: CellCoordinates;
+  readonly end: CellCoordinates
+}
+
+export interface SelectionBoundary {
   readonly min: CellCoordinates;
   readonly max: CellCoordinates
 }
@@ -101,9 +106,7 @@ export interface CellWithId {
 
 export interface SelectionWithId { readonly min: CellWithId; readonly max: CellWithId }
 
-export interface SelectionMode {
-  readonly columns: boolean;
-  readonly rows: boolean;
+export interface DragSelection {
   readonly active: boolean;
 }
 

@@ -1,5 +1,5 @@
-import EventEmitter from 'events';
 import { deepEqual } from '../../utils/objectUtils';
+import { EventEmitter } from './EventEmitter';
 
 interface DataGridStateOptions {
     // If true, the state will use deep equal to check if the value is changed

@@ -15,8 +15,8 @@ export const defaultKeyMap: DataGridKeyMap = {
 
     expandRight: 'Shift+ArrowRight',
     expandLeft: 'Shift+ArrowLeft',
-    expandUpper: 'Shift+ArrowDown',
-    expandLower: 'Shift+ArrowUp',
+    expandUpper: 'Shift+ArrowUp',
+    expandLower: 'Shift+ArrowDown',
 
     selectAll: '$mod+a',
     exit: 'Escape',

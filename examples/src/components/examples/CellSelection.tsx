@@ -53,17 +53,11 @@ export function CellSelection() {
                 </tbody>
             </table>
             {/* [!code highlight:12] */}
-            {selection.areaRect && (
-                <div
-                    className="absolute outline-2 outline-blue-600"
-                    style={selection.areaRect}
-                />
-            )}
+            {selection.areaRects.map((rect, index) => (
+                <div key={index} className={clxs.selectionRect} style={rect} />
+            ))}
             {selection.activeRect && (
-                <div
-                    className="absolute outline outline-blue-600"
-                    style={selection.activeRect}
-                />
+                <div className={clxs.selectionRect} style={selection.activeRect} />
             )}
         </div>
     );
@@ -75,4 +69,5 @@ const clxs = {
     row: 'bg-white dark:bg-gray-800',
     cell: 'border-b border-gray-100 p-4 pl-8 text-gray-500 dark:border-gray-700 dark:text-gray-400',
     activeCell: 'outline outline-blue-500',
+    selectionRect: 'absolute pointer-events-none outline-2 outline-offset-[-2px] outline-blue-600',
 };
