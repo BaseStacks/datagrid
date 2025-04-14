@@ -4,6 +4,7 @@ import { DataGrid } from '../instances/DataGrid';
 import type { CellCoordinates, RowData } from '../types';
 import { compareCoordinates } from '../utils/cellUtils';
 import { clearAllTextSelection } from '../utils/domUtils';
+import { breakAreaToSmallerPart, isAreaInsideOthers, tryCombineAreas, tryRemoveDuplicates } from '../utils/selectionUtils';
 
 export interface SelectionPluginOptions {
     container: HTMLElement;
@@ -19,42 +20,6 @@ export class SelectionPlugin<TRow extends RowData> {
     private coordElementMap = new Map<CellCoordinates, HTMLElement | null>();
 
     private unsubscribes: (() => void)[] = [];
-
-    private handleShiftMouseDown = (event: MouseEvent) => {
-        if (!event.shiftKey) {
-            return;
-        }
-
-        const clickOutside = !this.container?.contains(event.target as Node);
-        if (clickOutside) {
-            return;
-        }
-
-        this.coordRectMap = buildRectMap(this.container!, this.coordElementMap);
-        const cursorOffset = getCursorOffset(event, this.container!);
-        const clickedRect = findRect(cursorOffset, [...this.coordRectMap.values()]);
-
-        if (!clickedRect) {
-            return;
-        }
-
-        const clickedCellCoord = findCoordByRect(this.coordRectMap!, clickedRect);
-        if (!clickedCellCoord) {
-            throw new Error('This should never happen!');
-        }
-
-        const { selection } = this.dataGrid;
-        const { activeCell } = this.dataGrid.state;
-
-        if (activeCell.value) {
-            selection.updateLastSelectedArea(clickedCellCoord);
-        }
-        else {
-            selection.startSelection(clickedCellCoord);
-        }
-
-        event.preventDefault();
-    };
 
     private handleMouseDown = (event: MouseEvent) => {
         const { activeCell, editing } = this.dataGrid.state;
@@ -144,7 +109,38 @@ export class SelectionPlugin<TRow extends RowData> {
     };
 
     private stopDragSelect = () => {
+        if (!this.state.dragging.value) {
+            return;
+        }
+
         this.state.dragging.set(false);
+        const { selectedAreas } = this.dataGrid.state;
+        if (selectedAreas.value.length > 1) {
+            let newSelectedAreas = [...selectedAreas.value];
+
+            const lastSelectedArea = newSelectedAreas[newSelectedAreas.length - 1];
+            const insideOthers = isAreaInsideOthers(lastSelectedArea, newSelectedAreas.slice(0, -1));
+
+
+            if(insideOthers.length) {
+                const breakingArea = insideOthers[0];
+                const breakingAreaIndex = newSelectedAreas.findIndex((area) => area === breakingArea);
+                const smallerParts = breakAreaToSmallerPart(breakingArea, lastSelectedArea);
+                
+                newSelectedAreas = [
+                    ...newSelectedAreas.slice(0, breakingAreaIndex),
+                    ...smallerParts,
+                    ...newSelectedAreas.slice(breakingAreaIndex + 1),
+                ];
+
+                // Remove the last selected area
+                newSelectedAreas.pop();
+            }
+
+            const mergedAreas = tryCombineAreas(newSelectedAreas);
+            const uniqueAreas = tryRemoveDuplicates(mergedAreas);
+            selectedAreas.set(uniqueAreas);
+        }
     };
 
     private startFocus = (event: MouseEvent) => {

@@ -1,6 +1,7 @@
 import type { CellProps, Column, ColumnHeader, DataGridOptions, Row, RowData, RowOperation } from '../types';
-import { calculateAreaBoundary, getCellId } from '../utils/cellUtils';
+import { getCellId } from '../utils/cellUtils';
 import { updateRowData } from '../utils/rowUtils';
+import { calculateAreaBoundary } from '../utils/selectionUtils';
 import { DataGridSelection } from './DataGridSelection';
 import { DataGridStates } from './DataGridStates';
 

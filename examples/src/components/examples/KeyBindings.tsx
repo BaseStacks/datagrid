@@ -78,6 +78,6 @@ const clxs = {
     row: 'bg-white dark:bg-gray-800',
     cell: 'border-b border-gray-100 p-4 pl-8 text-gray-500 dark:border-gray-700 dark:text-gray-400',
     activeCell: 'outline outline-blue-500',
-    selectedAreaRect: 'absolute pointer-events-none outline outline-offset-[-px] outline-blue-600 bg-blue-600/5',
+    selectedAreaRect: 'absolute pointer-events-none outline-2 outline-offset-[-2px] outline-blue-600 bg-blue-600/5',
     activeRect: 'absolute pointer-events-none outline outline-yellow-600',
 };
