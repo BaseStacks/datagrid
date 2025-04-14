@@ -1,5 +1,6 @@
-import { createDataGridState } from '../helpers/datagridHelpers';
-import type { CellCoordinates, ColumnHeader, RangeSelection, Row, RowData, ScrollBehavior, SelectionMode } from '../types';
+import type { CellCoordinates, ColumnHeader, SelectedArea, Row, RowData, ScrollBehavior, SelectionMode } from '../types';
+import { getSelectedArea } from '../utils/cellUtils';
+import { DataGridState } from './atomic/DataGridState';
 
 export class DataGridStates<TRow extends RowData> {
     constructor() {
@@ -24,31 +25,25 @@ export class DataGridStates<TRow extends RowData> {
             }
 
             // If both are set, we calculate the SelectedRange
-            const nextRange: RangeSelection = {
-                min: {
-                    col: Math.min(this.activeCell.value.col, selectedCellValue.col),
-                    row: Math.min(this.activeCell.value.row, selectedCellValue.row),
-                },
-                max: {
-                    col: Math.max(this.activeCell.value.col, selectedCellValue.col),
-                    row: Math.max(this.activeCell.value.row, selectedCellValue.row),
-                },
-            };
+            const nextRange: SelectedArea = getSelectedArea(
+                this.activeCell.value,
+                selectedCellValue
+            );
             this.selectedArea.set(nextRange);
         });
     }
 
-    public editing = createDataGridState(false);
-    public activeCell = createDataGridState<(CellCoordinates & ScrollBehavior) | null>(null);
-    public lastEditingCell = createDataGridState<CellCoordinates | null>(null);
-    public selectedCell = createDataGridState<(CellCoordinates & ScrollBehavior) | null>(null);
-    public selectedArea = createDataGridState<RangeSelection | null>(null);
-    public dragging = createDataGridState<SelectionMode>({
+    public editing = new DataGridState(false);
+    public activeCell = new DataGridState<(CellCoordinates & ScrollBehavior) | null>(null);
+    public lastEditingCell = new DataGridState<CellCoordinates | null>(null);
+    public selectedCell = new DataGridState<(CellCoordinates & ScrollBehavior) | null>(null);
+    public selectedArea = new DataGridState<SelectedArea | null>(null);
+    public dragging = new DataGridState<SelectionMode>({
         columns: false,
         rows: false,
         active: false,
     });
 
-    public rows = createDataGridState<Row<TRow>[]>([], { useDeepEqual: false });
-    public headers = createDataGridState<ColumnHeader[]>([], { useDeepEqual: false });
+    public rows = new DataGridState<Row<TRow>[]>([], { useDeepEqual: false });
+    public headers = new DataGridState<ColumnHeader[]>([], { useDeepEqual: false });
 };

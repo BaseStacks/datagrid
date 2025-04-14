@@ -52,6 +52,7 @@
         "test:coverage": "pnpm test --coverage",
         "test:watch": "pnpm test--onlyChanged --watch",
         "type": "tsc --noEmit",
+        "type:watch": "tsc --noEmit --watch",
         "prerelease": "sh ./scripts/pre-release.sh"
     },
     "dependencies": {

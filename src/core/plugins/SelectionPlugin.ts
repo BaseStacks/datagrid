@@ -1,5 +1,5 @@
 import { buildRectMap, findCoordByRect, findFromRectMap, findRect, getCursorOffset, mergeRects, type RectType } from '../../react/utils/domRectUtils';
-import { createDataGridState } from '../helpers/datagridHelpers';
+import { DataGridState } from '../instances/atomic/DataGridState';
 import { DataGrid } from '../instances/DataGrid';
 import type { CellCoordinates, RowData } from '../types';
 import { compareCoordinates } from '../utils/cellUtils';
@@ -140,8 +140,8 @@ export class SelectionPlugin<TRow extends RowData> {
     public isActive = false;
 
     public state = {
-        selectedAreaRect: createDataGridState<RectType | null>(null),
-        activeCellRect: createDataGridState<RectType | null>(null),
+        selectedAreaRect: new DataGridState<RectType | null>(null),
+        activeCellRect: new DataGridState<RectType | null>(null),
     };
 
     public registerCell = (cell: CellCoordinates, element: HTMLElement | null) => {

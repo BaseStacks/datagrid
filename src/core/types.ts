@@ -13,7 +13,7 @@ export interface ScrollBehavior {
   readonly doNotScrollY?: boolean
 }
 
-export interface RangeSelection {
+export interface SelectedArea {
   readonly min: CellCoordinates;
   readonly max: CellCoordinates
 }
