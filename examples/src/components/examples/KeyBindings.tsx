@@ -16,10 +16,10 @@ export function KeyBindings() {
         return generateData({
             fields: [
                 { name: 'id', type: 'number', required: true },
-                { name: 'firstName', type: 'string', required: true },
-                { name: 'lastName', type: 'string', required: true },
-                { name: 'age', type: 'number', required: false },
-                { name: 'email', type: 'string', required: false },
+                { name: 'firstName', type: 'firstName', required: true },
+                { name: 'lastName', type: 'lastName', required: true },
+                { name: 'age', type: 'number', min: 18, max: 99, required: false },
+                { name: 'email', type: 'email', required: false },
             ],
             count: 10
         });

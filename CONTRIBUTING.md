@@ -6,7 +6,7 @@ As the creators and maintainers of this project, we want to ensure that `@basest
 
 Here is a quick guide to doing code contributions to the library.
 
-1. Fork and clone the repo to your local machine `git clone https://github.com/basestacks/package-template`
+1. Fork and clone the repo to your local machine `git clone https://github.com/basestacks/data-grid`
 
 2. Create a new branch from `master` with a meaningful name for a new feature or an issue you want to work on: `git checkout -b your-meaningful-branch-name`
 

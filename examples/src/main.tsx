@@ -1,6 +1,6 @@
 import './styles.css';
 
-import { HTMLAttributes, StrictMode, TdHTMLAttributes, } from 'react';
+import React, { cloneElement, HTMLAttributes, StrictMode, TdHTMLAttributes, } from 'react';
 import ReactDOM from 'react-dom/client';
 import { RouterProvider, createRouter } from '@tanstack/react-router';
 import { MDXProvider } from '@mdx-js/react';
@@ -26,7 +26,7 @@ const mdxComponents = {
         const codeNode = children.props.children as string;
         const language = children.props.className?.replace('language-', '');
         return <CodeBlock language={language!}>{codeNode as string}</CodeBlock>;
-    },
+    }
 };
 
 // Render the app

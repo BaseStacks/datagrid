@@ -1,4 +1,5 @@
 import React from 'react';
+import type { DataGrid } from './instances/DataGrid';
 
 export type RowData = Record<string, any>;
 export type RowKey<TRow extends RowData> = keyof TRow | ((opts: { rowData: TRow; rowIndex: number }) => TRow[keyof TRow])
@@ -137,3 +138,13 @@ export type DataGridAction =
 
 export type DataGridKeyMap = Partial<Record<DataGridAction, string | string[]>>;
 
+export interface DataGridPluginOptions {
+  readonly enable?: boolean;
+}
+
+export type DataGridPlugin<TOptions extends DataGridPluginOptions = DataGridPluginOptions> = new (dataGrid: DataGrid, options: TOptions) =>{
+  readonly name: string;
+  readonly isActive: boolean;
+  readonly activate: (opts: TOptions) => void;
+  readonly deactivate: () => void;
+};

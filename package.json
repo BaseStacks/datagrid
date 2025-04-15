@@ -4,10 +4,10 @@
     "description": "A template for creating packages with TypeScript, Rollup, and Jest",
     "author": "BaseStacks",
     "keywords": [],
-    "homepage": "https://github.com/BaseStacks/package-template",
+    "homepage": "https://github.com/BaseStacks/data-grid",
     "repository": {
         "type": "git",
-        "url": "https://github.com/BaseStacks/package-template"
+        "url": "https://github.com/BaseStacks/data-grid"
     },
     "license": "MIT",
     "sideEffects": false,

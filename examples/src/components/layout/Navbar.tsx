@@ -12,18 +12,12 @@ const gettingStartedRoutes = [{
     title: 'Installation',
 }];
 
-const guidesRoutes = [{
-    path: '/guides/basic',
-    title: 'Basic',
-}, {
-    path: '/guides/cell-selection',
-    title: 'Cell selection',
-}, {
-    path: '/guides/editable-data',
-    title: 'Editable data',
-}, {
-    path: '/guides/key-bindings',
-    title: 'Key bindings',
+const routeGroups = [{
+    label: 'Plugins',
+    children: [{
+        path: '/plugins/cell-selection',
+        title: 'CellSelection',
+    },]
 }];
 
 export function Navbar() {
@@ -44,24 +38,26 @@ export function Navbar() {
                             </li>
                         ))}
                     </ul>
-                    <div className="flex flex-col gap-3">
-                        <h3 className="font-mono text-sm/6 font-medium tracking-widest text-gray-500 uppercase sm:text-xs/6 dark:text-gray-400">
-                            guides
-                        </h3>
-                        <ul className="flex flex-col gap-2 border-l dark:border-[color-mix(in_oklab,_var(--color-gray-950),white_20%)] border-[color-mix(in_oklab,_var(--color-gray-950),white_90%)]">
-                            {guidesRoutes.map((route) => (
-                                <li key={route.path} className="-ml-px flex flex-col items-start gap-2">
-                                    <Link
-                                        to={route.path}
-                                        className="inline-block border-l border-transparent text-base/8 text-gray-600 hover:border-gray-950/25 hover:text-gray-950 sm:text-sm/6 dark:text-gray-300 dark:hover:border-white/25 dark:hover:text-white aria-[current]:border-gray-950 aria-[current]:font-semibold aria-[current]:text-gray-950 dark:aria-[current]:border-white dark:aria-[current]:text-white pl-5 sm:pl-4"
-                                        activeProps={{ 'aria-current': 'page' }}
-                                    >
-                                        {route.title}
-                                    </Link>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
+                    {routeGroups.map((group) => (
+                        <div className="flex flex-col gap-3">
+                            <h3 className="font-mono text-sm/6 font-medium tracking-widest text-gray-500 uppercase sm:text-xs/6 dark:text-gray-400">
+                                {group.label}
+                            </h3>
+                            <ul className="flex flex-col gap-2 border-l dark:border-[color-mix(in_oklab,_var(--color-gray-950),white_20%)] border-[color-mix(in_oklab,_var(--color-gray-950),white_90%)]">
+                                {group.children.map((route) => (
+                                    <li key={route.path} className="-ml-px flex flex-col items-start gap-2">
+                                        <Link
+                                            to={route.path}
+                                            className="inline-block border-l border-transparent text-base/8 text-gray-600 hover:border-gray-950/25 hover:text-gray-950 sm:text-sm/6 dark:text-gray-300 dark:hover:border-white/25 dark:hover:text-white aria-[current]:border-gray-950 aria-[current]:font-semibold aria-[current]:text-gray-950 dark:aria-[current]:border-white dark:aria-[current]:text-white pl-5 sm:pl-4"
+                                            activeProps={{ 'aria-current': 'page' }}
+                                        >
+                                            {route.title}
+                                        </Link>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    ))}
                 </nav>
             </div>
         </div>

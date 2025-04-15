@@ -4,6 +4,8 @@ interface FieldConfig {
     readonly name: string;
     readonly type: string;
     readonly required: boolean;
+    readonly min?: number;
+    readonly max?: number;
 }
 
 interface GenerateDataOptions {
@@ -47,7 +49,10 @@ export const generateData = (options: GenerateDataOptions) => {
                     item[field.name] = faker.phone.number();
                     break;
                 case 'number':
-                    item[field.name] = faker.number.int(1000);
+                    item[field.name] = faker.number.int({
+                        min: field.min ?? 0,
+                        max: field.max ?? 100
+                    });
                     break;
                 case 'boolean':
                     item[field.name] = faker.datatype.boolean();
@@ -73,6 +78,7 @@ export const generateData = (options: GenerateDataOptions) => {
                 case 'avatar':
                     item[field.name] = faker.image.avatar();
                     break;
+                    
                 default:
                     item[field.name] = faker.lorem.word();
             }

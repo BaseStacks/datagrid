@@ -8,15 +8,60 @@ import { CodeBlock } from '@/components/layout/CodeBlock';
     description="Cell selection supports Excel-style range operations, enabling users to highlight data for visual emphasis, copy selected content to the clipboard, and execute aggregations through the **Status Bar** interface."
 />
 
-<h2>Use CellSelection Plugin</h2>
+## Use CellSelection Plugin
 
 ```tsx
 import { CellSelectionPlugin } from '@basestacks/data-grid';
 import { useDataGrid, usePlugin } from '@basestacks/data-grid/react';
 
-// Use the CellSelectionPlugin in your DataGrid component
-const selection = usePlugin(CellSelectionPlugin, { enable: true });
+const dataGrid = useDataGrid({
+    // ... your configurations
+});
+
+const cellSelection = usePlugin(dataGrid, CellSelectionPlugin, { enable: true });
 ```
+
+Enabling the **CellSelection** plugin allows users to select individual cells or ranges of cells using both mouse and keyboard interactions. It also supports familiar Excel-style shortcuts for efficient navigation and manipulation of selections.
+
+> **Note:** On macOS, use the **Command (⌘)** key. On Windows/Linux, use the **Ctrl** or **Alt** key, depending on the platform.
+
+### 🖱️ Mouse Controls
+
+- **Click**: Selects a single cell.
+- **Click + Drag**: Selects a continuous range of cells between the start and end points.
+- **Ctrl + Click**: Adds or removes individual cells from the current selection.
+- **Ctrl + Drag**: Adds or removes a rectangular range of cells to/from the existing selection.
+- **Shift + Click**: Selects a range between the last focused cell and the clicked cell.
+- **Shift + Drag**: Selects a rectangular range from the last focused cell to the drag endpoint.
+
+### ⌨️ Keyboard Controls
+
+- **Arrow Keys**: Moves the active cell one step in the direction of the arrow.
+- **Ctrl + Arrow Keys**: Jumps to the edge of the current data region in the specified direction.
+- **Shift + Arrow Keys**: Expands the current selection by one cell in the arrow’s direction.
+- **Ctrl + Shift + Arrow Keys**: Expands the selection to the edge of the data region in the arrow’s direction.
+- **Shift + A**: Selects all visible cells.
+- **Shift + Enter**: Moves the active cell upward within the selection.
+- **Ctrl + Enter**: Moves the active cell downward within the selection.
+- **Page Up / Page Down**: Moves the active cell up or down by one visible page.
+- **Home / End**: Moves the active cell to the beginning or end of the current row.
+- **Esc**: Clears the current selection and resets the focus.
+
+### 🔧 Advanced Selection Behavior
+
+- **Deselection (Ctrl/Command + Click or Drag)**:  
+  Holding the **Command** (macOS) or **Ctrl**/**Alt** (Windows/Linux) key while clicking or dragging over already-selected cells will remove those cells or ranges from the selection.
+
+- **Range Splitting**:  
+  Deselecting a cell within a selected range creates multiple disjointed selections, each treated as an independent block.
+
+- **Selection Merging**:  
+  If a newly selected range is adjacent to an existing selection, the two may automatically merge into a single larger range.
+
+
+### 📋 Example Table
+
+The table below illustrates various mouse and keyboard interactions supported by the **CellSelection** plugin, along with their effects on the selection state.
 
 <Card>
     <KeyBindings />

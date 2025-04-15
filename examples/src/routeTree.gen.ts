@@ -12,10 +12,7 @@
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as IndexImport } from './routes/index'
-import { Route as GuidesKeyBindingsImport } from './routes/guides/key-bindings'
-import { Route as GuidesEditableDataImport } from './routes/guides/editable-data'
-import { Route as GuidesCellSelectionImport } from './routes/guides/cell-selection'
-import { Route as GuidesBasicImport } from './routes/guides/basic'
+import { Route as PluginsCellSelectionImport } from './routes/plugins/cell-selection'
 import { Route as GettingStartedInstallationImport } from './routes/getting-started/installation'
 
 // Create/Update Routes
@@ -26,27 +23,9 @@ const IndexRoute = IndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const GuidesKeyBindingsRoute = GuidesKeyBindingsImport.update({
-  id: '/guides/key-bindings',
-  path: '/guides/key-bindings',
-  getParentRoute: () => rootRoute,
-} as any)
-
-const GuidesEditableDataRoute = GuidesEditableDataImport.update({
-  id: '/guides/editable-data',
-  path: '/guides/editable-data',
-  getParentRoute: () => rootRoute,
-} as any)
-
-const GuidesCellSelectionRoute = GuidesCellSelectionImport.update({
-  id: '/guides/cell-selection',
-  path: '/guides/cell-selection',
-  getParentRoute: () => rootRoute,
-} as any)
-
-const GuidesBasicRoute = GuidesBasicImport.update({
-  id: '/guides/basic',
-  path: '/guides/basic',
+const PluginsCellSelectionRoute = PluginsCellSelectionImport.update({
+  id: '/plugins/cell-selection',
+  path: '/plugins/cell-selection',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -76,32 +55,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GettingStartedInstallationImport
       parentRoute: typeof rootRoute
     }
-    '/guides/basic': {
-      id: '/guides/basic'
-      path: '/guides/basic'
-      fullPath: '/guides/basic'
-      preLoaderRoute: typeof GuidesBasicImport
-      parentRoute: typeof rootRoute
-    }
-    '/guides/cell-selection': {
-      id: '/guides/cell-selection'
-      path: '/guides/cell-selection'
-      fullPath: '/guides/cell-selection'
-      preLoaderRoute: typeof GuidesCellSelectionImport
-      parentRoute: typeof rootRoute
-    }
-    '/guides/editable-data': {
-      id: '/guides/editable-data'
-      path: '/guides/editable-data'
-      fullPath: '/guides/editable-data'
-      preLoaderRoute: typeof GuidesEditableDataImport
-      parentRoute: typeof rootRoute
-    }
-    '/guides/key-bindings': {
-      id: '/guides/key-bindings'
-      path: '/guides/key-bindings'
-      fullPath: '/guides/key-bindings'
-      preLoaderRoute: typeof GuidesKeyBindingsImport
+    '/plugins/cell-selection': {
+      id: '/plugins/cell-selection'
+      path: '/plugins/cell-selection'
+      fullPath: '/plugins/cell-selection'
+      preLoaderRoute: typeof PluginsCellSelectionImport
       parentRoute: typeof rootRoute
     }
   }
@@ -112,75 +70,45 @@ declare module '@tanstack/react-router' {
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/getting-started/installation': typeof GettingStartedInstallationRoute
-  '/guides/basic': typeof GuidesBasicRoute
-  '/guides/cell-selection': typeof GuidesCellSelectionRoute
-  '/guides/editable-data': typeof GuidesEditableDataRoute
-  '/guides/key-bindings': typeof GuidesKeyBindingsRoute
+  '/plugins/cell-selection': typeof PluginsCellSelectionRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/getting-started/installation': typeof GettingStartedInstallationRoute
-  '/guides/basic': typeof GuidesBasicRoute
-  '/guides/cell-selection': typeof GuidesCellSelectionRoute
-  '/guides/editable-data': typeof GuidesEditableDataRoute
-  '/guides/key-bindings': typeof GuidesKeyBindingsRoute
+  '/plugins/cell-selection': typeof PluginsCellSelectionRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
   '/getting-started/installation': typeof GettingStartedInstallationRoute
-  '/guides/basic': typeof GuidesBasicRoute
-  '/guides/cell-selection': typeof GuidesCellSelectionRoute
-  '/guides/editable-data': typeof GuidesEditableDataRoute
-  '/guides/key-bindings': typeof GuidesKeyBindingsRoute
+  '/plugins/cell-selection': typeof PluginsCellSelectionRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/getting-started/installation'
-    | '/guides/basic'
-    | '/guides/cell-selection'
-    | '/guides/editable-data'
-    | '/guides/key-bindings'
+  fullPaths: '/' | '/getting-started/installation' | '/plugins/cell-selection'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/getting-started/installation'
-    | '/guides/basic'
-    | '/guides/cell-selection'
-    | '/guides/editable-data'
-    | '/guides/key-bindings'
+  to: '/' | '/getting-started/installation' | '/plugins/cell-selection'
   id:
     | '__root__'
     | '/'
     | '/getting-started/installation'
-    | '/guides/basic'
-    | '/guides/cell-selection'
-    | '/guides/editable-data'
-    | '/guides/key-bindings'
+    | '/plugins/cell-selection'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   GettingStartedInstallationRoute: typeof GettingStartedInstallationRoute
-  GuidesBasicRoute: typeof GuidesBasicRoute
-  GuidesCellSelectionRoute: typeof GuidesCellSelectionRoute
-  GuidesEditableDataRoute: typeof GuidesEditableDataRoute
-  GuidesKeyBindingsRoute: typeof GuidesKeyBindingsRoute
+  PluginsCellSelectionRoute: typeof PluginsCellSelectionRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   GettingStartedInstallationRoute: GettingStartedInstallationRoute,
-  GuidesBasicRoute: GuidesBasicRoute,
-  GuidesCellSelectionRoute: GuidesCellSelectionRoute,
-  GuidesEditableDataRoute: GuidesEditableDataRoute,
-  GuidesKeyBindingsRoute: GuidesKeyBindingsRoute,
+  PluginsCellSelectionRoute: PluginsCellSelectionRoute,
 }
 
 export const routeTree = rootRoute
@@ -195,10 +123,7 @@ export const routeTree = rootRoute
       "children": [
         "/",
         "/getting-started/installation",
-        "/guides/basic",
-        "/guides/cell-selection",
-        "/guides/editable-data",
-        "/guides/key-bindings"
+        "/plugins/cell-selection"
       ]
     },
     "/": {
@@ -207,17 +132,8 @@ export const routeTree = rootRoute
     "/getting-started/installation": {
       "filePath": "getting-started/installation.tsx"
     },
-    "/guides/basic": {
-      "filePath": "guides/basic.tsx"
-    },
-    "/guides/cell-selection": {
-      "filePath": "guides/cell-selection.tsx"
-    },
-    "/guides/editable-data": {
-      "filePath": "guides/editable-data.tsx"
-    },
-    "/guides/key-bindings": {
-      "filePath": "guides/key-bindings.tsx"
+    "/plugins/cell-selection": {
+      "filePath": "plugins/cell-selection.tsx"
     }
   }
 }

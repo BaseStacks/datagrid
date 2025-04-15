@@ -1,5 +1,6 @@
 export * from './hooks/useDataGrid';
 export * from './hooks/useDataGridContext';
+export * from './hooks/usePlugin';
 
 export * from './hooks/plugins/useCellSelection';
 export * from './hooks/plugins/useKeyBindings';
