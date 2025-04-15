@@ -2,12 +2,12 @@ import { memo } from 'react';
 import type { CellSelectionPlugin } from '../../../core';
 import { useDataGridState } from '../../hooks/atomic/useDataGridState';
 
-interface SelectedCellProps extends React.HTMLAttributes<HTMLElement> {
+interface ActiveCellRectProps extends React.HTMLAttributes<HTMLElement> {
     readonly as?: React.ElementType;
     readonly selection: CellSelectionPlugin;
 }
 
-function SelectedCellRectImpl({ as, selection, style, ...props }: SelectedCellProps) {
+function ActiveCellRectImpl({ as, selection, style, ...props }: ActiveCellRectProps) {
     const activeCellRect = useDataGridState(selection.state.activeCellRect);
 
     const Components = as || 'div';
@@ -20,4 +20,4 @@ function SelectedCellRectImpl({ as, selection, style, ...props }: SelectedCellPr
     );
 };
 
-export const SelectedCellRect = memo(SelectedCellRectImpl);
+export const ActiveCellRect = memo(ActiveCellRectImpl);
