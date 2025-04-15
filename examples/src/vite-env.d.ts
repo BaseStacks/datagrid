@@ -5,3 +5,9 @@ declare module '*.tsx?raw' {
   export default content;
 
 }
+
+declare module '*.mdx' {
+  import { ComponentType } from 'react';
+  const component: ComponentType<any>;
+  export default component;
+}

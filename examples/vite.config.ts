@@ -4,6 +4,8 @@ import tailwindcss from '@tailwindcss/vite';
 import { TanStackRouterVite } from '@tanstack/router-plugin/vite';
 import path from 'path';
 
+import mdx from '@mdx-js/rollup';
+
 // https://vite.dev/config/
 export default defineConfig({
     resolve: {
@@ -13,8 +15,9 @@ export default defineConfig({
         },
     },
     plugins: [
-        TanStackRouterVite({ target: 'react', autoCodeSplitting: true }),
+        mdx({}),
         react(),
         tailwindcss(),
+        TanStackRouterVite({ target: 'react', autoCodeSplitting: true }),
     ],
 });
