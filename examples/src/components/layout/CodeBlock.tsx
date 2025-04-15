@@ -1,3 +1,4 @@
+import { transformerNotationHighlight } from '@shikijs/transformers';
 import React from 'react';
 import ShikiHighlighter, { ShikiHighlighterProps } from 'react-shiki';
 
@@ -21,6 +22,11 @@ export function CodeBlock(props: React.PropsWithChildren<CodeBlockProps>) {
                 showLanguage={false}
                 as="div"
                 className="background-color:transparent;color:var(--color-slate-50)"
+                transformers={[
+                    transformerNotationHighlight({
+                        classActiveLine: 'line relative bg-blue-300/15',
+                    })
+                ]}
                 {...rest}
             />
         </div>

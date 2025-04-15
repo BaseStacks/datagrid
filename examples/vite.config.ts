@@ -15,7 +15,9 @@ export default defineConfig({
         },
     },
     plugins: [
-        mdx({}),
+        mdx({
+            providerImportSource: '@mdx-js/react'
+        }),
         react(),
         tailwindcss(),
         TanStackRouterVite({ target: 'react', autoCodeSplitting: true }),

@@ -1,12 +1,14 @@
 import './styles.css';
 
-import { StrictMode } from 'react';
+import { HTMLAttributes, StrictMode, TdHTMLAttributes, } from 'react';
 import ReactDOM from 'react-dom/client';
 import { RouterProvider, createRouter } from '@tanstack/react-router';
 import { MDXProvider } from '@mdx-js/react';
 
 // Import the generated route tree
 import { routeTree } from './routeTree.gen';
+import { CodeBlock } from './components/layout/CodeBlock';
+import { PageHeader } from './components/PageHeader';
 
 // Create a new router instance
 const router = createRouter({ routeTree });
@@ -18,13 +20,22 @@ declare module '@tanstack/react-router' {
     }
 }
 
+const mdxComponents = {
+    PageHeader,
+    pre: ({ children }: { children: React.ReactElement<HTMLAttributes<HTMLElement>> }) => {
+        const codeNode = children.props.children as string;
+        const language = children.props.className?.replace('language-', '');
+        return <CodeBlock language={language!}>{codeNode as string}</CodeBlock>;
+    },
+};
+
 // Render the app
 const rootElement = document.getElementById('root')!;
 if (!rootElement.innerHTML) {
     const root = ReactDOM.createRoot(rootElement);
     root.render(
         <StrictMode>
-            <MDXProvider>
+            <MDXProvider components={mdxComponents}>
                 <RouterProvider router={router} />
             </MDXProvider>
         </StrictMode>,

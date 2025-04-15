@@ -1,6 +1,23 @@
-<p className="page-category">Core Features</p>
-<h1 className="page-title">Cell Selection</h1>
-<p className="page-description">The <code>CellSelection</code> plugin allows you to select a cell in the table.</p>
+import { KeyBindings } from '@/components/examples/KeyBindings';
+import { Card } from '@/components/layout/Card';
+import { CodeBlock } from '@/components/layout/CodeBlock';
 
-<p className="page-description">You can select a cell by clicking on it. You can also use the keyboard to navigate and select cells.</p>
+<PageHeader
+    category="Plugins"
+    title="CellSelection"
+    description="Cell selection supports Excel-style range operations, enabling users to highlight data for visual emphasis, copy selected content to the clipboard, and execute aggregations through the **Status Bar** interface."
+/>
 
+<h2>Use CellSelection Plugin</h2>
+
+```tsx
+import { CellSelectionPlugin } from '@basestacks/data-grid';
+import { useDataGrid, usePlugin } from '@basestacks/data-grid/react';
+
+// Use the CellSelectionPlugin in your DataGrid component
+const selection = usePlugin(CellSelectionPlugin, { enable: true });
+```
+
+<Card>
+    <KeyBindings />
+</Card>

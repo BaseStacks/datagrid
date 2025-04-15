@@ -1,20 +1,29 @@
 import { Column, DataGridProvider, useDataGrid, useKeyBindings, useCellSelection, useStateWatch } from '@basestacks/data-grid';
 import { useMemo, useState } from 'react';
 import { TextInput } from './controls/TextInput';
+import { generateData } from '@/helpers/dataHelpers';
 
 export function KeyBindings() {
     const columns = useMemo((): Column[] => [
         { dataKey: 'id', header: 'ID' },
         { dataKey: 'firstName', header: 'First Name', cell: (cell) => <TextInput cell={cell} /> },
         { dataKey: 'lastName', header: 'Last Name', cell: (cell) => <TextInput cell={cell} /> },
-        { dataKey: 'age', header: 'Age', cell: (cell) => <TextInput cell={cell} type="number" /> },
+        { dataKey: 'age', header: 'Age', cell: (cell) => <TextInput cell={cell} /> },
+        { dataKey: 'email', header: 'Email', cell: (cell) => <TextInput cell={cell} /> },
     ], []);
 
-    const [data, setData] = useState([
-        { id: 1, firstName: 'John', lastName: 'Doe', age: 30 },
-        { id: 2, firstName: 'Jane', lastName: 'Smith', age: 25 },
-        { id: 3, firstName: 'Alice', lastName: 'Johnson', age: 28 },
-    ]);
+    const [data, setData] = useState(() => {
+        return generateData({
+            fields: [
+                { name: 'id', type: 'number', required: true },
+                { name: 'firstName', type: 'string', required: true },
+                { name: 'lastName', type: 'string', required: true },
+                { name: 'age', type: 'number', required: false },
+                { name: 'email', type: 'string', required: false },
+            ],
+            count: 10
+        });
+    });
 
     const dataGrid = useDataGrid({
         data,
