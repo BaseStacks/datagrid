@@ -6,13 +6,13 @@ import { compareCoordinates } from '../utils/cellUtils';
 import { clearAllTextSelection } from '../utils/domUtils';
 import { breakAreaToSmallerPart, isAreaInsideOthers, tryCombineAreas, tryRemoveDuplicates } from '../utils/selectionUtils';
 
-export interface SelectionPluginOptions {
-    container: HTMLElement;
+export interface CellSelectionPluginOptions {
+    readonly container: HTMLElement;
 }
 
 type DraggingStatus = 'start' | 'dragging' | false;
 
-export class SelectionPlugin<TRow extends RowData> {
+export class CellSelectionPlugin<TRow extends RowData> {
     private readonly dataGrid: DataGrid<TRow>;
 
     private container: HTMLElement | null = null;
@@ -64,7 +64,7 @@ export class SelectionPlugin<TRow extends RowData> {
                 startSelection(clickedCellCoord);
             }
         }
-        if (createNewArea) {
+        else if (createNewArea) {
             startSelection(clickedCellCoord);
         }
         else {
@@ -184,7 +184,7 @@ export class SelectionPlugin<TRow extends RowData> {
         }
     };
 
-    public active = ({ container }: SelectionPluginOptions) => {
+    public active = ({ container }: CellSelectionPluginOptions) => {
         this.isActive = true;
         this.container = container;
 
@@ -252,7 +252,7 @@ export class SelectionPlugin<TRow extends RowData> {
         this.isActive = false;
     };
 
-    public reActivate = ({ container }: SelectionPluginOptions) => {
+    public reActivate = ({ container }: CellSelectionPluginOptions) => {
         this.deactivate();
         this.active({ container });
     };

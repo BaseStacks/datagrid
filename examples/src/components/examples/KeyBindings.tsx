@@ -1,4 +1,4 @@
-import { Column, DataGridProvider, useDataGrid, useKeyBindings, useSelection, useStateWatch } from '@basestacks/data-grid';
+import { Column, DataGridProvider, useDataGrid, useKeyBindings, useCellSelection, useStateWatch } from '@basestacks/data-grid';
 import { useMemo, useState } from 'react';
 import { TextInput } from './controls/TextInput';
 
@@ -25,7 +25,7 @@ export function KeyBindings() {
     const headers = useStateWatch(dataGrid.state.headers);
     const rows = useStateWatch(dataGrid.state.rows);
 
-    const selection = useSelection(dataGrid);
+    const selection = useCellSelection(dataGrid);
 
     useKeyBindings(dataGrid); // [!code highlight]
 

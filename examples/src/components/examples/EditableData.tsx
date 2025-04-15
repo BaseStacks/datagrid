@@ -1,4 +1,4 @@
-import { Column, DataGridProvider, useDataGrid, useSelection, useStateWatch } from '@basestacks/data-grid';
+import { Column, DataGridProvider, useDataGrid, useCellSelection, useStateWatch } from '@basestacks/data-grid';
 import { useMemo, useState } from 'react';
 import { TextInput } from './controls/TextInput';
 
@@ -25,7 +25,7 @@ export function EditableData() {
     const headers = useStateWatch(dataGrid.state.headers);
     const rows = useStateWatch(dataGrid.state.rows);
 
-    const selection = useSelection(dataGrid);
+    const selection = useCellSelection(dataGrid);
 
     return (
         <DataGridProvider dataGrid={dataGrid}>

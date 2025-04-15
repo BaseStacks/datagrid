@@ -1,4 +1,4 @@
-import { useDataGrid, useSelection, useStateWatch } from '@basestacks/data-grid';
+import { useDataGrid, useCellSelection, useStateWatch } from '@basestacks/data-grid';
 import { useMemo, useState } from 'react';
 
 export function CellSelection() {
@@ -16,7 +16,7 @@ export function CellSelection() {
 
     const dataGrid = useDataGrid({ data, columns });
 
-    const selection = useSelection(dataGrid); // [!code highlight]
+    const selection = useCellSelection(dataGrid); // [!code highlight]
 
     const headers = useStateWatch(dataGrid.state.headers);
     const rows = useStateWatch(dataGrid.state.rows);

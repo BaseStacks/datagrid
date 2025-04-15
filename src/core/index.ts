@@ -8,5 +8,5 @@ export * from './instances/atomic/DataGridState';
 
 export * from './utils/cellUtils';
 
-export * from './plugins/SelectionPlugin';
+export * from './plugins/CellSelectionPlugin';
 export * from './plugins/KeyBindingPlugin';
