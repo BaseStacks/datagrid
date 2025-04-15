@@ -1,4 +1,4 @@
-import type { CellCoordinates } from '..';
+import type { CellCoordinates, Id } from '..';
 
 export interface RectType {
     readonly width: number;
@@ -124,19 +124,12 @@ export const buildRectMap = (container: HTMLElement, coordElementMap: Map<CellCo
     return map;
 };
 
-export const findCoordByRect = (cellRectMap: Map<string, RectType | null>, rect: RectType) => {
+export const findCellByRect = (cellRectMap: Map<Id, RectType | null>, rect: RectType) => {
     for (const [cellId, cellRect] of cellRectMap.entries()) {
         if (cellRect && cellRect.left === rect.left && cellRect.top === rect.top) {
             return cellId;
         }
     }
+
     return null;
-};
-
-export const findFromRectMap = (cellRectMap: Map<CellCoordinates, RectType | null>, targetCoord: CellCoordinates) => {
-    const pair = cellRectMap.entries().find(([coord, rect]) => {
-        return coord.col === targetCoord.col && coord.row === targetCoord.row && rect;
-    });
-
-    return pair ? pair[1] : null;
 };

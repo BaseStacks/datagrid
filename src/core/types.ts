@@ -1,9 +1,13 @@
 import React from 'react';
-import type { DataGrid } from './instances/DataGrid';
 
 export type RowData = Record<string, any>;
 export type RowKey<TRow extends RowData> = keyof TRow | ((opts: { rowData: TRow; rowIndex: number }) => TRow[keyof TRow])
 export type Unsubscribe = () => void;
+
+export type Id = string | number;
+
+export type WithId<T> = T & { readonly id: Id };
+
 export interface CellCoordinates {
   readonly col: number
   readonly row: number
@@ -14,9 +18,9 @@ export interface ScrollBehavior {
   readonly doNotScrollY?: boolean
 }
 
-export interface SelectedArea {
-  readonly start: CellCoordinates;
-  readonly end: CellCoordinates
+export interface CellSelectedRange {
+  readonly start: Id;
+  readonly end: Id;
 }
 
 export interface SelectionBoundary {

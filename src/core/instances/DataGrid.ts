@@ -27,8 +27,12 @@ export class DataGrid<TRow extends RowData = RowData> {
                 index: rowIndex,
                 data: newRowData,
                 cells: columns.map((column, columnIndex) => {
+                    const coordinates = {
+                        row: rowIndex,
+                        col: columnIndex,
+                    };
                     const cellInfo = {
-                        id: getCellId(rowIndex, columnIndex),
+                        id: getCellId(coordinates),
                         coordinates: {
                             row: rowIndex,
                             col: columnIndex,

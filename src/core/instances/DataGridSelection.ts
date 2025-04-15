@@ -1,4 +1,5 @@
-import type { CellCoordinates, RowData } from '../types';
+import type { CellCoordinates, Id, RowData } from '../types';
+import { getCoordinatesById, getCellId } from '../utils/cellUtils';
 import { DataGridStates } from './DataGridStates';
 
 type Offset = [number, number];
@@ -6,7 +7,7 @@ type Offset = [number, number];
 interface GetCellCoordinatesParams {
     readonly maxRow: number;
     readonly maxCol: number;
-    readonly cell: CellCoordinates | null;
+    readonly from: Id | null;
     readonly offset: [number, number];
 }
 
@@ -17,9 +18,9 @@ const directions: Record<string, Offset> = {
     up: [0, -1],
 };
 
-const getCellCoordinates = ({ maxRow, maxCol, cell, offset }: GetCellCoordinatesParams): CellCoordinates | null => {
+const findCellCoordinates = ({ maxRow, maxCol, from, offset }: GetCellCoordinatesParams): CellCoordinates | null => {
     // Return null if cell is null
-    if (!cell) return null;
+    if (!from) return null;
 
     const [deltaX, deltaY] = offset;
 
@@ -28,9 +29,10 @@ const getCellCoordinates = ({ maxRow, maxCol, cell, offset }: GetCellCoordinates
     // Calculate row boundaries
     const minRow = 0;
 
+    const cellCoordinates = getCoordinatesById(from);
     return {
-        col: Math.max(minCol, Math.min(maxCol, cell.col + deltaX)),
-        row: Math.max(minRow, Math.min(maxRow, cell.row + deltaY)),
+        col: Math.max(minCol, Math.min(maxCol, cellCoordinates.col + deltaX)),
+        row: Math.max(minRow, Math.min(maxRow, cellCoordinates.row + deltaY)),
     };
 };
 
@@ -51,21 +53,30 @@ export class DataGridSelection<TRow extends RowData> {
 
     public navigate = (relativeOffset: Offset) => {
         const { activeCell } = this.state;
-        const selectionStart = getCellCoordinates({
+        if (!activeCell.value) {
+            return;
+        }
+        const selectionStart = findCellCoordinates({
             maxRow: this.rowLength,
             maxCol: this.columnLength,
-            cell: activeCell.value,
+            from: activeCell.value.id,
             offset: relativeOffset,
         });
         this.cleanSelection();
         this.startSelection(selectionStart!);
     };
 
-    public startSelection = (start: CellCoordinates) => {
+    public startSelection = (startPoint: CellCoordinates) => {
         const { activeCell, selectedAreas } = this.state;
-        const newSelectedArea = { start, end: start };
+        const newSelectedArea = {
+            start: getCellId(startPoint),
+            end: getCellId(startPoint)
+        };
 
-        activeCell.set(start);
+        activeCell.set({
+            id: getCellId(startPoint),
+            ...startPoint,
+        });
 
         selectedAreas.set((prevSelectedAreas) => {
             const selectedAreas = [...prevSelectedAreas];
@@ -104,7 +115,10 @@ export class DataGridSelection<TRow extends RowData> {
 
     public active = (coord: CellCoordinates) => {
         const { activeCell } = this.state;
-        activeCell.set(coord);
+        activeCell.set({
+            id: getCellId(coord),
+            ...coord
+        });
     };
 
     public moveRight = () => this.navigate(directions.right);
@@ -136,7 +150,7 @@ export class DataGridSelection<TRow extends RowData> {
         this.navigate(topOfColumn);
     };
 
-    public selectArea = (start: CellCoordinates, end: CellCoordinates) => {
+    public selectArea = (start: Id, end: Id) => {
         const { selectedAreas } = this.state;
         selectedAreas.set((prevSelectedAreas) => {
             const newSelectedArea = { start, end };
@@ -146,7 +160,7 @@ export class DataGridSelection<TRow extends RowData> {
         });
     };
 
-    public updateLastSelectedArea = (endCell: CellCoordinates) => {
+    public updateLastSelectedArea = (endCell: Id) => {
         const { selectedAreas } = this.state;
         selectedAreas.set((prevSelectedAreas) => {
             if (prevSelectedAreas.length === 0) {
@@ -168,13 +182,19 @@ export class DataGridSelection<TRow extends RowData> {
         }
 
         const { end } = lastSelectedArea;
-        const newEnd = getCellCoordinates({
+        const newEnd = findCellCoordinates({
             maxRow: this.rowLength,
             maxCol: this.columnLength,
-            cell: end,
+            from: end,
             offset: directions.left,
         });
-        this.updateLastSelectedArea(newEnd!);
+
+        if (!newEnd) {
+            return;
+        }
+
+        const cellId = getCellId(newEnd);
+        this.updateLastSelectedArea(cellId);
     };
 
     public expandRight = () => {
@@ -185,13 +205,18 @@ export class DataGridSelection<TRow extends RowData> {
         }
 
         const { end } = lastSelectedArea;
-        const newEnd = getCellCoordinates({
+        const newEnd = findCellCoordinates({
             maxRow: this.rowLength,
             maxCol: this.columnLength,
-            cell: end,
+            from: end,
             offset: directions.right,
         });
-        this.updateLastSelectedArea(newEnd!);
+        if (!newEnd) {
+            return;
+        }
+
+        const cellId = getCellId(newEnd);
+        this.updateLastSelectedArea(cellId);
     };
 
     public expandUpper = () => {
@@ -202,13 +227,18 @@ export class DataGridSelection<TRow extends RowData> {
         }
 
         const { end } = lastSelectedArea;
-        const newEnd = getCellCoordinates({
+        const newEnd = findCellCoordinates({
             maxRow: this.rowLength,
             maxCol: this.columnLength,
-            cell: end,
+            from: end,
             offset: directions.up,
         });
-        this.updateLastSelectedArea(newEnd!);
+        if (!newEnd) {
+            return;
+        }
+
+        const cellId = getCellId(newEnd);
+        this.updateLastSelectedArea(cellId);
     };
 
     public expandLower = () => {
@@ -219,19 +249,24 @@ export class DataGridSelection<TRow extends RowData> {
         }
 
         const { end } = lastSelectedArea;
-        const newEnd = getCellCoordinates({
+        const newEnd = findCellCoordinates({
             maxRow: this.rowLength,
             maxCol: this.columnLength,
-            cell: end,
+            from: end,
             offset: directions.down,
         });
-        this.updateLastSelectedArea(newEnd!);
+        if (!newEnd) {
+            return;
+        }
+
+        const cellId = getCellId(newEnd);
+        this.updateLastSelectedArea(cellId);
     };
 
     public selectAll = () => {
         const { rows, headers } = this.state;
-        const from: CellCoordinates = { col: 0, row: 0 };
-        const to: CellCoordinates = { col: headers.value.length - 1, row: rows.value.length - 1 };
+        const from = getCellId({ col: 0, row: 0 });
+        const to = getCellId({ col: headers.value.length - 1, row: rows.value.length - 1 });
         this.selectArea(from, to);
     };
 };

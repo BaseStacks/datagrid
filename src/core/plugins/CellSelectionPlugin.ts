@@ -1,8 +1,7 @@
-import { findCoordByRect, findFromRectMap, findRect, getCursorOffset, mergeRects, type RectType } from '../utils/domRectUtils';
+import { findCellByRect, findRect, getCursorOffset, mergeRects, type RectType } from '../utils/domRectUtils';
 import { DataGridState } from '../instances/atomic/DataGridState';
 import { DataGrid } from '../instances/DataGrid';
-import type { CellCoordinates, DataGridPlugin, RowData } from '../types';
-import { compareCoordinates } from '../utils/cellUtils';
+import type { DataGridPlugin, RowData } from '../types';
 import { clearAllTextSelection } from '../utils/domUtils';
 import { breakAreaToSmallerPart, isAreaInsideOthers, tryCombineAreas, tryRemoveDuplicates } from '../utils/selectionUtils';
 
@@ -19,12 +18,12 @@ export class CellSelectionPlugin<TRow extends RowData> implements DataGridPlugin
         return this.dataGrid.layout.container;
     }
 
-    private get coordRectMap() {
+    private get cellRectMap() {
         return this.dataGrid.layout.cellRectMap;
     }
 
     private handleMouseDown = (event: MouseEvent) => {
-        const { activeCell, editing } = this.dataGrid.state;
+        const { activeCell } = this.dataGrid.state;
         const { cleanSelection, startSelection, updateLastSelectedArea } = this.dataGrid.selection;
 
         const clickOutside = !this.container?.contains(event.target as Node);
@@ -32,22 +31,13 @@ export class CellSelectionPlugin<TRow extends RowData> implements DataGridPlugin
             return;
         }
 
-        const {
-            clickedCell,
-            clickedRect,
-        } = this.dataGrid.layout.getEventData(event);
+        const rectInfo = this.dataGrid.layout.getIntersectionRect(event);
 
-        if (!clickedRect) {
+        if (!rectInfo || !rectInfo.cell) {
             return;
         }
 
-        if (!clickedCell) {
-            throw new Error('This should never happen!');
-        }
-
-        const clickOnActiveCell = compareCoordinates(clickedCellCoord, activeCell.value!);
-        const clickedOnEditingCell = clickOnActiveCell && editing.value;
-        if (clickedOnEditingCell) {
+        if (rectInfo.cell.isFocusing) {
             cleanSelection({
                 maintainActiveCell: true,
                 maintainEditing: true,
@@ -60,18 +50,18 @@ export class CellSelectionPlugin<TRow extends RowData> implements DataGridPlugin
 
         if (expandSelection) {
             if (activeCell.value) {
-                updateLastSelectedArea(clickedCellCoord);
+                updateLastSelectedArea(rectInfo.cell.id);
             }
             else {
-                startSelection(clickedCellCoord);
+                startSelection(rectInfo.cell.coordinates);
             }
         }
         else if (createNewArea) {
-            startSelection(clickedCellCoord);
+            startSelection(rectInfo.cell.coordinates);
         }
         else {
             cleanSelection();
-            startSelection(clickedCellCoord);
+            startSelection(rectInfo.cell.coordinates);
         }
 
         this.state.dragging.set('start');
@@ -96,18 +86,17 @@ export class CellSelectionPlugin<TRow extends RowData> implements DataGridPlugin
         const { selection } = this.dataGrid;
 
         const cursorOffset = getCursorOffset(event, this.container!);
-        const cellRect = findRect(cursorOffset, [...this.coordRectMap.values()]);
+        const cellRect = findRect(cursorOffset, [...this.cellRectMap.values()]);
         if (!cellRect) {
             return;
         }
 
-        const hoveringCoord = findCoordByRect(this.coordRectMap!, cellRect);
-        if (!hoveringCoord) {
+        const hoveringCell = findCellByRect(this.cellRectMap!, cellRect);
+        if (!hoveringCell) {
             return;
         }
 
-
-        selection.updateLastSelectedArea(hoveringCoord);
+        selection.updateLastSelectedArea(hoveringCell);
     };
 
     private stopDragSelect = () => {
@@ -124,11 +113,11 @@ export class CellSelectionPlugin<TRow extends RowData> implements DataGridPlugin
             const insideOthers = isAreaInsideOthers(lastSelectedArea, newSelectedAreas.slice(0, -1));
 
 
-            if(insideOthers.length) {
+            if (insideOthers.length) {
                 const breakingArea = insideOthers[0];
                 const breakingAreaIndex = newSelectedAreas.findIndex((area) => area === breakingArea);
                 const smallerParts = breakAreaToSmallerPart(breakingArea, lastSelectedArea);
-                
+
                 newSelectedAreas = [
                     ...newSelectedAreas.slice(0, breakingAreaIndex),
                     ...smallerParts,
@@ -154,8 +143,8 @@ export class CellSelectionPlugin<TRow extends RowData> implements DataGridPlugin
             return;
         }
 
-        const clickedOnActiveCell = activeCell.value && event.target === this.coordRectMap.get(activeCell.value);
-        if (clickedOnActiveCell) {
+        const rectInfo = this.dataGrid.layout.getIntersectionRect(event);
+        if (rectInfo?.cell.isActive) {
             return;
         }
 
@@ -178,15 +167,7 @@ export class CellSelectionPlugin<TRow extends RowData> implements DataGridPlugin
         dragging: new DataGridState<DraggingStatus>(false),
     };
 
-    public registerCell = (cell: CellCoordinates, element: HTMLElement | null) => {
-        if (element) {
-            this.coordElementMap.set(cell, element);
-        } else {
-            this.coordElementMap.delete(cell);
-        }
-    };
-
-    public activate = ({ }: CellSelectionPluginOptions) => {
+    public activate = (_options: CellSelectionPluginOptions) => {
         this.active = true;
 
         window.addEventListener('mousedown', this.handleMouseDown);
@@ -205,8 +186,8 @@ export class CellSelectionPlugin<TRow extends RowData> implements DataGridPlugin
             }
 
             const newSelectedAreaRects = newSelectedAreas.map((newSelectedArea) => {
-                const startRect = findFromRectMap(this.coordRectMap, newSelectedArea.start);
-                const endRect = findFromRectMap(this.coordRectMap, newSelectedArea.end);
+                const startRect = this.dataGrid.layout.getRect(newSelectedArea.start);
+                const endRect = this.dataGrid.layout.getRect(newSelectedArea.end);
                 if (!startRect || !endRect) {
                     throw new Error('This should never happen!');
                 }
@@ -223,7 +204,7 @@ export class CellSelectionPlugin<TRow extends RowData> implements DataGridPlugin
                 return;
             }
 
-            const rect = findFromRectMap(this.coordRectMap, nextActiveCell);
+            const rect = this.dataGrid.layout.getRect(nextActiveCell.id);
             activeCellRect.set(rect);
         });
 
@@ -246,7 +227,7 @@ export class CellSelectionPlugin<TRow extends RowData> implements DataGridPlugin
         this.unsubscribes.forEach(unsubscribe => unsubscribe());
         this.unsubscribes = [];
 
-        this.coordRectMap.clear();
+        this.cellRectMap.clear();
 
         this.active = false;
     };
