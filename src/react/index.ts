@@ -10,3 +10,5 @@ export * from './hooks/debug/useWhatChanged';
 
 // Components
 export * from './components/DataGridProvider';
+export * from './components/DataGridContainer';
+export * from './components/DataGridCell';

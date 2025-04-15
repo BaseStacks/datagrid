@@ -1,25 +1,27 @@
-import { buildRectMap, findCoordByRect, findFromRectMap, findRect, getCursorOffset, mergeRects, type RectType } from '../utils/domRectUtils';
+import { findCoordByRect, findFromRectMap, findRect, getCursorOffset, mergeRects, type RectType } from '../utils/domRectUtils';
 import { DataGridState } from '../instances/atomic/DataGridState';
 import { DataGrid } from '../instances/DataGrid';
-import type { CellCoordinates, RowData } from '../types';
+import type { CellCoordinates, DataGridPlugin, RowData } from '../types';
 import { compareCoordinates } from '../utils/cellUtils';
 import { clearAllTextSelection } from '../utils/domUtils';
 import { breakAreaToSmallerPart, isAreaInsideOthers, tryCombineAreas, tryRemoveDuplicates } from '../utils/selectionUtils';
 
 export interface CellSelectionPluginOptions {
-    readonly container: HTMLElement;
 }
 
 type DraggingStatus = 'start' | 'dragging' | false;
 
-export class CellSelectionPlugin<TRow extends RowData> {
+export class CellSelectionPlugin<TRow extends RowData> implements DataGridPlugin<CellSelectionPluginOptions> {
     private readonly dataGrid: DataGrid<TRow>;
-
-    private container: HTMLElement | null = null;
-    private coordRectMap = new Map<CellCoordinates, RectType | null>();
-    private coordElementMap = new Map<CellCoordinates, HTMLElement | null>();
-
     private unsubscribes: (() => void)[] = [];
+
+    private get container() {
+        return this.dataGrid.layout.container;
+    }
+
+    private get coordRectMap() {
+        return this.dataGrid.layout.cellRectMap;
+    }
 
     private handleMouseDown = (event: MouseEvent) => {
         const { activeCell, editing } = this.dataGrid.state;
@@ -30,16 +32,16 @@ export class CellSelectionPlugin<TRow extends RowData> {
             return;
         }
 
-        this.coordRectMap = buildRectMap(this.container!, this.coordElementMap);
-        const cursorOffset = getCursorOffset(event, this.container!);
-        const clickedRect = findRect(cursorOffset, [...this.coordRectMap.values()]);
+        const {
+            clickedCell,
+            clickedRect,
+        } = this.dataGrid.layout.getEventData(event);
 
         if (!clickedRect) {
             return;
         }
 
-        const clickedCellCoord = findCoordByRect(this.coordRectMap!, clickedRect);
-        if (!clickedCellCoord) {
+        if (!clickedCell) {
             throw new Error('This should never happen!');
         }
 
@@ -168,7 +170,7 @@ export class CellSelectionPlugin<TRow extends RowData> {
         this.dataGrid = dataGrid;
     }
 
-    public isActive = false;
+    public active = false;
 
     public state = {
         selectedAreaRects: new DataGridState<RectType[]>([]),
@@ -184,15 +186,14 @@ export class CellSelectionPlugin<TRow extends RowData> {
         }
     };
 
-    public active = ({ container }: CellSelectionPluginOptions) => {
-        this.isActive = true;
-        this.container = container;
+    public activate = ({ }: CellSelectionPluginOptions) => {
+        this.active = true;
 
         window.addEventListener('mousedown', this.handleMouseDown);
         window.addEventListener('mouseup', this.stopDragSelect);
 
-        this.container.addEventListener('mousemove', this.onMouseMove);
-        this.container.addEventListener('dblclick', this.startFocus);
+        this.container!.addEventListener('mousemove', this.onMouseMove);
+        this.container!.addEventListener('dblclick', this.startFocus);
 
         const { activeCell, selectedAreas } = this.dataGrid.state;
         const { selectedAreaRects, activeCellRect } = this.state;
@@ -230,7 +231,7 @@ export class CellSelectionPlugin<TRow extends RowData> {
     };
 
     public deactivate = () => {
-        if (!this.isActive) {
+        if (!this.active) {
             return;
         }
 
@@ -246,14 +247,7 @@ export class CellSelectionPlugin<TRow extends RowData> {
         this.unsubscribes = [];
 
         this.coordRectMap.clear();
-        this.coordElementMap.clear();
-        this.container = null;
 
-        this.isActive = false;
-    };
-
-    public reActivate = ({ container }: CellSelectionPluginOptions) => {
-        this.deactivate();
-        this.active({ container });
+        this.active = false;
     };
 };

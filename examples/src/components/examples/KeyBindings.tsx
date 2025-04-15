@@ -1,4 +1,4 @@
-import { Column, DataGridProvider, useDataGrid, useKeyBindings, useCellSelection, useStateWatch } from '@basestacks/data-grid';
+import { Column, DataGridProvider, useDataGrid, useKeyBindings, useStateWatch, DataGridContainer, DataGridCell, CellSelectionPlugin, usePlugin } from '@basestacks/data-grid';
 import { useMemo, useState } from 'react';
 import { TextInput } from './controls/TextInput';
 import { generateData } from '@/helpers/dataHelpers';
@@ -34,13 +34,17 @@ export function KeyBindings() {
     const headers = useStateWatch(dataGrid.state.headers);
     const rows = useStateWatch(dataGrid.state.rows);
 
-    const selection = useCellSelection(dataGrid);
+    const cellSelection = usePlugin(dataGrid, CellSelectionPlugin, {});
 
-    useKeyBindings(dataGrid); // [!code highlight]
+    const activeRect = useStateWatch(cellSelection.state.activeCellRect);
+    const areaRects = useStateWatch(cellSelection.state.selectedAreaRects);
+    const dragging = useStateWatch(cellSelection.state.dragging);
+
+    useKeyBindings(dataGrid);
 
     return (
         <DataGridProvider dataGrid={dataGrid}>
-            <div ref={selection.registerContainer} className="relative select-none">
+            <DataGridContainer>
                 <table className={clxs.table}>
                     <thead>
                         <tr>
@@ -55,28 +59,24 @@ export function KeyBindings() {
                         {rows.map((row, index) => (
                             <tr key={index} className={clxs.row}>
                                 {row.cells.map((cell) => (
-                                    <td
-                                        key={cell.id}
-                                        className={clxs.cell}
-                                        ref={selection.registerCell(cell)}
-                                    >
+                                    <DataGridCell key={cell.id} cell={cell} className={clxs.cell} as="td">
                                         {cell.render()}
-                                    </td>
+                                    </DataGridCell>
                                 ))}
                             </tr>
                         ))}
                     </tbody>
                 </table>
-                {selection.areaRects.map((rect, index) => (
+                {areaRects.map((rect, index) => (
                     <div key={index} className={clxs.selectedAreaRect} style={rect} />
                 ))}
-                {selection.activeRect && (
-                    <div className={clxs.activeRect} style={selection.activeRect} />
+                {activeRect && (
+                    <div className={clxs.activeRect} style={activeRect} />
                 )}
-                {selection.dragging && (
+                {dragging && (
                     <div className="absolute w-full h-full" />
                 )}
-            </div>
+            </DataGridContainer>
         </DataGridProvider>
     );
 };

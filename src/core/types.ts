@@ -142,9 +142,8 @@ export interface DataGridPluginOptions {
   readonly enable?: boolean;
 }
 
-export type DataGridPlugin<TOptions extends DataGridPluginOptions = DataGridPluginOptions> = new (dataGrid: DataGrid, options: TOptions) =>{
-  readonly name: string;
-  readonly isActive: boolean;
+export type DataGridPlugin<TOptions extends DataGridPluginOptions = DataGridPluginOptions> = {
+  readonly active: boolean;
   readonly activate: (opts: TOptions) => void;
   readonly deactivate: () => void;
 };

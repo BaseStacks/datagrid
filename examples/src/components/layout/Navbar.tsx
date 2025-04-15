@@ -13,6 +13,7 @@ const gettingStartedRoutes = [{
 }];
 
 const routeGroups = [{
+    key: 'plugins',
     label: 'Plugins',
     children: [{
         path: '/plugins/cell-selection',
@@ -39,7 +40,7 @@ export function Navbar() {
                         ))}
                     </ul>
                     {routeGroups.map((group) => (
-                        <div className="flex flex-col gap-3">
+                        <div key={group.key} className="flex flex-col gap-3">
                             <h3 className="font-mono text-sm/6 font-medium tracking-widest text-gray-500 uppercase sm:text-xs/6 dark:text-gray-400">
                                 {group.label}
                             </h3>

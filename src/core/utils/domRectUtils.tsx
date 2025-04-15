@@ -66,7 +66,7 @@ export const getRect = (container: HTMLElement, start?: HTMLElement, end?: HTMLE
 
 export const findRect = (offset: CursorOffset, rects: (RectType | null)[]): RectType | null => {
     for (const rect of rects) {
-        if(!rect) continue; // Skip if rect is null or undefined
+        if (!rect) continue; // Skip if rect is null or undefined
 
         if (
             offset.x >= rect.left &&
@@ -124,10 +124,10 @@ export const buildRectMap = (container: HTMLElement, coordElementMap: Map<CellCo
     return map;
 };
 
-export const findCoordByRect = (cellRectMap: Map<CellCoordinates, RectType | null>, rect: RectType) => {
-    for (const [coord, cellRect] of cellRectMap.entries()) {
+export const findCoordByRect = (cellRectMap: Map<string, RectType | null>, rect: RectType) => {
+    for (const [cellId, cellRect] of cellRectMap.entries()) {
         if (cellRect && cellRect.left === rect.left && cellRect.top === rect.top) {
-            return coord;
+            return cellId;
         }
     }
     return null;
