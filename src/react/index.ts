@@ -2,7 +2,6 @@ export * from './hooks/useDataGrid';
 export * from './hooks/useDataGridContext';
 export * from './hooks/usePlugin';
 
-export * from './hooks/plugins/useKeyBindings';
 export * from './hooks/atomic/useDataGridState';
 
 export * from './hooks/debug/useWhatChanged';

@@ -1,4 +1,4 @@
-import { Column, DataGridProvider, useDataGrid, useKeyBindings, useDataGridState, DataGridContainer, DataGridCell, CellSelectionPlugin, usePlugin, SelectedRangeRects, SelectedCellRect, SelectionBackdrop } from '@basestacks/data-grid';
+import { Column, DataGridProvider, useDataGrid, useDataGridState, DataGridContainer, DataGridCell, CellSelectionPlugin, usePlugin, SelectedRangeRects, ActiveCellRect, SelectionBackdrop } from '@basestacks/data-grid';
 import { useMemo, useState } from 'react';
 import { TextInput } from './controls/TextInput';
 import { generateData } from '@/helpers/dataHelpers';
@@ -36,8 +36,6 @@ export function CellSelection() {
 
     const cellSelection = usePlugin(dataGrid, CellSelectionPlugin, {});
 
-    useKeyBindings(dataGrid);
-
     return (
         <DataGridProvider dataGrid={dataGrid}>
             <DataGridContainer>
@@ -64,7 +62,7 @@ export function CellSelection() {
                     </tbody>
                 </table>
                 <SelectedRangeRects selection={cellSelection} className={clxs.selectedRangeRect} />
-                <SelectedCellRect selection={cellSelection} className={clxs.activeRect} />
+                <ActiveCellRect selection={cellSelection} className={clxs.activeRect} />
                 <SelectionBackdrop selection={cellSelection} />
             </DataGridContainer>
         </DataGridProvider>

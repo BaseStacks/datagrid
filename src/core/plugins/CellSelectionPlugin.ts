@@ -1,14 +1,52 @@
 import { findCellByRect, findRect, getCursorOffset, mergeRects, type RectType } from '../utils/domRectUtils';
 import { DataGridState } from '../instances/atomic/DataGridState';
 import { DataGrid } from '../instances/DataGrid';
-import type { DataGridPlugin, RowData } from '../types';
+import type { DataGridKeyMap, DataGridPlugin, DataGridPluginOptions, RowData } from '../types';
 import { clearAllTextSelection } from '../utils/domUtils';
 import { breakRangeToSmallerPart, isRangeInsideOthers, tryCombineRanges, tryRemoveDuplicates } from '../utils/selectionUtils';
 
-export interface CellSelectionPluginOptions {
+type CellSelectionPluginShortcut =
+    | 'activeLower'
+    | 'activeUpper'
+    | 'activeLeft'
+    | 'activeRight'
+    | 'jumpBottom'
+    | 'jumpTop'
+    | 'jumpLeft'
+    | 'jumpRight'
+    | 'expandRight'
+    | 'expandLeft'
+    | 'expandLower'
+    | 'expandUpper'
+    | 'selectAll'
+    | 'exit';
+
+export interface CellSelectionPluginOptions extends DataGridPluginOptions {
+    readonly keyMap?: DataGridKeyMap<CellSelectionPluginShortcut>;
 }
 
-type DraggingStatus = 'start' | 'dragging' | false;
+export type CellSelectionDraggingStatus = 'start' | 'dragging' | false;
+
+
+export const defaultKeyMap: DataGridKeyMap<CellSelectionPluginShortcut> = {
+    activeLower: 'ArrowDown',
+    activeUpper: 'ArrowUp',
+    activeLeft: 'ArrowLeft',
+    activeRight: 'ArrowRight',
+
+    jumpBottom: '$mod+ArrowDown',
+    jumpTop: '$mod+ArrowUp',
+    jumpLeft: '$mod+ArrowLeft',
+    jumpRight: '$mod+ArrowRight',
+
+    expandRight: 'Shift+ArrowRight',
+    expandLeft: 'Shift+ArrowLeft',
+    expandUpper: 'Shift+ArrowUp',
+    expandLower: 'Shift+ArrowDown',
+
+    selectAll: '$mod+a',
+    exit: 'Escape'
+};
 
 export class CellSelectionPlugin<TRow extends RowData = RowData> implements DataGridPlugin<CellSelectionPluginOptions> {
     private readonly dataGrid: DataGrid<TRow>;
@@ -155,6 +193,22 @@ export class CellSelectionPlugin<TRow extends RowData = RowData> implements Data
         }
     };
 
+    private addEventListeners = () => {
+        window.addEventListener('mousedown', this.handleMouseDown);
+        window.addEventListener('mouseup', this.stopDragSelect);
+
+        this.container!.addEventListener('mousemove', this.onMouseMove);
+        this.container!.addEventListener('dblclick', this.startFocus);
+    };
+
+    private removeEventListeners = () => {
+        window.removeEventListener('mousedown', this.handleMouseDown);
+        window.removeEventListener('mouseup', this.stopDragSelect);
+
+        this.container?.removeEventListener('mousemove', this.onMouseMove);
+        this.container?.removeEventListener('dblclick', this.startFocus);
+    };
+
     constructor(dataGrid: DataGrid<TRow>) {
         this.dataGrid = dataGrid;
     }
@@ -164,17 +218,40 @@ export class CellSelectionPlugin<TRow extends RowData = RowData> implements Data
     public state = {
         selectedRangeRects: new DataGridState<RectType[]>([]),
         activeCellRect: new DataGridState<RectType | null>(null),
-        dragging: new DataGridState<DraggingStatus>(false),
+        dragging: new DataGridState<CellSelectionDraggingStatus>(false),
     };
 
     public activate = (_options: CellSelectionPluginOptions) => {
+        const { keyMap } = _options;
+
         this.active = true;
 
-        window.addEventListener('mousedown', this.handleMouseDown);
-        window.addEventListener('mouseup', this.stopDragSelect);
+        this.addEventListeners();
 
-        this.container!.addEventListener('mousemove', this.onMouseMove);
-        this.container!.addEventListener('dblclick', this.startFocus);
+        const handlers: Record<CellSelectionPluginShortcut, () => void> = {
+            activeLeft: this.dataGrid.selection.moveLeft,
+            activeRight: this.dataGrid.selection.moveRight,
+            activeUpper: this.dataGrid.selection.moveUp,
+            activeLower: this.dataGrid.selection.moveDown,
+            jumpBottom: this.dataGrid.selection.jumpBottom,
+            jumpTop: this.dataGrid.selection.jumpTop,
+            jumpLeft: this.dataGrid.selection.jumpLeft,
+            jumpRight: this.dataGrid.selection.jumpRight,
+            expandLeft: this.dataGrid.selection.expandLeft,
+            expandRight: this.dataGrid.selection.expandRight,
+            expandUpper: this.dataGrid.selection.expandUpper,
+            expandLower: this.dataGrid.selection.expandLower,
+            selectAll: this.dataGrid.selection.selectAll,
+            exit: this.dataGrid.selection.cleanSelection,
+        };
+
+        // Define keybindings
+        const mergeKeyMap = {
+            ...defaultKeyMap,
+            ...keyMap
+        };
+
+        this.dataGrid.keyBindings.add(this, mergeKeyMap, handlers);
 
         const { activeCell, selectedRanges } = this.dataGrid.state;
         const { selectedRangeRects, activeCellRect } = this.state;
@@ -216,13 +293,8 @@ export class CellSelectionPlugin<TRow extends RowData = RowData> implements Data
             return;
         }
 
-        if (this.container) {
-            window.removeEventListener('mousedown', this.handleMouseDown);
-            window.removeEventListener('mouseup', this.stopDragSelect);
-
-            this.container.removeEventListener('mousemove', this.onMouseMove);
-            this.container.removeEventListener('dblclick', this.startFocus);
-        }
+        this.removeEventListeners();
+        this.dataGrid.keyBindings.remove(this);
 
         this.unsubscribes.forEach(unsubscribe => unsubscribe());
         this.unsubscribes = [];

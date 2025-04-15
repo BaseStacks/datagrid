@@ -2,6 +2,7 @@ import type { CellProps, Column, ColumnHeader, DataGridOptions, Row, RowData, Ro
 import { getCellId } from '../utils/cellUtils';
 import { updateRowData } from '../utils/rowUtils';
 import { calculateRangeBoundary } from '../utils/selectionUtils';
+import { DataGridKeyBindings } from './DataGridKeyBindings';
 import { DataGridLayout } from './DataGridLayout';
 import { DataGridSelection } from './DataGridSelection';
 import { DataGridStates } from './DataGridStates';
@@ -108,6 +109,7 @@ export class DataGrid<TRow extends RowData = RowData> {
         this.state = new DataGridStates<TRow>();
         this.selection = new DataGridSelection(this.state);
         this.layout = new DataGridLayout(this.state);
+        this.keyBindings = new DataGridKeyBindings(this.state);
 
         this.initialize();
     }
@@ -116,6 +118,7 @@ export class DataGrid<TRow extends RowData = RowData> {
     public state: DataGridStates<TRow>;
     public selection: DataGridSelection<TRow>;
     public layout: DataGridLayout<TRow>;
+    public keyBindings: DataGridKeyBindings<TRow>;
 
     public updateOptions = (newOptions: DataGridOptions<TRow>) => {
         const { columns, data } = newOptions;

@@ -134,13 +134,9 @@ export type DataGridAction =
   | 'selectAll'
   | 'exit'
   | 'focus'
-
-  // | 'insertRow'
-  // | 'duplicateRow'
-  // | 'delete'
   ;
 
-export type DataGridKeyMap = Partial<Record<DataGridAction, string | string[]>>;
+export type DataGridKeyMap<TAction extends string> = Partial<Record<TAction, string | string[]>>;
 
 export interface DataGridPluginOptions {
   readonly enable?: boolean;
