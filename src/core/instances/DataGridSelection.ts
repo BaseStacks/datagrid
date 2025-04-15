@@ -67,8 +67,8 @@ export class DataGridSelection<TRow extends RowData> {
     };
 
     public startSelection = (startPoint: CellCoordinates) => {
-        const { activeCell, selectedAreas } = this.state;
-        const newSelectedArea = {
+        const { activeCell, selectedRanges } = this.state;
+        const newSelectedRange = {
             start: getCellId(startPoint),
             end: getCellId(startPoint)
         };
@@ -78,10 +78,10 @@ export class DataGridSelection<TRow extends RowData> {
             ...startPoint,
         });
 
-        selectedAreas.set((prevSelectedAreas) => {
-            const selectedAreas = [...prevSelectedAreas];
-            selectedAreas.push(newSelectedArea);
-            return selectedAreas;
+        selectedRanges.set((prevSelectedRanges) => {
+            const selectedRanges = [...prevSelectedRanges];
+            selectedRanges.push(newSelectedRange);
+            return selectedRanges;
         });
     };
 
@@ -89,7 +89,7 @@ export class DataGridSelection<TRow extends RowData> {
         maintainActiveCell = false,
         maintainEditing = false,
     } = {}) => {
-        const { editing, activeCell, selectedAreas } = this.state;
+        const { editing, activeCell, selectedRanges } = this.state;
 
         if (!maintainActiveCell) {
             activeCell.set(null);
@@ -97,7 +97,7 @@ export class DataGridSelection<TRow extends RowData> {
         if (!maintainEditing) {
             editing.set(false);
         }
-        selectedAreas.set([]);
+        selectedRanges.set([]);
     };
 
     public focus = () => {
@@ -150,38 +150,38 @@ export class DataGridSelection<TRow extends RowData> {
         this.navigate(topOfColumn);
     };
 
-    public selectArea = (start: Id, end: Id) => {
-        const { selectedAreas } = this.state;
-        selectedAreas.set((prevSelectedAreas) => {
-            const newSelectedArea = { start, end };
-            const selectedAreas = [...prevSelectedAreas];
-            selectedAreas.push(newSelectedArea);
-            return selectedAreas;
+    public selectRange = (start: Id, end: Id) => {
+        const { selectedRanges } = this.state;
+        selectedRanges.set((prevSelectedRanges) => {
+            const newSelectedRange = { start, end };
+            const selectedRanges = [...prevSelectedRanges];
+            selectedRanges.push(newSelectedRange);
+            return selectedRanges;
         });
     };
 
-    public updateLastSelectedArea = (endCell: Id) => {
-        const { selectedAreas } = this.state;
-        selectedAreas.set((prevSelectedAreas) => {
-            if (prevSelectedAreas.length === 0) {
-                return prevSelectedAreas;
+    public updateLastSelectedRange = (endCell: Id) => {
+        const { selectedRanges } = this.state;
+        selectedRanges.set((prevSelectedRanges) => {
+            if (prevSelectedRanges.length === 0) {
+                return prevSelectedRanges;
             }
-            const lastSelectedArea = prevSelectedAreas[prevSelectedAreas.length - 1];
-            const newSelectedArea = { ...lastSelectedArea, end: endCell };
-            const selectedAreas = [...prevSelectedAreas];
-            selectedAreas[selectedAreas.length - 1] = newSelectedArea;
-            return selectedAreas;
+            const lastSelectedRange = prevSelectedRanges[prevSelectedRanges.length - 1];
+            const newSelectedRange = { ...lastSelectedRange, end: endCell };
+            const selectedRanges = [...prevSelectedRanges];
+            selectedRanges[selectedRanges.length - 1] = newSelectedRange;
+            return selectedRanges;
         });
     };
 
     public expandLeft = () => {
-        const { selectedAreas } = this.state;
-        const lastSelectedArea = selectedAreas.value[selectedAreas.value.length - 1];
-        if (!lastSelectedArea) {
+        const { selectedRanges } = this.state;
+        const lastSelectedRange = selectedRanges.value[selectedRanges.value.length - 1];
+        if (!lastSelectedRange) {
             return;
         }
 
-        const { end } = lastSelectedArea;
+        const { end } = lastSelectedRange;
         const newEnd = findCellCoordinates({
             maxRow: this.rowLength,
             maxCol: this.columnLength,
@@ -194,17 +194,17 @@ export class DataGridSelection<TRow extends RowData> {
         }
 
         const cellId = getCellId(newEnd);
-        this.updateLastSelectedArea(cellId);
+        this.updateLastSelectedRange(cellId);
     };
 
     public expandRight = () => {
-        const { selectedAreas } = this.state;
-        const lastSelectedArea = selectedAreas.value[selectedAreas.value.length - 1];
-        if (!lastSelectedArea) {
+        const { selectedRanges } = this.state;
+        const lastSelectedRange = selectedRanges.value[selectedRanges.value.length - 1];
+        if (!lastSelectedRange) {
             return;
         }
 
-        const { end } = lastSelectedArea;
+        const { end } = lastSelectedRange;
         const newEnd = findCellCoordinates({
             maxRow: this.rowLength,
             maxCol: this.columnLength,
@@ -216,17 +216,17 @@ export class DataGridSelection<TRow extends RowData> {
         }
 
         const cellId = getCellId(newEnd);
-        this.updateLastSelectedArea(cellId);
+        this.updateLastSelectedRange(cellId);
     };
 
     public expandUpper = () => {
-        const { selectedAreas } = this.state;
-        const lastSelectedArea = selectedAreas.value[selectedAreas.value.length - 1];
-        if (!lastSelectedArea) {
+        const { selectedRanges } = this.state;
+        const lastSelectedRange = selectedRanges.value[selectedRanges.value.length - 1];
+        if (!lastSelectedRange) {
             return;
         }
 
-        const { end } = lastSelectedArea;
+        const { end } = lastSelectedRange;
         const newEnd = findCellCoordinates({
             maxRow: this.rowLength,
             maxCol: this.columnLength,
@@ -238,17 +238,17 @@ export class DataGridSelection<TRow extends RowData> {
         }
 
         const cellId = getCellId(newEnd);
-        this.updateLastSelectedArea(cellId);
+        this.updateLastSelectedRange(cellId);
     };
 
     public expandLower = () => {
-        const { selectedAreas } = this.state;
-        const lastSelectedArea = selectedAreas.value[selectedAreas.value.length - 1];
-        if (!lastSelectedArea) {
+        const { selectedRanges } = this.state;
+        const lastSelectedRange = selectedRanges.value[selectedRanges.value.length - 1];
+        if (!lastSelectedRange) {
             return;
         }
 
-        const { end } = lastSelectedArea;
+        const { end } = lastSelectedRange;
         const newEnd = findCellCoordinates({
             maxRow: this.rowLength,
             maxCol: this.columnLength,
@@ -260,14 +260,14 @@ export class DataGridSelection<TRow extends RowData> {
         }
 
         const cellId = getCellId(newEnd);
-        this.updateLastSelectedArea(cellId);
+        this.updateLastSelectedRange(cellId);
     };
 
     public selectAll = () => {
         const { rows, headers } = this.state;
         const from = getCellId({ col: 0, row: 0 });
         const to = getCellId({ col: headers.value.length - 1, row: rows.value.length - 1 });
-        this.selectArea(from, to);
+        this.selectRange(from, to);
     };
 };
 

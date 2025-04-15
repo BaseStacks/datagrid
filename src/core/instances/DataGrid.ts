@@ -1,7 +1,7 @@
 import type { CellProps, Column, ColumnHeader, DataGridOptions, Row, RowData, RowOperation } from '../types';
 import { getCellId } from '../utils/cellUtils';
 import { updateRowData } from '../utils/rowUtils';
-import { calculateAreaBoundary } from '../utils/selectionUtils';
+import { calculateRangeBoundary } from '../utils/selectionUtils';
 import { DataGridLayout } from './DataGridLayout';
 import { DataGridSelection } from './DataGridSelection';
 import { DataGridStates } from './DataGridStates';
@@ -159,7 +159,7 @@ export class DataGrid<TRow extends RowData = RowData> {
     };
 
     public deleteSelection = () => {
-        const { activeCell, selectedAreas } = this.state;
+        const { activeCell, selectedRanges } = this.state;
         const { onChange, columns, data } = this.options;
         if (!onChange) {
             return;
@@ -172,8 +172,8 @@ export class DataGrid<TRow extends RowData = RowData> {
         const newData = [...data];
         const operations: RowOperation[] = [];
 
-        for (const selectedArea of selectedAreas.value) {
-            const { min, max } = calculateAreaBoundary(selectedArea);
+        for (const selectedRange of selectedRanges.value) {
+            const { min, max } = calculateRangeBoundary(selectedRange);
 
             for (let row = min.row; row <= max.row; ++row) {
                 const modifiedRowData = { ...newData[row] };
@@ -254,15 +254,15 @@ export class DataGrid<TRow extends RowData = RowData> {
     };
 
     public applyPasteData = async (pasteData: string[][]) => {
-        const { selectedAreas, editing } = this.state;
+        const { selectedRanges, editing } = this.state;
         const { createRow, onChange, columns, data, lockRows } = this.options;
 
-        const selectedArea = selectedAreas.value[0];
-        if (!selectedArea || editing.value) {
+        const selectedRange = selectedRanges.value[0];
+        if (!selectedRange || editing.value) {
             return;
         }
 
-        const { min, max } = calculateAreaBoundary(selectedArea);
+        const { min, max } = calculateRangeBoundary(selectedRange);
 
         const results = await Promise.all(
             pasteData[0].map((_, columnIndex) => {

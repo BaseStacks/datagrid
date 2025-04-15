@@ -4,7 +4,7 @@ export * from './hooks/usePlugin';
 
 export * from './hooks/plugins/useCellSelection';
 export * from './hooks/plugins/useKeyBindings';
-export * from './hooks/atomic/useStateWatch';
+export * from './hooks/atomic/useDataGridState';
 
 export * from './hooks/debug/useWhatChanged';
 
@@ -12,3 +12,7 @@ export * from './hooks/debug/useWhatChanged';
 export * from './components/DataGridProvider';
 export * from './components/DataGridContainer';
 export * from './components/DataGridCell';
+
+export * from './components/cell-selection/SelectedCellRect';
+export * from './components/cell-selection/SelectedRangeRects';
+export * from './components/cell-selection/SelectionBackdrop';

@@ -3,14 +3,14 @@ import { DataGridState } from '../instances/atomic/DataGridState';
 import { DataGrid } from '../instances/DataGrid';
 import type { DataGridPlugin, RowData } from '../types';
 import { clearAllTextSelection } from '../utils/domUtils';
-import { breakAreaToSmallerPart, isAreaInsideOthers, tryCombineAreas, tryRemoveDuplicates } from '../utils/selectionUtils';
+import { breakRangeToSmallerPart, isRangeInsideOthers, tryCombineRanges, tryRemoveDuplicates } from '../utils/selectionUtils';
 
 export interface CellSelectionPluginOptions {
 }
 
 type DraggingStatus = 'start' | 'dragging' | false;
 
-export class CellSelectionPlugin<TRow extends RowData> implements DataGridPlugin<CellSelectionPluginOptions> {
+export class CellSelectionPlugin<TRow extends RowData = RowData> implements DataGridPlugin<CellSelectionPluginOptions> {
     private readonly dataGrid: DataGrid<TRow>;
     private unsubscribes: (() => void)[] = [];
 
@@ -24,7 +24,7 @@ export class CellSelectionPlugin<TRow extends RowData> implements DataGridPlugin
 
     private handleMouseDown = (event: MouseEvent) => {
         const { activeCell } = this.dataGrid.state;
-        const { cleanSelection, startSelection, updateLastSelectedArea } = this.dataGrid.selection;
+        const { cleanSelection, startSelection, updateLastSelectedRange } = this.dataGrid.selection;
 
         const clickOutside = !this.container?.contains(event.target as Node);
         if (clickOutside) {
@@ -45,18 +45,18 @@ export class CellSelectionPlugin<TRow extends RowData> implements DataGridPlugin
             return;
         }
 
-        const createNewArea = event.ctrlKey;
+        const createNewRange = event.ctrlKey;
         const expandSelection = event.shiftKey;
 
         if (expandSelection) {
             if (activeCell.value) {
-                updateLastSelectedArea(rectInfo.cell.id);
+                updateLastSelectedRange(rectInfo.cell.id);
             }
             else {
                 startSelection(rectInfo.cell.coordinates);
             }
         }
-        else if (createNewArea) {
+        else if (createNewRange) {
             startSelection(rectInfo.cell.coordinates);
         }
         else {
@@ -96,7 +96,7 @@ export class CellSelectionPlugin<TRow extends RowData> implements DataGridPlugin
             return;
         }
 
-        selection.updateLastSelectedArea(hoveringCell);
+        selection.updateLastSelectedRange(hoveringCell);
     };
 
     private stopDragSelect = () => {
@@ -105,32 +105,32 @@ export class CellSelectionPlugin<TRow extends RowData> implements DataGridPlugin
         }
 
         this.state.dragging.set(false);
-        const { selectedAreas } = this.dataGrid.state;
-        if (selectedAreas.value.length > 1) {
-            let newSelectedAreas = [...selectedAreas.value];
+        const { selectedRanges } = this.dataGrid.state;
+        if (selectedRanges.value.length > 1) {
+            let newSelectedRanges = [...selectedRanges.value];
 
-            const lastSelectedArea = newSelectedAreas[newSelectedAreas.length - 1];
-            const insideOthers = isAreaInsideOthers(lastSelectedArea, newSelectedAreas.slice(0, -1));
+            const lastSelectedRange = newSelectedRanges[newSelectedRanges.length - 1];
+            const insideOthers = isRangeInsideOthers(lastSelectedRange, newSelectedRanges.slice(0, -1));
 
 
             if (insideOthers.length) {
-                const breakingArea = insideOthers[0];
-                const breakingAreaIndex = newSelectedAreas.findIndex((area) => area === breakingArea);
-                const smallerParts = breakAreaToSmallerPart(breakingArea, lastSelectedArea);
+                const breakingRange = insideOthers[0];
+                const breakingRangeIndex = newSelectedRanges.findIndex((range) => range === breakingRange);
+                const smallerParts = breakRangeToSmallerPart(breakingRange, lastSelectedRange);
 
-                newSelectedAreas = [
-                    ...newSelectedAreas.slice(0, breakingAreaIndex),
+                newSelectedRanges = [
+                    ...newSelectedRanges.slice(0, breakingRangeIndex),
                     ...smallerParts,
-                    ...newSelectedAreas.slice(breakingAreaIndex + 1),
+                    ...newSelectedRanges.slice(breakingRangeIndex + 1),
                 ];
 
-                // Remove the last selected area
-                newSelectedAreas.pop();
+                // Remove the last selected range
+                newSelectedRanges.pop();
             }
 
-            const mergedAreas = tryCombineAreas(newSelectedAreas);
-            const uniqueAreas = tryRemoveDuplicates(mergedAreas);
-            selectedAreas.set(uniqueAreas);
+            const mergedRanges = tryCombineRanges(newSelectedRanges);
+            const uniqueRanges = tryRemoveDuplicates(mergedRanges);
+            selectedRanges.set(uniqueRanges);
         }
     };
 
@@ -162,7 +162,7 @@ export class CellSelectionPlugin<TRow extends RowData> implements DataGridPlugin
     public active = false;
 
     public state = {
-        selectedAreaRects: new DataGridState<RectType[]>([]),
+        selectedRangeRects: new DataGridState<RectType[]>([]),
         activeCellRect: new DataGridState<RectType | null>(null),
         dragging: new DataGridState<DraggingStatus>(false),
     };
@@ -176,18 +176,18 @@ export class CellSelectionPlugin<TRow extends RowData> implements DataGridPlugin
         this.container!.addEventListener('mousemove', this.onMouseMove);
         this.container!.addEventListener('dblclick', this.startFocus);
 
-        const { activeCell, selectedAreas } = this.dataGrid.state;
-        const { selectedAreaRects, activeCellRect } = this.state;
+        const { activeCell, selectedRanges } = this.dataGrid.state;
+        const { selectedRangeRects, activeCellRect } = this.state;
 
-        const unwatchSelectedAreas = selectedAreas.watch((newSelectedAreas) => {
-            if (!newSelectedAreas?.length) {
-                selectedAreaRects.set([]);
+        const unwatchSelectedRanges = selectedRanges.watch((newSelectedRanges) => {
+            if (!newSelectedRanges?.length) {
+                selectedRangeRects.set([]);
                 return;
             }
 
-            const newSelectedAreaRects = newSelectedAreas.map((newSelectedArea) => {
-                const startRect = this.dataGrid.layout.getRect(newSelectedArea.start);
-                const endRect = this.dataGrid.layout.getRect(newSelectedArea.end);
+            const newSelectedRangeRects = newSelectedRanges.map((newSelectedRange) => {
+                const startRect = this.dataGrid.layout.getRect(newSelectedRange.start);
+                const endRect = this.dataGrid.layout.getRect(newSelectedRange.end);
                 if (!startRect || !endRect) {
                     throw new Error('This should never happen!');
                 }
@@ -195,7 +195,7 @@ export class CellSelectionPlugin<TRow extends RowData> implements DataGridPlugin
                 return mergeRects(startRect, endRect);
             });
 
-            selectedAreaRects.set(newSelectedAreaRects);
+            selectedRangeRects.set(newSelectedRangeRects);
         });
 
         const unwatchActiveCell = activeCell.watch((nextActiveCell) => {
@@ -208,7 +208,7 @@ export class CellSelectionPlugin<TRow extends RowData> implements DataGridPlugin
             activeCellRect.set(rect);
         });
 
-        this.unsubscribes.push(unwatchSelectedAreas, unwatchActiveCell);
+        this.unsubscribes.push(unwatchSelectedRanges, unwatchActiveCell);
     };
 
     public deactivate = () => {

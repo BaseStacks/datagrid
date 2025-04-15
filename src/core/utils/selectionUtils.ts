@@ -1,7 +1,7 @@
 import type { CellCoordinates, CellSelectedRange, SelectionBoundary } from '../types';
 import { getCoordinatesById, getCellId } from './cellUtils';
 
-export const calculateAreaBoundary = ({ start, end }: CellSelectedRange): SelectionBoundary => {
+export const calculateRangeBoundary = ({ start, end }: CellSelectedRange): SelectionBoundary => {
     const startCoordinates = getCoordinatesById(start);
     const endCoordinates = getCoordinatesById(end);
 
@@ -17,156 +17,156 @@ export const calculateAreaBoundary = ({ start, end }: CellSelectedRange): Select
     };
 };
 
-export const breakAreaToSmallerPart = (area: CellSelectedRange, extrude: CellSelectedRange): CellSelectedRange[] => {
-    const { min: areaMin, max: areaMax } = calculateAreaBoundary(area);
-    const { min: extrudeMin, max: extrudeMax } = calculateAreaBoundary(extrude);
+export const breakRangeToSmallerPart = (range: CellSelectedRange, extrude: CellSelectedRange): CellSelectedRange[] => {
+    const { min: rangeMin, max: rangeMax } = calculateRangeBoundary(range);
+    const { min: extrudeMin, max: extrudeMax } = calculateRangeBoundary(extrude);
 
     // Check if there's any overlap
-    if (extrudeMax.col < areaMin.col || extrudeMin.col > areaMax.col ||
-        extrudeMax.row < areaMin.row || extrudeMin.row > areaMax.row) {
-        // No overlap, return the original area
-        return [{ start: getCellId({ col: areaMin.col, row: areaMin.row }), end: getCellId({ col: areaMax.col, row: areaMax.row }) }];
+    if (extrudeMax.col < rangeMin.col || extrudeMin.col > rangeMax.col ||
+        extrudeMax.row < rangeMin.row || extrudeMin.row > rangeMax.row) {
+        // No overlap, return the original range
+        return [{ start: getCellId({ col: rangeMin.col, row: rangeMin.row }), end: getCellId({ col: rangeMax.col, row: rangeMax.row }) }];
     }
 
-    // Check if extrude completely contains the area
-    if (extrudeMin.col <= areaMin.col && extrudeMax.col >= areaMax.col &&
-        extrudeMin.row <= areaMin.row && extrudeMax.row >= areaMax.row) {
-        // Extrude completely covers the area, return empty array
+    // Check if extrude completely contains the range
+    if (extrudeMin.col <= rangeMin.col && extrudeMax.col >= rangeMax.col &&
+        extrudeMin.row <= rangeMin.row && extrudeMax.row >= rangeMax.row) {
+        // Extrude completely covers the range, return empty array
         return [];
     }
 
     const result: CellSelectedRange[] = [];
 
-    // Area above the extrude
-    if (areaMin.row < extrudeMin.row) {
+    // Range above the extrude
+    if (rangeMin.row < extrudeMin.row) {
         result.push({
-            start: getCellId({ col: areaMin.col, row: areaMin.row }),
-            end: getCellId({ col: areaMax.col, row: extrudeMin.row - 1 })
+            start: getCellId({ col: rangeMin.col, row: rangeMin.row }),
+            end: getCellId({ col: rangeMax.col, row: extrudeMin.row - 1 })
         });
     }
 
-    // Area below the extrude
-    if (areaMax.row > extrudeMax.row) {
+    // Range below the extrude
+    if (rangeMax.row > extrudeMax.row) {
         result.push({
-            start: getCellId({ col: areaMin.col, row: extrudeMax.row + 1 }),
-            end: getCellId({ col: areaMax.col, row: areaMax.row })
+            start: getCellId({ col: rangeMin.col, row: extrudeMax.row + 1 }),
+            end: getCellId({ col: rangeMax.col, row: rangeMax.row })
         });
     }
 
-    // Area to the left of the extrude (middle section only)
-    const leftMinRow = Math.max(areaMin.row, extrudeMin.row);
-    const leftMaxRow = Math.min(areaMax.row, extrudeMax.row);
-    if (areaMin.col < extrudeMin.col && leftMinRow <= leftMaxRow) {
+    // Range to the left of the extrude (middle section only)
+    const leftMinRow = Math.max(rangeMin.row, extrudeMin.row);
+    const leftMaxRow = Math.min(rangeMax.row, extrudeMax.row);
+    if (rangeMin.col < extrudeMin.col && leftMinRow <= leftMaxRow) {
         result.push({
-            start: getCellId({ col: areaMin.col, row: leftMinRow }),
+            start: getCellId({ col: rangeMin.col, row: leftMinRow }),
             end: getCellId({ col: extrudeMin.col - 1, row: leftMaxRow })
         });
     }
 
-    // Area to the right of the extrude (middle section only)
-    const rightMinRow = Math.max(areaMin.row, extrudeMin.row);
-    const rightMaxRow = Math.min(areaMax.row, extrudeMax.row);
-    if (areaMax.col > extrudeMax.col && rightMinRow <= rightMaxRow) {
+    // Range to the right of the extrude (middle section only)
+    const rightMinRow = Math.max(rangeMin.row, extrudeMin.row);
+    const rightMaxRow = Math.min(rangeMax.row, extrudeMax.row);
+    if (rangeMax.col > extrudeMax.col && rightMinRow <= rightMaxRow) {
         result.push({
             start: getCellId({ col: extrudeMax.col + 1, row: rightMinRow }),
-            end: getCellId({ col: areaMax.col, row: rightMaxRow })
+            end: getCellId({ col: rangeMax.col, row: rightMaxRow })
         });
     }
 
     return result;
 };
 
-export const isAreaOverlapping = (areaA: CellSelectedRange, areaB: CellSelectedRange): boolean => {
-    const { min: areaAMin, max: areaAMax } = calculateAreaBoundary(areaA);
-    const { min: areaBMin, max: areaBMax } = calculateAreaBoundary(areaB);
+export const isRangeOverlapping = (rangeA: CellSelectedRange, rangeB: CellSelectedRange): boolean => {
+    const { min: rangeAMin, max: rangeAMax } = calculateRangeBoundary(rangeA);
+    const { min: rangeBMin, max: rangeBMax } = calculateRangeBoundary(rangeB);
 
-    return !(areaAMax.col < areaBMin.col || areaAMin.col > areaBMax.col ||
-        areaAMax.row < areaBMin.row || areaAMin.row > areaBMax.row);
+    return !(rangeAMax.col < rangeBMin.col || rangeAMin.col > rangeBMax.col ||
+        rangeAMax.row < rangeBMin.row || rangeAMin.row > rangeBMax.row);
 };
 
-export const isAreaEqual = (areaA: CellSelectedRange, areaB: CellSelectedRange): boolean => {
-    const { min: areaAMin, max: areaAMax } = calculateAreaBoundary(areaA);
-    const { min: areaBMin, max: areaBMax } = calculateAreaBoundary(areaB);
+export const isRangeEqual = (rangeA: CellSelectedRange, rangeB: CellSelectedRange): boolean => {
+    const { min: rangeAMin, max: rangeAMax } = calculateRangeBoundary(rangeA);
+    const { min: rangeBMin, max: rangeBMax } = calculateRangeBoundary(rangeB);
 
     return (
-        areaAMin.col === areaBMin.col &&
-        areaAMin.row === areaBMin.row &&
-        areaAMax.col === areaBMax.col &&
-        areaAMax.row === areaBMax.row
+        rangeAMin.col === rangeBMin.col &&
+        rangeAMin.row === rangeBMin.row &&
+        rangeAMax.col === rangeBMax.col &&
+        rangeAMax.row === rangeBMax.row
     );
 };
 
-export const isAreaInsideOthers = (area: CellSelectedRange, others: CellSelectedRange[]): CellSelectedRange[] => {
-    const { min: areaMin, max: areaMax } = calculateAreaBoundary(area);
+export const isRangeInsideOthers = (range: CellSelectedRange, others: CellSelectedRange[]): CellSelectedRange[] => {
+    const { min: rangeMin, max: rangeMax } = calculateRangeBoundary(range);
     return others.filter(other => {
-        const { min: otherMin, max: otherMax } = calculateAreaBoundary(other);
+        const { min: otherMin, max: otherMax } = calculateRangeBoundary(other);
         return (
-            areaMin.col >= otherMin.col &&
-            areaMin.row >= otherMin.row &&
-            areaMax.col <= otherMax.col &&
-            areaMax.row <= otherMax.row
+            rangeMin.col >= otherMin.col &&
+            rangeMin.row >= otherMin.row &&
+            rangeMax.col <= otherMax.col &&
+            rangeMax.row <= otherMax.row
         );
     });
 };
 
-export const isAreaAdjacent = (areaA: CellSelectedRange, areaB: CellSelectedRange): boolean => {
-    const { min: areaAMin, max: areaAMax } = calculateAreaBoundary(areaA);
-    const { min: areaBMin, max: areaBMax } = calculateAreaBoundary(areaB);
+export const isRangeAdjacent = (rangeA: CellSelectedRange, rangeB: CellSelectedRange): boolean => {
+    const { min: rangeAMin, max: rangeAMax } = calculateRangeBoundary(rangeA);
+    const { min: rangeBMin, max: rangeBMax } = calculateRangeBoundary(rangeB);
 
     return (
-        (areaAMax.col + 1 === areaBMin.col && areaAMin.row <= areaBMax.row && areaAMax.row >= areaBMin.row) ||
-        (areaAMin.col - 1 === areaBMax.col && areaAMin.row <= areaBMax.row && areaAMax.row >= areaBMin.row) ||
-        (areaAMax.row + 1 === areaBMin.row && areaAMin.col <= areaBMax.col && areaAMax.col >= areaBMin.col) ||
-        (areaAMin.row - 1 === areaBMax.row && areaAMin.col <= areaBMax.col && areaAMax.col >= areaBMin.col)
+        (rangeAMax.col + 1 === rangeBMin.col && rangeAMin.row <= rangeBMax.row && rangeAMax.row >= rangeBMin.row) ||
+        (rangeAMin.col - 1 === rangeBMax.col && rangeAMin.row <= rangeBMax.row && rangeAMax.row >= rangeBMin.row) ||
+        (rangeAMax.row + 1 === rangeBMin.row && rangeAMin.col <= rangeBMax.col && rangeAMax.col >= rangeBMin.col) ||
+        (rangeAMin.row - 1 === rangeBMax.row && rangeAMin.col <= rangeBMax.col && rangeAMax.col >= rangeBMin.col)
     );
 };
 
 /**
- * Attempts to combine multiple selected areas into a single rectangular area.
+ * Attempts to combine multiple selected ranges into a single rectangular range.
  * 
- * This function analyzes a collection of selected areas to determine if they form
+ * This function analyzes a collection of selected ranges to determine if they form
  * a perfect rectangle when combined. A perfect rectangle means that there are no
  * "holes" or missing cells within the boundary.
  * 
- * @param areas - An array of SelectedArea objects to analyze
- * @returns The combined rectangular SelectedArea if the input areas form a perfect rectangle,
+ * @param ranges - An array of SelectedRange objects to analyze
+ * @returns The combined rectangular SelectedRange if the input ranges form a perfect rectangle,
  *          or null if:
  *          - The input array is empty
- *          - The input array contains only one area
- *          - The selected areas do not form a perfect rectangle (have gaps or irregular shape)
+ *          - The input array contains only one range
+ *          - The selected ranges do not form a perfect rectangle (have gaps or irregular shape)
  */
-export const tryMakeRectangle = (areas: CellSelectedRange[]) => {
-    // If no areas, return empty array
-    if (areas.length === 0) {
+export const tryMakeRectangle = (ranges: CellSelectedRange[]) => {
+    // If no ranges, return empty array
+    if (ranges.length === 0) {
         return null;
     }
 
-    // If only one area, return it as is
-    if (areas.length === 1) {
+    // If only one range, return it as is
+    if (ranges.length === 1) {
         return null;
     }
 
-    // Find the overall boundary that would encompass all areas
+    // Find the overall boundary that would encompass all ranges
     let minCol = Infinity, minRow = Infinity, maxCol = -Infinity, maxRow = -Infinity;
 
-    for (const area of areas) {
-        const { min, max } = calculateAreaBoundary(area);
+    for (const range of ranges) {
+        const { min, max } = calculateRangeBoundary(range);
         minCol = Math.min(minCol, min.col);
         minRow = Math.min(minRow, min.row);
         maxCol = Math.max(maxCol, max.col);
         maxRow = Math.max(maxRow, max.row);
     }
 
-    // Create the potential rectangle area
+    // Create the potential rectangle range
     const potentialRectangle: CellSelectedRange = {
         start: getCellId({ col: minCol, row: minRow }),
         end: getCellId({ col: maxCol, row: maxRow })
     };
 
-    // Calculate the total cells in all input areas
+    // Calculate the total cells in all input ranges
     const cells: CellCoordinates[] = [];
-    for (const area of areas) {
-        const { min, max } = calculateAreaBoundary(area);
+    for (const range of ranges) {
+        const { min, max } = calculateRangeBoundary(range);
         for (let row = min.row; row <= max.row; row++) {
             for (let col = min.col; col <= max.col; col++) {
                 const isCellExisting = cells.some(cell => cell.col === col && cell.row === row);
@@ -186,82 +186,82 @@ export const tryMakeRectangle = (areas: CellSelectedRange[]) => {
         return potentialRectangle;
     }
 
-    // Otherwise, return the original areas
+    // Otherwise, return the original ranges
     return null;
 };
 
-type AreaGroup = {
+type RangeGroup = {
     members: CellSelectedRange[];
-    mergedArea: CellSelectedRange | null;
+    mergedRange: CellSelectedRange | null;
 };
 
-const createAreaGroup = (currentArea: CellSelectedRange, others: CellSelectedRange[]): AreaGroup => {
+const createRangeGroup = (currentRange: CellSelectedRange, others: CellSelectedRange[]): RangeGroup => {
     const members = [
-        currentArea,
+        currentRange,
         ...others
-            .filter(other => other != currentArea)
-            .filter(other => isAreaAdjacent(currentArea, other) || isAreaOverlapping(currentArea, other))
+            .filter(other => other != currentRange)
+            .filter(other => isRangeAdjacent(currentRange, other) || isRangeOverlapping(currentRange, other))
     ];
 
-    const group: AreaGroup = {
+    const group: RangeGroup = {
         members: members,
-        mergedArea: tryMakeRectangle(members)
+        mergedRange: tryMakeRectangle(members)
     };
 
     return group;
 };
 
 /**
- * Attempts to combine adjacent or overlapping areas into larger rectangle areas.
+ * Attempts to combine adjacent or overlapping ranges into larger rectangle ranges.
  * Continues combining until no further combines are possible.
  * 
- * @param areas - Array of selected areas to combine
- * @returns Array of combined rectangle areas
+ * @param ranges - Array of selected ranges to combine
+ * @returns Array of combined rectangle ranges
  */
-export const tryCombineAreas = (areas: CellSelectedRange[]): CellSelectedRange[] => {
+export const tryCombineRanges = (ranges: CellSelectedRange[]): CellSelectedRange[] => {
     // Return early if there's nothing to combine
-    if (areas.length < 2) return areas;
+    if (ranges.length < 2) return ranges;
 
-    const mergedAreas: CellSelectedRange[] = [];
-    let remainingAreas = [...areas];
+    const mergedRanges: CellSelectedRange[] = [];
+    let remainingRanges = [...ranges];
 
-    // Process areas until none remain
-    while (remainingAreas.length > 0) {
-        const currentArea = remainingAreas[0];
+    // Process ranges until none remain
+    while (remainingRanges.length > 0) {
+        const currentRange = remainingRanges[0];
 
-        // Try to group with adjacent/overlapping areas
-        const group = createAreaGroup(currentArea, remainingAreas);
+        // Try to group with adjacent/overlapping ranges
+        const group = createRangeGroup(currentRange, remainingRanges);
 
-        if (group.mergedArea) {
+        if (group.mergedRange) {
             // If a rectangle merge was possible, add it to results
-            mergedAreas.push(group.mergedArea);
-            // Remove all areas that were part of this group
-            remainingAreas = remainingAreas.filter(area => !group.members.includes(area));
+            mergedRanges.push(group.mergedRange);
+            // Remove all ranges that were part of this group
+            remainingRanges = remainingRanges.filter(range => !group.members.includes(range));
         } else {
-            // If no merge possible, keep the current area as-is
-            mergedAreas.push(currentArea);
-            remainingAreas.shift(); // Remove current area from next loop
+            // If no merge possible, keep the current range as-is
+            mergedRanges.push(currentRange);
+            remainingRanges.shift(); // Remove current range from next loop
         }
     }
 
     // If any merges occurred, recursively try to merge the results again
-    const hadMerges = mergedAreas.length < areas.length;
+    const hadMerges = mergedRanges.length < ranges.length;
     if (hadMerges) {
-        return tryCombineAreas(mergedAreas);
+        return tryCombineRanges(mergedRanges);
     }
 
-    return mergedAreas;
+    return mergedRanges;
 };
 
-export const tryRemoveDuplicates = (areas: CellSelectedRange[]): CellSelectedRange[] => {
-    const uniqueAreas: CellSelectedRange[] = [];
+export const tryRemoveDuplicates = (ranges: CellSelectedRange[]): CellSelectedRange[] => {
+    const uniqueRanges: CellSelectedRange[] = [];
 
-    areas.forEach(area => {
-        if (!uniqueAreas.some(existingArea => isAreaEqual(existingArea, area))) {
-            uniqueAreas.push(area);
+    ranges.forEach(range => {
+        if (!uniqueRanges.some(existingRange => isRangeEqual(existingRange, range))) {
+            uniqueRanges.push(range);
         }
     });
 
-    return uniqueAreas;
+    return uniqueRanges;
 };
 

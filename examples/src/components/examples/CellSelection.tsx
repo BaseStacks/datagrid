@@ -1,9 +1,9 @@
-import { Column, DataGridProvider, useDataGrid, useKeyBindings, useStateWatch, DataGridContainer, DataGridCell, CellSelectionPlugin, usePlugin } from '@basestacks/data-grid';
+import { Column, DataGridProvider, useDataGrid, useKeyBindings, useDataGridState, DataGridContainer, DataGridCell, CellSelectionPlugin, usePlugin, SelectedRangeRects, SelectedCellRect, SelectionBackdrop } from '@basestacks/data-grid';
 import { useMemo, useState } from 'react';
 import { TextInput } from './controls/TextInput';
 import { generateData } from '@/helpers/dataHelpers';
 
-export function KeyBindings() {
+export function CellSelection() {
     const columns = useMemo((): Column[] => [
         { dataKey: 'id', header: 'ID' },
         { dataKey: 'firstName', header: 'First Name', cell: (cell) => <TextInput cell={cell} /> },
@@ -31,14 +31,10 @@ export function KeyBindings() {
         onChange: setData
     });
 
-    const headers = useStateWatch(dataGrid.state.headers);
-    const rows = useStateWatch(dataGrid.state.rows);
+    const headers = useDataGridState(dataGrid.state.headers);
+    const rows = useDataGridState(dataGrid.state.rows);
 
     const cellSelection = usePlugin(dataGrid, CellSelectionPlugin, {});
-
-    const activeRect = useStateWatch(cellSelection.state.activeCellRect);
-    const areaRects = useStateWatch(cellSelection.state.selectedAreaRects);
-    const dragging = useStateWatch(cellSelection.state.dragging);
 
     useKeyBindings(dataGrid);
 
@@ -67,15 +63,9 @@ export function KeyBindings() {
                         ))}
                     </tbody>
                 </table>
-                {areaRects.map((rect, index) => (
-                    <div key={index} className={clxs.selectedAreaRect} style={rect} />
-                ))}
-                {activeRect && (
-                    <div className={clxs.activeRect} style={activeRect} />
-                )}
-                {dragging && (
-                    <div className="absolute w-full h-full" />
-                )}
+                <SelectedRangeRects selection={cellSelection} className={clxs.selectedRangeRect} />
+                <SelectedCellRect selection={cellSelection} className={clxs.activeRect} />
+                <SelectionBackdrop selection={cellSelection} />
             </DataGridContainer>
         </DataGridProvider>
     );
@@ -87,6 +77,6 @@ const clxs = {
     row: 'bg-white dark:bg-gray-800',
     cell: 'border-b border-gray-100 p-4 pl-8 text-gray-500 dark:border-gray-700 dark:text-gray-400',
     activeCell: 'outline outline-blue-500',
-    selectedAreaRect: 'absolute pointer-events-none outline-2 outline-offset-[-2px] outline-blue-600 bg-blue-600/5',
+    selectedRangeRect: 'absolute pointer-events-none outline-2 outline-offset-[-2px] outline-blue-600 bg-blue-600/5',
     activeRect: 'absolute pointer-events-none outline outline-yellow-600',
 };
