@@ -4,9 +4,16 @@ export type RowData = Record<string, any>;
 export type RowKey<TRow extends RowData> = keyof TRow | ((opts: { rowData: TRow; rowIndex: number }) => TRow[keyof TRow])
 export type Unsubscribe = () => void;
 
-export type Id = string | number;
+export type ColumnKey = string | number;
+export type RowDataKey = string | number;
 
-export type WithId<T> = T & { readonly id: Id };
+export type HeaderId = `header:${ColumnKey}`;
+export type RowId = `row:${RowDataKey}`;
+export type CellId = `cell:${RowDataKey}-${ColumnKey}`;
+
+export type Id = HeaderId | RowId | CellId;
+
+export type WithId<TId, TData> = TData & { readonly id: TId };
 
 export interface CellCoordinates {
   readonly col: number
@@ -19,8 +26,8 @@ export interface ScrollBehavior {
 }
 
 export interface CellSelectedRange {
-  readonly start: Id;
-  readonly end: Id;
+  readonly start: CellId;
+  readonly end: CellId;
 }
 
 export interface SelectionBoundary {
@@ -34,8 +41,9 @@ export interface RowSize {
 }
 
 export interface CellProps<TValue = any> {
-  readonly id: string;
-  readonly coordinates: CellCoordinates;
+  readonly id: CellId;
+  readonly rowId: RowId;
+  readonly colId: HeaderId;
   readonly value?: TValue;
   readonly active: boolean;
   readonly focused: boolean;
@@ -47,14 +55,15 @@ export interface CellProps<TValue = any> {
 }
 
 export interface Cell<TValue = any> {
-  readonly id: string;
-  readonly coordinates: CellCoordinates;
+  readonly id: CellId;
+  readonly rowId: RowId;
+  readonly colId: HeaderId;
   readonly render: () => TValue;
 }
 
 export interface ColumnHeader {
-  readonly index: number
-  readonly column: Column
+  readonly id: HeaderId;
+  readonly column: Column;
   readonly render: () => string | React.ReactNode;
 }
 
@@ -70,6 +79,10 @@ export interface Column<TValue = any> {
   readonly deleteValue?: (opts: { value: RowData; rowIndex: number }) => TValue | Promise<TValue>;
 }
 
+export interface ColumnLayout {
+  readonly width: number;
+  readonly left: number;
+}
 
 export interface Row<TRow extends RowData = RowData> {
   readonly index: number;
@@ -90,6 +103,12 @@ export interface DataGridOptions<TRow extends RowData = RowData> {
 
   readonly rowKey?: RowKey<TRow>;
   readonly lockRows?: boolean;
+
+  // Layout
+  readonly columnMinWidth?: number;
+  readonly columnMaxWidth?: number;
+  readonly headerHeight?: number;
+  readonly rowHeight?: number;
 
   // Deleting an empty cell of an empty row will actually remove the row. 
   // This behavior is auto-disabled if the lockRows is enabled.

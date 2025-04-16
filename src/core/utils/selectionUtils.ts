@@ -1,5 +1,5 @@
 import type { CellCoordinates, CellSelectedRange, SelectionBoundary } from '../types';
-import { getCoordinatesById, getCellId } from './cellUtils';
+import { getCoordinatesById, createCellId } from './cellUtils';
 
 export const calculateRangeBoundary = ({ start, end }: CellSelectedRange): SelectionBoundary => {
     const startCoordinates = getCoordinatesById(start);
@@ -25,7 +25,7 @@ export const breakRangeToSmallerPart = (range: CellSelectedRange, extrude: CellS
     if (extrudeMax.col < rangeMin.col || extrudeMin.col > rangeMax.col ||
         extrudeMax.row < rangeMin.row || extrudeMin.row > rangeMax.row) {
         // No overlap, return the original range
-        return [{ start: getCellId({ col: rangeMin.col, row: rangeMin.row }), end: getCellId({ col: rangeMax.col, row: rangeMax.row }) }];
+        return [{ start: createCellId({ col: rangeMin.col, row: rangeMin.row }), end: createCellId({ col: rangeMax.col, row: rangeMax.row }) }];
     }
 
     // Check if extrude completely contains the range
@@ -40,16 +40,16 @@ export const breakRangeToSmallerPart = (range: CellSelectedRange, extrude: CellS
     // Range above the extrude
     if (rangeMin.row < extrudeMin.row) {
         result.push({
-            start: getCellId({ col: rangeMin.col, row: rangeMin.row }),
-            end: getCellId({ col: rangeMax.col, row: extrudeMin.row - 1 })
+            start: createCellId({ col: rangeMin.col, row: rangeMin.row }),
+            end: createCellId({ col: rangeMax.col, row: extrudeMin.row - 1 })
         });
     }
 
     // Range below the extrude
     if (rangeMax.row > extrudeMax.row) {
         result.push({
-            start: getCellId({ col: rangeMin.col, row: extrudeMax.row + 1 }),
-            end: getCellId({ col: rangeMax.col, row: rangeMax.row })
+            start: createCellId({ col: rangeMin.col, row: extrudeMax.row + 1 }),
+            end: createCellId({ col: rangeMax.col, row: rangeMax.row })
         });
     }
 
@@ -58,8 +58,8 @@ export const breakRangeToSmallerPart = (range: CellSelectedRange, extrude: CellS
     const leftMaxRow = Math.min(rangeMax.row, extrudeMax.row);
     if (rangeMin.col < extrudeMin.col && leftMinRow <= leftMaxRow) {
         result.push({
-            start: getCellId({ col: rangeMin.col, row: leftMinRow }),
-            end: getCellId({ col: extrudeMin.col - 1, row: leftMaxRow })
+            start: createCellId({ col: rangeMin.col, row: leftMinRow }),
+            end: createCellId({ col: extrudeMin.col - 1, row: leftMaxRow })
         });
     }
 
@@ -68,8 +68,8 @@ export const breakRangeToSmallerPart = (range: CellSelectedRange, extrude: CellS
     const rightMaxRow = Math.min(rangeMax.row, extrudeMax.row);
     if (rangeMax.col > extrudeMax.col && rightMinRow <= rightMaxRow) {
         result.push({
-            start: getCellId({ col: extrudeMax.col + 1, row: rightMinRow }),
-            end: getCellId({ col: rangeMax.col, row: rightMaxRow })
+            start: createCellId({ col: extrudeMax.col + 1, row: rightMinRow }),
+            end: createCellId({ col: rangeMax.col, row: rightMaxRow })
         });
     }
 
@@ -159,8 +159,8 @@ export const tryMakeRectangle = (ranges: CellSelectedRange[]) => {
 
     // Create the potential rectangle range
     const potentialRectangle: CellSelectedRange = {
-        start: getCellId({ col: minCol, row: minRow }),
-        end: getCellId({ col: maxCol, row: maxRow })
+        start: createCellId({ col: minCol, row: minRow }),
+        end: createCellId({ col: maxCol, row: maxRow })
     };
 
     // Calculate the total cells in all input ranges

@@ -1,4 +1,4 @@
-import { useLayoutEffect } from 'react';
+import { useEffect } from 'react';
 import { useDataGridContext } from '../hooks/useDataGridContext';
 
 export interface DataGridContainerProps extends React.HTMLAttributes<HTMLElement> {
@@ -13,8 +13,9 @@ export function DataGridContainer({
 
     const Component = (as || 'div') as React.ElementType;
 
-    useLayoutEffect(() => {
+    useEffect(() => {
         dataGrid.layout.container?.style.setProperty('position', 'relative');
+        dataGrid.layout.container?.style.setProperty('overflow', 'auto');
     }, [dataGrid.layout.container]);
 
     return (

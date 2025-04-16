@@ -10,6 +10,9 @@ export * from './hooks/debug/useWhatChanged';
 export * from './components/DataGridProvider';
 export * from './components/DataGridContainer';
 export * from './components/DataGridCell';
+export * from './components/DataGridRow';
+export * from './components/DataGridHeader';
+export * from './components/DataGridHeaderGroup';
 
 export * from './components/cell-selection/ActiveCellRect';
 export * from './components/cell-selection/SelectedRangeRects';

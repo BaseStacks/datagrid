@@ -1,4 +1,4 @@
-import { findCellByRect, findRect, getCursorOffset, mergeRects, type RectType } from '../utils/domRectUtils';
+import { mergeRects, type RectType } from '../utils/domRectUtils';
 import { DataGridState } from '../instances/atomic/DataGridState';
 import { DataGrid } from '../instances/DataGrid';
 import type { DataGridKeyMap, DataGridPlugin, DataGridPluginOptions, RowData } from '../types';
@@ -123,18 +123,12 @@ export class CellSelectionPlugin<TRow extends RowData = RowData> implements Data
 
         const { selection } = this.dataGrid;
 
-        const cursorOffset = getCursorOffset(event, this.container!);
-        const cellRect = findRect(cursorOffset, [...this.cellRectMap.values()]);
-        if (!cellRect) {
+        const rectInfo = this.dataGrid.layout.getIntersectionRect(event);
+        if (!rectInfo || !rectInfo.cell) {
             return;
         }
 
-        const hoveringCell = findCellByRect(this.cellRectMap!, cellRect);
-        if (!hoveringCell) {
-            return;
-        }
-
-        selection.updateLastSelectedRange(hoveringCell);
+        selection.updateLastSelectedRange(rectInfo.cell.id);
     };
 
     private stopDragSelect = () => {

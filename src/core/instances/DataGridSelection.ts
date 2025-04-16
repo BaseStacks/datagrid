@@ -1,5 +1,5 @@
-import type { CellCoordinates, Id, RowData } from '../types';
-import { getCoordinatesById, getCellId } from '../utils/cellUtils';
+import type { CellCoordinates, CellId, RowData } from '../types';
+import { getCoordinatesById, createCellId } from '../utils/cellUtils';
 import { DataGridStates } from './DataGridStates';
 
 type Offset = [number, number];
@@ -7,7 +7,7 @@ type Offset = [number, number];
 interface GetCellCoordinatesParams {
     readonly maxRow: number;
     readonly maxCol: number;
-    readonly from: Id | null;
+    readonly from: CellId | null;
     readonly offset: [number, number];
 }
 
@@ -69,12 +69,12 @@ export class DataGridSelection<TRow extends RowData> {
     public startSelection = (startPoint: CellCoordinates) => {
         const { activeCell, selectedRanges } = this.state;
         const newSelectedRange = {
-            start: getCellId(startPoint),
-            end: getCellId(startPoint)
+            start: createCellId(startPoint),
+            end: createCellId(startPoint)
         };
 
         activeCell.set({
-            id: getCellId(startPoint),
+            id: createCellId(startPoint),
             ...startPoint,
         });
 
@@ -116,7 +116,7 @@ export class DataGridSelection<TRow extends RowData> {
     public active = (coord: CellCoordinates) => {
         const { activeCell } = this.state;
         activeCell.set({
-            id: getCellId(coord),
+            id: createCellId(coord),
             ...coord
         });
     };
@@ -150,7 +150,7 @@ export class DataGridSelection<TRow extends RowData> {
         this.navigate(topOfColumn);
     };
 
-    public selectRange = (start: Id, end: Id) => {
+    public selectRange = (start: CellId, end: CellId) => {
         const { selectedRanges } = this.state;
         selectedRanges.set((prevSelectedRanges) => {
             const newSelectedRange = { start, end };
@@ -160,7 +160,7 @@ export class DataGridSelection<TRow extends RowData> {
         });
     };
 
-    public updateLastSelectedRange = (endCell: Id) => {
+    public updateLastSelectedRange = (endCell: CellId) => {
         const { selectedRanges } = this.state;
         selectedRanges.set((prevSelectedRanges) => {
             if (prevSelectedRanges.length === 0) {
@@ -193,7 +193,7 @@ export class DataGridSelection<TRow extends RowData> {
             return;
         }
 
-        const cellId = getCellId(newEnd);
+        const cellId = createCellId(newEnd);
         this.updateLastSelectedRange(cellId);
     };
 
@@ -215,7 +215,7 @@ export class DataGridSelection<TRow extends RowData> {
             return;
         }
 
-        const cellId = getCellId(newEnd);
+        const cellId = createCellId(newEnd);
         this.updateLastSelectedRange(cellId);
     };
 
@@ -237,7 +237,7 @@ export class DataGridSelection<TRow extends RowData> {
             return;
         }
 
-        const cellId = getCellId(newEnd);
+        const cellId = createCellId(newEnd);
         this.updateLastSelectedRange(cellId);
     };
 
@@ -259,14 +259,14 @@ export class DataGridSelection<TRow extends RowData> {
             return;
         }
 
-        const cellId = getCellId(newEnd);
+        const cellId = createCellId(newEnd);
         this.updateLastSelectedRange(cellId);
     };
 
     public selectAll = () => {
         const { rows, headers } = this.state;
-        const from = getCellId({ col: 0, row: 0 });
-        const to = getCellId({ col: headers.value.length - 1, row: rows.value.length - 1 });
+        const from = createCellId({ col: 0, row: 0 });
+        const to = createCellId({ col: headers.value.length - 1, row: rows.value.length - 1 });
         this.selectRange(from, to);
     };
 };

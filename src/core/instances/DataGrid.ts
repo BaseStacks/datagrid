@@ -1,5 +1,7 @@
-import type { CellProps, Column, ColumnHeader, DataGridOptions, Row, RowData, RowOperation } from '../types';
-import { getCellId } from '../utils/cellUtils';
+import { defaultOptions } from '../configs';
+import type { CellProps, Column, ColumnHeader, DataGridOptions, HeaderId, Row, RowData, RowId, RowOperation } from '../types';
+import { createCellId } from '../utils/cellUtils';
+import { createId } from '../utils/idUtils';
 import { updateRowData } from '../utils/rowUtils';
 import { calculateRangeBoundary } from '../utils/selectionUtils';
 import { DataGridKeyBindings } from './DataGridKeyBindings';
@@ -11,7 +13,7 @@ export class DataGrid<TRow extends RowData = RowData> {
     private createHeaders = (): ColumnHeader[] => {
         const { columns } = this.options;
         return columns.map((column, index) => ({
-            index,
+            id: createId({ type: 'header', col: index }) as HeaderId,
             column,
             render: () => typeof column.header === 'function' ? column.header() : column.header,
         }));
@@ -33,11 +35,9 @@ export class DataGrid<TRow extends RowData = RowData> {
                         col: columnIndex,
                     };
                     const cellInfo = {
-                        id: getCellId(coordinates),
-                        coordinates: {
-                            row: rowIndex,
-                            col: columnIndex,
-                        }
+                        id: createCellId(coordinates),
+                        rowId: createId({ type: 'row', row: rowIndex }) as RowId,
+                        colId: createId({ type: 'header', col: columnIndex }) as HeaderId,
                     };
 
                     const cellValue = newRowData[column.dataKey as keyof TRow] ?? null;
@@ -105,7 +105,8 @@ export class DataGrid<TRow extends RowData = RowData> {
     };
 
     constructor(options: DataGridOptions<TRow>) {
-        this.options = options;
+        this.options = { ...options, ...defaultOptions };
+
         this.state = new DataGridStates<TRow>();
         this.selection = new DataGridSelection(this.state);
         this.layout = new DataGridLayout(this.state);
