@@ -64,10 +64,10 @@ export function CellSelection() {
 };
 
 const clxs = {
-    table: 'w-full flex flex-col border-collapse text-sm',
-    header: 'border-b border-gray-200 p-4 pt-0 pb-3 pl-8 text-left font-medium text-gray-400 dark:border-gray-600 dark:text-gray-200',
-    row: 'flex flex-row bg-white dark:bg-gray-800',
-    cell: 'border-b border-gray-100 p-4 pl-8 text-gray-500 dark:border-gray-700 dark:text-gray-400',
+    table: 'border-collapse text-sm',
+    header: 'border-b border-gray-200 p-4 text-left font-medium text-gray-400 flex items-center dark:border-gray-600 dark:text-gray-200',
+    row: 'bg-white dark:bg-gray-800',
+    cell: 'border-b border-gray-100 p-4 text-gray-500 dark:border-gray-700 dark:text-gray-400',
     activeCell: 'outline outline-blue-500',
     selectedRangeRect: 'absolute pointer-events-none outline-2 outline-offset-[-2px] outline-blue-600 bg-blue-600/5',
     activeRect: 'absolute pointer-events-none outline outline-yellow-600',
