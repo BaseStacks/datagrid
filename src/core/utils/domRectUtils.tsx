@@ -13,22 +13,22 @@ export interface CursorOffset {
 }
 
 export const getRect = (container: HTMLElement, start?: HTMLElement, end?: HTMLElement): RectType => {
+    const containerRect = container.getBoundingClientRect();
+    const scrollLeft = container.scrollLeft;
+    const scrollTop = container.scrollTop;
+
     // Get bounding rectangles
     if (start && end) {
         const startRect = start.getBoundingClientRect();
         const endRect = end.getBoundingClientRect();
-        const containerRect = container.getBoundingClientRect();
 
-        // Calculate the top-left and bottom-right corners
-        const left = Math.min(startRect.left, endRect.left) - containerRect.left;
-        const top = Math.min(startRect.top, endRect.top) - containerRect.top;
-        const right = Math.max(startRect.right, endRect.right) - containerRect.left;
-        const bottom = Math.max(startRect.bottom, endRect.bottom) - containerRect.top;
 
-        // Calculate width and height
+        const left = Math.min(startRect.left, endRect.left) - containerRect.left + scrollLeft;
+        const top = Math.min(startRect.top, endRect.top) - containerRect.top + scrollTop;
+        const right = Math.max(startRect.right, endRect.right) - containerRect.left + scrollLeft;
+        const bottom = Math.max(startRect.bottom, endRect.bottom) - containerRect.top + scrollTop;
         const width = right - left;
         const height = bottom - top;
-
         return {
             left,
             top,
@@ -39,23 +39,22 @@ export const getRect = (container: HTMLElement, start?: HTMLElement, end?: HTMLE
 
     if (start) {
         const startRect = start.getBoundingClientRect();
-        const containerRect = container.getBoundingClientRect();
 
         return {
-            left: startRect.left - containerRect.left,
-            top: startRect.top - containerRect.top,
+            left: startRect.left - containerRect.left + scrollLeft,
+            top: startRect.top - containerRect.top + scrollTop,
             width: startRect.width,
             height: startRect.height
         };
     }
 
-    const containerRect = container.getBoundingClientRect();
-    const left = containerRect.left - containerRect.left;
-    const top = containerRect.top - containerRect.top;
-    const right = containerRect.right - containerRect.left;
-    const bottom = containerRect.bottom - containerRect.top;
+    const left = containerRect.left - containerRect.left + scrollLeft;
+    const top = containerRect.top - containerRect.top + scrollTop;
+    const right = containerRect.right - containerRect.left + scrollLeft;
+    const bottom = containerRect.bottom - containerRect.top + scrollTop;
     const width = right - left;
     const height = bottom - top;
+
     return {
         left,
         top,
@@ -105,9 +104,12 @@ export const mergeRects = (...rects: RectType[]): RectType => {
 
 export const getCursorOffset = (event: MouseEvent, container: HTMLElement): CursorOffset => {
     const containerRect = container.getBoundingClientRect();
+    const scrollLeft = container.scrollLeft;
+    const scrollTop = container.scrollTop;
+
     return {
-        x: event.clientX - containerRect.left,
-        y: event.clientY - containerRect.top
+        x: event.clientX - containerRect.left + scrollLeft,
+        y: event.clientY - containerRect.top + scrollTop
     };
 };
 

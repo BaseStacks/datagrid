@@ -137,6 +137,7 @@ export class CellSelectionPlugin<TRow extends RowData = RowData> implements Data
         }
 
         this.state.dragging.set(false);
+
         const { selectedRanges } = this.dataGrid.state;
         if (selectedRanges.value.length > 1) {
             let newSelectedRanges = [...selectedRanges.value];

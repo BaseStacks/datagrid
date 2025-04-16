@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useDataGridContext } from '../hooks/useDataGridContext';
+import React from 'react';
 
 export interface DataGridContainerProps extends React.HTMLAttributes<HTMLElement> {
     readonly as?: string;
@@ -13,15 +14,27 @@ export function DataGridContainer({
 
     const Component = (as || 'div') as React.ElementType;
 
+    const containerRef = React.createRef<HTMLElement>();
+
     useEffect(() => {
-        dataGrid.layout.container?.style.setProperty('position', 'relative');
-        dataGrid.layout.container?.style.setProperty('overflow', 'auto');
     }, [dataGrid.layout.container]);
+
+    useEffect(() => {
+        const container = containerRef.current!;
+        container.style.setProperty('position', 'relative');
+        container.style.setProperty('overflow', 'auto');
+
+        dataGrid.layout.registerContainer(container!);
+
+        return () => {
+            dataGrid.layout.removeContainer(container!);
+        };
+    }, [containerRef, dataGrid.layout]);
 
     return (
         <Component
-            ref={dataGrid.layout.registerContainer}
             {...props}
+            ref={containerRef}
         />
     );
 };

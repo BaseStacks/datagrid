@@ -69,9 +69,9 @@ export function CellSelection() {
 
 const clxs = {
     table: 'text-sm',
-    header: 'border-gray-200 p-2 text-left font-medium text-gray-400 flex items-center dark:border-gray-600 dark:text-gray-200',
+    header: 'flex items-center border-gray-200 p-2 text-left font-medium text-gray-400 dark:border-gray-600 dark:text-gray-200',
     row: 'bg-white dark:bg-gray-800 overflow-hidden',
-    cell: 'border-gray-100 p-2 text-gray-500 dark:border-gray-700 dark:text-gray-400',
+    cell: 'border-b border-gray-100 flex items-center border-gray-100 p-2 text-gray-500 dark:border-gray-700 dark:text-gray-400',
     activeCell: 'outline outline-blue-500',
     selectedRangeRect: 'absolute pointer-events-none outline-2 outline-offset-[-2px] outline-blue-600 bg-blue-600/5',
     activeRect: 'absolute pointer-events-none outline outline-offset-[-2px] outline-blue-600',

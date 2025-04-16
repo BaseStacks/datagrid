@@ -28,6 +28,15 @@ export class DataGridLayout<TRow extends RowData> {
         }
     };
 
+    private updateRects = () => {
+        this._elementMap.forEach((element, id) => {
+            const rect = getRect(this._container!, element);
+            if (rect) {
+                this._rectMap.set(id, rect);
+            }
+        });
+    };
+
     private createColumnLayout = (id: HeaderId) => {
         const existingWidth = this.columns.value.get(id);
         if (existingWidth) {
@@ -42,23 +51,6 @@ export class DataGridLayout<TRow extends RowData> {
             });
             return newColumnLayouts;
         });
-    };
-
-    private updateColumnLayouts = (id: HeaderId) => {
-        const columnWidth = this.columns.value.get(id);
-        if (!columnWidth) {
-            throw new Error(`Column width not found for column ID: ${id}`);
-        }
-
-        const element = this._elementMap.get(id);
-        if (!element) {
-            throw new Error(`Element not found for column ID: ${id}`);
-        }
-
-        const rect = getRect(this._container!, element);
-        if (!rect) {
-            throw new Error(`Rect not found for column ID: ${id}`);
-        }
     };
 
     constructor(state: DataGridStates<TRow>) {
@@ -89,7 +81,16 @@ export class DataGridLayout<TRow extends RowData> {
             return;
         }
 
+        if (this._container) {
+            throw new Error('Container already registered');
+        }
+
         this._container = container;
+        for (const [id, element] of this._elementMap.entries()) {
+            this.updateRect(id, element);
+        }
+
+        this._container.addEventListener('scroll', this.updateRects);
 
         // Set default column width based on container width
         const containerWidth = container.clientWidth;
@@ -98,22 +99,30 @@ export class DataGridLayout<TRow extends RowData> {
         this._defaultColumnWidth = Math.max(this._columnMinWidth, Math.min(defaultColumnWidth, this._columnMaxWidth));
     };
 
+    public removeContainer = (container: HTMLElement) => {
+        if (!this._container) {
+            throw new Error('Container not registered');
+        }
+
+        if (container !== this._container) {
+            throw new Error('Container mismatch');
+        }
+
+        this._container.removeEventListener('scroll', this.updateRects);
+        this._container = null;
+    };
+
     public registerElement = (id: Id, element: HTMLElement) => {
         this._elementMap.set(id, element);
-        this.updateRect(id, element);
+
+        if (this._container) {
+            this.updateRect(id, element);
+        }
 
         const isHeader = idTypeEquals(id, 'header');
         if (isHeader) {
             this.createColumnLayout(id as HeaderId);
         }
-
-        element.addEventListener('resize', (e) => {
-            this.updateRect(id, e.currentTarget as HTMLElement);
-
-            if (isHeader) {
-                this.updateColumnLayouts(id as HeaderId);
-            }
-        });
     };
 
     public removeElement = (id: Id) => {

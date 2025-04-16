@@ -19,12 +19,7 @@ export class DataGridState<TValue> {
     public get value(): TValue {
         return this._value;
     }
-    public set value(newValue: TValue) {
-        if (this._value !== newValue) {
-            this._value = newValue;
-            this._events.emit('update_value', this._value);
-        }
-    }
+
     constructor(initialValue: TValue, options: DataGridStateOptions = {}) {
         this._value = initialValue;
         this._options = options;
@@ -54,7 +49,7 @@ export class DataGridState<TValue> {
             }
         }
 
-        this.value = _newValue;
+        this._value = _newValue;
 
         if (!silent) {
             this._events.emit('update_value', this.value);

@@ -12,17 +12,17 @@ export const useStrictState = <TValue>(
         }
         return initValue;
     });
-
-    const strictSetState = useRef((value: TValue) => {
-        if (useDeepEqual) {
-            if (deepEqual(state, value)) {
-                return;
-            }
+    const stateRef = useRef(state);
+    const strictSetState = useRef((newValue: TValue) => {
+        if (useDeepEqual && deepEqual(stateRef.current, newValue)) {
+            return;
         }
-        if (!useDeepEqual && state !== value) {
-            setState(value);
-
+        else if (!useDeepEqual && stateRef.current === newValue) {
+            return;
         }
+
+        setState(newValue);
+        stateRef.current = newValue;
     });
 
     return [state, strictSetState.current] as const;
