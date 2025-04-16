@@ -12,8 +12,8 @@ export class DataGridLayout<TRow extends RowData> {
     private _elementMap: Map<Id, HTMLElement> = new Map();
     private _rectMap: Map<Id, RectType> = new Map();
 
-    private _defaultColumnWidth = 200;
-    private _columnMinWidth = 200;
+    private _defaultColumnWidth = 100;
+    private _columnMinWidth = 100;
     private _columnMaxWidth = 500;
 
     private updateRect = (cellId: Id, element: HTMLElement | null) => {

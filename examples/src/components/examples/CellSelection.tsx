@@ -9,7 +9,9 @@ export function CellSelection() {
         { dataKey: 'firstName', header: 'First Name', cell: (cell) => <TextInput cell={cell} /> },
         { dataKey: 'lastName', header: 'Last Name', cell: (cell) => <TextInput cell={cell} /> },
         { dataKey: 'age', header: 'Age', cell: (cell) => <TextInput cell={cell} /> },
+        { dataKey: 'address', header: 'Address', cell: (cell) => <TextInput cell={cell} /> },
         { dataKey: 'email', header: 'Email', cell: (cell) => <TextInput cell={cell} /> },
+        { dataKey: 'phone', header: 'Phone', cell: (cell) => <TextInput cell={cell} /> },
     ], []);
 
     const [data, setData] = useState(() => {
@@ -19,7 +21,9 @@ export function CellSelection() {
                 { name: 'firstName', type: 'firstName', required: true },
                 { name: 'lastName', type: 'lastName', required: true },
                 { name: 'age', type: 'number', min: 18, max: 99, required: false },
+                { name: 'address', type: 'address', required: false },
                 { name: 'email', type: 'email', required: false },
+                { name: 'phone', type: 'phone', required: false },
             ],
             count: 10
         });
@@ -64,11 +68,11 @@ export function CellSelection() {
 };
 
 const clxs = {
-    table: 'border-collapse text-sm',
-    header: 'border-b border-gray-200 p-4 text-left font-medium text-gray-400 flex items-center dark:border-gray-600 dark:text-gray-200',
-    row: 'bg-white dark:bg-gray-800',
-    cell: 'border-b border-gray-100 p-4 text-gray-500 dark:border-gray-700 dark:text-gray-400',
+    table: 'text-sm',
+    header: 'border-gray-200 p-2 text-left font-medium text-gray-400 flex items-center dark:border-gray-600 dark:text-gray-200',
+    row: 'bg-white dark:bg-gray-800 overflow-hidden',
+    cell: 'border-gray-100 p-2 text-gray-500 dark:border-gray-700 dark:text-gray-400',
     activeCell: 'outline outline-blue-500',
     selectedRangeRect: 'absolute pointer-events-none outline-2 outline-offset-[-2px] outline-blue-600 bg-blue-600/5',
-    activeRect: 'absolute pointer-events-none outline outline-yellow-600',
+    activeRect: 'absolute pointer-events-none outline outline-offset-[-2px] outline-blue-600',
 };

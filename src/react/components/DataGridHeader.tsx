@@ -17,6 +17,10 @@ function DataGridHeaderImpl<TElement extends HTMLElement = HTMLElement>({ as, he
     const style: React.CSSProperties = useMemo(() => {
         return {
             ...props.style,
+            position: 'absolute',
+            top: '0',
+            left: '0',
+            width: '100%',
             height: '100%',
         };
     }, [props.style]);
@@ -28,8 +32,6 @@ function DataGridHeaderImpl<TElement extends HTMLElement = HTMLElement>({ as, he
             const columnLayout = columns.get(header.id);
             if (columnLayout && columnLayout.width !== widthRef.current) {
                 ref.current.style.width = `${columnLayout.width}px`;
-                ref.current.style.position = 'absolute';
-                ref.current.style.top = '0';
                 ref.current.style.left = `${columnLayout.left}px`;
                 widthRef.current = columnLayout.width;
             }

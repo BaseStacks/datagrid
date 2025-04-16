@@ -1,4 +1,4 @@
 export const defaultOptions = {
-    headerHeight: 48,
-    rowHeight: 48
+    headerHeight: 42,
+    rowHeight: 42
 };

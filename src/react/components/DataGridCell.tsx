@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import { type Cell } from '../../core';
 import { useDataGridContext } from '../hooks/useDataGridContext';
 import React from 'react';
@@ -15,6 +15,15 @@ export function DataGridCell<TElement extends HTMLElement = HTMLElement>({ as, c
 
     const Component = as || 'div' as React.ElementType;
 
+    const style: React.CSSProperties = useMemo(() => ({
+        ...props.style,
+        position: 'absolute',
+        top: '0',
+        left: '0',
+        width: '100%',
+        height: '100%',
+    }), [props.style]);
+
     useLayoutEffect(() => {
         const unwatchColumnLayout = dataGrid.layout.columns.watch((columns) => {
             if (!ref.current) return;
@@ -22,8 +31,6 @@ export function DataGridCell<TElement extends HTMLElement = HTMLElement>({ as, c
             const columnLayout = columns.get(cell.colId);
             if (columnLayout && columnLayout.width !== widthRef.current) {
                 ref.current.style.width = `${columnLayout.width}px`;
-                ref.current.style.position = 'absolute';
-                ref.current.style.top = '0';
                 ref.current.style.left = `${columnLayout.left}px`;
                 widthRef.current = columnLayout.width;
             }
@@ -42,7 +49,7 @@ export function DataGridCell<TElement extends HTMLElement = HTMLElement>({ as, c
     }, [dataGrid.layout, cell.id, ref]);
 
     return (
-        <Component {...props} ref={ref}>
+        <Component {...props} ref={ref} style={style}>
             {children ?? cell.render()}
         </Component>
     );

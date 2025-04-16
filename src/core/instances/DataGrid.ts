@@ -130,7 +130,10 @@ export class DataGrid<TRow extends RowData = RowData> {
             this.state.headers.set(this.createHeaders());
         }
 
-        this.options = newOptions;
+        this.options = {
+            ...this.options,
+            ...newOptions,
+        };
     };
 
     public isCellDisabled = (rowIndex: number, columnIndex: number) => {
