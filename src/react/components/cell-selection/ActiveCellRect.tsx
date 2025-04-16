@@ -12,9 +12,11 @@ function ActiveCellRectImpl({ as, selection, style, ...props }: ActiveCellRectPr
 
     const Components = as || 'div';
 
+
+
     return (
         <Components
-            style={{ ...activeCellRect, ...style }}
+            style={{ ...activeCellRect, ...style, zIndex: 10 }}
             {...props}
         />
     );

@@ -70,9 +70,10 @@ export interface ColumnHeader {
 export interface Column<TValue = any> {
   readonly dataKey?: string;
   readonly header?: string | (() => any);
-  readonly cell?: (opts: CellProps<TValue>) => React.ReactNode
+  readonly cell?: string | ((opts: CellProps<TValue>) => React.ReactNode)
   readonly footer?: string | (() => any);
   readonly disabled?: boolean | ((opts: { value: RowData; rowIndex: number }) => boolean);
+  readonly pinned?: 'left' | 'right';
   readonly prePasteValues?: (values: string[]) => TValue[];
   readonly pasteValue?: (opts: { value: TValue; rowData: RowData; rowIndex: number }) => TValue | Promise<TValue>;
   readonly isCellEmpty?: (opts: { value: RowData; rowIndex: number }) => boolean;
@@ -80,6 +81,7 @@ export interface Column<TValue = any> {
 }
 
 export interface ColumnLayout {
+  readonly header: ColumnHeader;
   readonly width: number;
   readonly left: number;
 }

@@ -13,7 +13,11 @@ function SelectedRangeRectsImpl({ as, selection, style, ...props }: SelectedRang
     const Component = as || 'div';
 
     return rangeRects.map((rect, index) => (
-        <Component key={index} style={{ ...rect, ...style }} {...props} />
+        <Component
+            {...props}
+            key={index}
+            style={{ ...rect, ...style, zIndex: 2 }}
+        />
     ));
 }
 

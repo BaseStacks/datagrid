@@ -13,7 +13,7 @@ export class DataGridLayout<TRow extends RowData> {
     private _rectMap: Map<Id, RectType> = new Map();
 
     private _defaultColumnWidth = 100;
-    private _columnMinWidth = 100;
+    private _columnMinWidth = 200;
     private _columnMaxWidth = 500;
 
     private updateRect = (cellId: Id, element: HTMLElement | null) => {
@@ -43,12 +43,65 @@ export class DataGridLayout<TRow extends RowData> {
             throw new Error(`Column width already exists for column ID: ${id}`);
         }
 
+        const header = this.state.headers.value.find((header) => header.id === id);
+        if (!header) {
+            throw new Error(`Header not found for column ID: ${id}`);
+        }
+
         this.columns.set((prevColumnLayouts) => {
             const newColumnLayouts = new Map(prevColumnLayouts);
+            const pinned = header.column.pinned;
+
+            const pinnedColumns = prevColumnLayouts.values()
+                .filter((layout) => layout.header.column.pinned === pinned);
+
+            const left = pinned === 'left'
+                ? pinnedColumns.reduce((acc, layout) => acc + layout.width, 0)
+                : pinned === 'right'
+                    ? this._container!.clientWidth - this._defaultColumnWidth
+                    : prevColumnLayouts.values().reduce((acc, layout) => acc + layout.width, 0);
+
             newColumnLayouts.set(id, {
+                header,
                 width: this._defaultColumnWidth,
-                left: prevColumnLayouts.values().reduce((acc, layout) => acc + layout.width, 0),
+                left: left,
             });
+            return newColumnLayouts;
+        });
+    };
+
+    private handleContainerScroll = () => {
+        const scrollLeft = this._container!.scrollLeft;
+
+        this.updateRects();
+        this.columns.set((prev) => {
+            const newColumnLayouts = new Map(prev);
+
+            const leftPinnedColumns: ColumnLayout[] = [];
+            const rightPinnedColumns: ColumnLayout[] = [];
+
+            newColumnLayouts.forEach((layout, id) => {
+                const header = layout.header;
+                const pinned = header.column.pinned;
+
+                if (pinned === 'left') {
+                    leftPinnedColumns.push(layout);
+                } else if (pinned === 'right') {
+                    rightPinnedColumns.push(layout);
+                }
+
+                const left = pinned === 'left'
+                    ? scrollLeft
+                    : pinned === 'right'
+                        ? this._container!.clientWidth - layout.width
+                        : prev.get(id)?.left || 0;
+
+                newColumnLayouts.set(id, {
+                    ...layout,
+                    left,
+                });
+            });
+
             return newColumnLayouts;
         });
     };
@@ -76,6 +129,10 @@ export class DataGridLayout<TRow extends RowData> {
         return cellRectMap;
     }
 
+    /**
+     * Register the container to the layout
+     * @param container
+     */
     public registerContainer = (container: HTMLElement) => {
         if (!container) {
             return;
@@ -90,7 +147,7 @@ export class DataGridLayout<TRow extends RowData> {
             this.updateRect(id, element);
         }
 
-        this._container.addEventListener('scroll', this.updateRects);
+        this._container.addEventListener('scroll', this.handleContainerScroll);
 
         // Set default column width based on container width
         const containerWidth = container.clientWidth;
@@ -99,6 +156,10 @@ export class DataGridLayout<TRow extends RowData> {
         this._defaultColumnWidth = Math.max(this._columnMinWidth, Math.min(defaultColumnWidth, this._columnMaxWidth));
     };
 
+    /**
+     * Remove the container from the layout
+     * @param container 
+     */
     public removeContainer = (container: HTMLElement) => {
         if (!this._container) {
             throw new Error('Container not registered');
@@ -108,10 +169,15 @@ export class DataGridLayout<TRow extends RowData> {
             throw new Error('Container mismatch');
         }
 
-        this._container.removeEventListener('scroll', this.updateRects);
+        this._container.removeEventListener('scroll', this.handleContainerScroll);
         this._container = null;
     };
 
+    /**
+     * Register the element to the layout
+     * @param id
+     * @param element
+     */
     public registerElement = (id: Id, element: HTMLElement) => {
         this._elementMap.set(id, element);
 
@@ -125,6 +191,10 @@ export class DataGridLayout<TRow extends RowData> {
         }
     };
 
+    /**
+     * Remove the element from the layout
+     * @param id 
+     */
     public removeElement = (id: Id) => {
         this._elementMap.delete(id);
         this._rectMap.delete(id);
@@ -136,6 +206,11 @@ export class DataGridLayout<TRow extends RowData> {
         this.updateRect(id, null);
     };
 
+    /**
+     * Get the intersection rectangle of the clicked element
+     * @param event 
+     * @returns 
+     */
     public getIntersectionRect = (event: MouseEvent) => {
         const cursorOffset = getCursorOffset(event, this._container!);
         const clickedRect = findRect(cursorOffset, [...this.cellRectMap.values()]);
@@ -165,6 +240,10 @@ export class DataGridLayout<TRow extends RowData> {
         return null;
     };
 
+    /**
+     * Get the rectangle of the element by id
+     * @param id
+     */
     public getRect = (id: Id) => {
         const cellElement = this._elementMap.get(id);
         if (!cellElement) {

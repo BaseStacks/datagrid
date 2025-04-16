@@ -11,7 +11,6 @@ interface DataGridCellProps<TElement extends HTMLElement> extends React.HTMLAttr
 export function DataGridCell<TElement extends HTMLElement = HTMLElement>({ as, cell, children, ...props }: DataGridCellProps<TElement>) {
     const ref = React.createRef<TElement>();
     const dataGrid = useDataGridContext();
-    const widthRef = useRef<number>(0);
 
     const Component = as || 'div' as React.ElementType;
 
@@ -29,10 +28,13 @@ export function DataGridCell<TElement extends HTMLElement = HTMLElement>({ as, c
             if (!ref.current) return;
 
             const columnLayout = columns.get(cell.colId);
-            if (columnLayout && columnLayout.width !== widthRef.current) {
+            if (columnLayout) {
                 ref.current.style.width = `${columnLayout.width}px`;
                 ref.current.style.left = `${columnLayout.left}px`;
-                widthRef.current = columnLayout.width;
+                if (columnLayout.header.column.pinned) {
+                    ref.current.style.zIndex = '1';
+                    ref.current.style.borderRightWidth = '1px';
+                }
             }
         });
 

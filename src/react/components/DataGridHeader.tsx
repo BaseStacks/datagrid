@@ -11,7 +11,6 @@ function DataGridHeaderImpl<TElement extends HTMLElement = HTMLElement>({ as, he
     const ref = React.createRef<TElement>();
     const dataGrid = useDataGridContext();
 
-    const widthRef = useRef<number>(0);
     const Component = as || 'div' as React.ElementType;
 
     const style: React.CSSProperties = useMemo(() => {
@@ -30,10 +29,13 @@ function DataGridHeaderImpl<TElement extends HTMLElement = HTMLElement>({ as, he
             if (!ref.current) return;
 
             const columnLayout = columns.get(header.id);
-            if (columnLayout && columnLayout.width !== widthRef.current) {
+            if (columnLayout) {
                 ref.current.style.width = `${columnLayout.width}px`;
                 ref.current.style.left = `${columnLayout.left}px`;
-                widthRef.current = columnLayout.width;
+                if (columnLayout.header.column.pinned) {
+                    ref.current.style.zIndex = '1';
+                    ref.current.style.borderRightWidth = '1px';
+                }
             }
         });
 
