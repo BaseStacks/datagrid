@@ -17,7 +17,7 @@ export function DataGridContainer({
     const containerRef = React.createRef<HTMLElement>();
 
     useEffect(() => {
-    }, [dataGrid.layout.container]);
+    }, [dataGrid.layout.containerState]);
 
     useEffect(() => {
         const container = containerRef.current!;

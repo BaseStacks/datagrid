@@ -81,9 +81,11 @@ export interface Column<TValue = any> {
 }
 
 export interface ColumnLayout {
+  readonly index: number;
   readonly header: ColumnHeader;
   readonly width: number;
-  readonly left: number;
+  readonly left?: number;
+  readonly right?: number;
 }
 
 export interface Row<TRow extends RowData = RowData> {
@@ -101,7 +103,6 @@ export interface RowOperation {
 export interface DataGridOptions<TRow extends RowData = RowData> {
   readonly data: TRow[]
   readonly columns: Column[]
-  readonly stickyRightColumn?: Column;
 
   readonly rowKey?: RowKey<TRow>;
   readonly lockRows?: boolean;

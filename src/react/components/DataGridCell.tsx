@@ -1,16 +1,17 @@
-import { useEffect, useLayoutEffect, useMemo, useRef } from 'react';
-import { type Cell } from '../../core';
+import { useEffect, useLayoutEffect, useMemo } from 'react';
+import { LayoutPlugin, type Cell } from '../../core';
 import { useDataGridContext } from '../hooks/useDataGridContext';
 import React from 'react';
 
 interface DataGridCellProps<TElement extends HTMLElement> extends React.HTMLAttributes<TElement> {
     readonly as?: string
     readonly cell: Cell;
+    readonly layout: LayoutPlugin;
 }
 
-export function DataGridCell<TElement extends HTMLElement = HTMLElement>({ as, cell, children, ...props }: DataGridCellProps<TElement>) {
-    const ref = React.createRef<TElement>();
+export function DataGridCell<TElement extends HTMLElement = HTMLElement>({ as, cell, layout, children, ...props }: DataGridCellProps<TElement>) {
     const dataGrid = useDataGridContext();
+    const ref = React.createRef<TElement>();
 
     const Component = as || 'div' as React.ElementType;
 
@@ -24,16 +25,27 @@ export function DataGridCell<TElement extends HTMLElement = HTMLElement>({ as, c
     }), [props.style]);
 
     useLayoutEffect(() => {
-        const unwatchColumnLayout = dataGrid.layout.columns.watch((columns) => {
-            if (!ref.current) return;
+        const unwatchColumnLayout = layout.state.columns.watchItem(cell.colId, ({ operation, item }) => {
+            if (!ref.current) {
+                return;
+            };
 
-            const columnLayout = columns.get(cell.colId);
-            if (columnLayout) {
-                ref.current.style.width = `${columnLayout.width}px`;
-                ref.current.style.left = `${columnLayout.left}px`;
-                if (columnLayout.header.column.pinned) {
-                    ref.current.style.zIndex = '1';
+            if (operation === 'remove') {
+                return;
+            }
+
+            ref.current.style.width = `${item.width}px`;
+            ref.current.style.left = item.left === undefined ? '' : `${item.left}px`;
+            ref.current.style.right = item.right === undefined ? '' : `${item.right}px`;
+
+            if (item.header.column.pinned) {
+                ref.current.style.zIndex = '1';
+
+                if (item.header.column.pinned === 'left') {
                     ref.current.style.borderRightWidth = '1px';
+                }
+                else if (item.header.column.pinned === 'right') {
+                    ref.current.style.borderLeftWidth = '1px';
                 }
             }
         });
@@ -41,7 +53,7 @@ export function DataGridCell<TElement extends HTMLElement = HTMLElement>({ as, c
         return () => {
             unwatchColumnLayout();
         };
-    }, [cell.colId, dataGrid.layout.columns, ref]);
+    }, [cell.colId, layout.state.columns, ref]);
 
     useEffect(() => {
         dataGrid.layout.registerElement(cell.id, ref.current!);

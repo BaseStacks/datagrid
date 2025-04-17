@@ -1,12 +1,12 @@
 import { deepEqual } from '../../utils/objectUtils';
 import { EventEmitter } from './EventEmitter';
 
-interface DataGridStateOptions {
+export interface DataGridStateOptions {
     // If true, the state will use deep equal to check if the value is changed
     readonly useDeepEqual?: boolean;
 }
 
-interface DataGridStateSetOptions {
+export interface DataGridStateSetOptions {
     // If true, the event will not be emitted when the value is set
     readonly silent?: boolean;
 }

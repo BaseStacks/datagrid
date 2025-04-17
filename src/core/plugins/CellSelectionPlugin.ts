@@ -53,7 +53,7 @@ export class CellSelectionPlugin<TRow extends RowData = RowData> implements Data
     private unsubscribes: (() => void)[] = [];
 
     private get container() {
-        return this.dataGrid.layout.container;
+        return this.dataGrid.layout.containerState.value;
     }
 
     private get cellRectMap() {

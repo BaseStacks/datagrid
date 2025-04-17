@@ -6,12 +6,13 @@ import { generateData } from '@/helpers/dataHelpers';
 export function CellSelection() {
     const columns = useMemo((): Column[] => [
         { dataKey: 'id', header: 'ID', pinned: 'left' },
-        { dataKey: 'firstName', header: 'First Name', cell: (cell) => <TextInput cell={cell} /> },
+        { dataKey: 'firstName', header: 'First Name', pinned: 'left', cell: (cell) => <TextInput cell={cell} /> },
         { dataKey: 'lastName', header: 'Last Name', cell: (cell) => <TextInput cell={cell} /> },
         { dataKey: 'age', header: 'Age', cell: (cell) => <TextInput cell={cell} /> },
         { dataKey: 'address', header: 'Address', cell: (cell) => <TextInput cell={cell} /> },
         { dataKey: 'email', header: 'Email', cell: (cell) => <TextInput cell={cell} /> },
-        { dataKey: 'phone', header: 'Phone', pinned: 'right', cell: (cell) => <TextInput cell={cell} /> },
+        { dataKey: 'phone', header: 'Phone', cell: (cell) => <TextInput cell={cell} /> },
+        { dataKey: 'actions', header: 'Actions', pinned: 'right', cell: (cell) => <TextInput cell={cell} /> },
     ], []);
 
     const [data, setData] = useState(() => {
@@ -32,30 +33,28 @@ export function CellSelection() {
     const dataGrid = useDataGrid({
         data,
         columns,
-        columnMinWidth: 200,
         onChange: setData,
     });
 
-    usePlugin(dataGrid, LayoutPlugin, {});
-
+    const layout = usePlugin(dataGrid, LayoutPlugin, {});
     const cellSelection = usePlugin(dataGrid, CellSelectionPlugin, {});
 
     const headers = useDataGridState(dataGrid.state.headers);
     const rows = useDataGridState(dataGrid.state.rows);
-
+    
     return (
         <DataGridProvider dataGrid={dataGrid}>
             <DataGridContainer>
                 <div className={clxs.table}>
-                    <DataGridHeaderGroup>
+                    <DataGridHeaderGroup layout={layout}>
                         {headers.map((header, index) => (
-                            <DataGridHeader key={index} header={header} className={clxs.header} />
+                            <DataGridHeader key={index} header={header} className={clxs.header} layout={layout} />
                         ))}
                     </DataGridHeaderGroup>
                     {rows.map((row, index) => (
-                        <DataGridRow key={index} className={clxs.row}>
+                        <DataGridRow key={index} layout={layout} className={clxs.row}>
                             {row.cells.map((cell) => (
-                                <DataGridCell key={cell.id} cell={cell} className={clxs.cell}>
+                                <DataGridCell key={cell.id} cell={cell} className={clxs.cell} layout={layout}>
                                     {cell.render()}
                                 </DataGridCell>
                             ))}

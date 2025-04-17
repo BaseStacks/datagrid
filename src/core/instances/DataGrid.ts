@@ -105,7 +105,7 @@ export class DataGrid<TRow extends RowData = RowData> {
     };
 
     constructor(options: DataGridOptions<TRow>) {
-        this.options = { ...options, ...defaultOptions };
+        this.options = { ...(defaultOptions as any), ...options, };
 
         this.state = new DataGridStates<TRow>();
         this.selection = new DataGridSelection(this.state);
@@ -115,7 +115,7 @@ export class DataGrid<TRow extends RowData = RowData> {
         this.initialize();
     }
 
-    public options: DataGridOptions<TRow>;
+    public options: Required<DataGridOptions<TRow>>;
     public state: DataGridStates<TRow>;
     public selection: DataGridSelection<TRow>;
     public layout: DataGridLayout<TRow>;

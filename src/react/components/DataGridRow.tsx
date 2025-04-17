@@ -1,12 +1,15 @@
 import { memo, useLayoutEffect, useMemo, useRef } from 'react';
 import { useDataGridContext } from '../hooks/useDataGridContext';
+import type { LayoutPlugin } from '../../core';
 
 export interface DataGridRowProps extends React.HTMLAttributes<HTMLElement> {
     readonly as?: string;
+    readonly layout: LayoutPlugin;
 }
 
 function DataGridRowImpl({
     as = 'div',
+    layout,
     ...props
 }: React.PropsWithChildren<DataGridRowProps>) {
     const dataGrid = useDataGridContext();
@@ -23,7 +26,7 @@ function DataGridRowImpl({
     }, [dataGrid.options.rowHeight, props.style]);
 
     useLayoutEffect(() => {
-        const unwatchColumnLayout = dataGrid.layout.columns.watch((columns) => {
+        const unwatchColumnLayout = layout.state.columns.watch((columns) => {
             if (!ref.current) return;
 
             ref.current.style.width = columns.values().reduce((acc, column) => acc + column.width, 0) + 'px';
@@ -32,7 +35,7 @@ function DataGridRowImpl({
         return () => {
             unwatchColumnLayout();
         };
-    }, [dataGrid.layout.columns, ref]);
+    }, [layout.state.columns, ref]);
 
     return (
         <Component
