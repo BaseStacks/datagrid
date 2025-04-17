@@ -28,15 +28,6 @@ export class DataGridLayout<TRow extends RowData> {
         }
     };
 
-    private updateRects = () => {
-        this._elementMap.forEach((element, id) => {
-            const rect = getRect(this._container!, element);
-            if (rect) {
-                this._rectMap.set(id, rect);
-            }
-        });
-    };
-
     private createColumnLayout = (id: HeaderId) => {
         const existingWidth = this.columns.value.get(id);
         if (existingWidth) {
@@ -58,7 +49,7 @@ export class DataGridLayout<TRow extends RowData> {
             const left = pinned === 'left'
                 ? pinnedColumns.reduce((acc, layout) => acc + layout.width, 0)
                 : pinned === 'right'
-                    ? this._container!.clientWidth - this._defaultColumnWidth
+                    ? this._container.clientWidth - this._defaultColumnWidth
                     : prevColumnLayouts.values().reduce((acc, layout) => acc + layout.width, 0);
 
             newColumnLayouts.set(id, {
@@ -66,42 +57,6 @@ export class DataGridLayout<TRow extends RowData> {
                 width: this._defaultColumnWidth,
                 left: left,
             });
-            return newColumnLayouts;
-        });
-    };
-
-    private handleContainerScroll = () => {
-        const scrollLeft = this._container!.scrollLeft;
-
-        this.updateRects();
-        this.columns.set((prev) => {
-            const newColumnLayouts = new Map(prev);
-
-            const leftPinnedColumns: ColumnLayout[] = [];
-            const rightPinnedColumns: ColumnLayout[] = [];
-
-            newColumnLayouts.forEach((layout, id) => {
-                const header = layout.header;
-                const pinned = header.column.pinned;
-
-                if (pinned === 'left') {
-                    leftPinnedColumns.push(layout);
-                } else if (pinned === 'right') {
-                    rightPinnedColumns.push(layout);
-                }
-
-                const left = pinned === 'left'
-                    ? scrollLeft
-                    : pinned === 'right'
-                        ? this._container!.clientWidth - layout.width
-                        : prev.get(id)?.left || 0;
-
-                newColumnLayouts.set(id, {
-                    ...layout,
-                    left,
-                });
-            });
-
             return newColumnLayouts;
         });
     };
@@ -129,6 +84,15 @@ export class DataGridLayout<TRow extends RowData> {
         return cellRectMap;
     }
 
+    public updateRects = () => {
+        this._elementMap.forEach((element, id) => {
+            const rect = getRect(this._container!, element);
+            if (rect) {
+                this._rectMap.set(id, rect);
+            }
+        });
+    };
+
     /**
      * Register the container to the layout
      * @param container
@@ -146,8 +110,6 @@ export class DataGridLayout<TRow extends RowData> {
         for (const [id, element] of this._elementMap.entries()) {
             this.updateRect(id, element);
         }
-
-        this._container.addEventListener('scroll', this.handleContainerScroll);
 
         // Set default column width based on container width
         const containerWidth = container.clientWidth;
@@ -169,7 +131,6 @@ export class DataGridLayout<TRow extends RowData> {
             throw new Error('Container mismatch');
         }
 
-        this._container.removeEventListener('scroll', this.handleContainerScroll);
         this._container = null;
     };
 

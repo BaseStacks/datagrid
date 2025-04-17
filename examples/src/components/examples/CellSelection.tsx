@@ -1,4 +1,4 @@
-import { Column, DataGridProvider, useDataGrid, useDataGridState, DataGridContainer, DataGridCell, CellSelectionPlugin, usePlugin, SelectedRangeRects, ActiveCellRect, SelectionBackdrop, DataGridHeader, DataGridHeaderGroup, DataGridRow } from '@basestacks/data-grid';
+import { Column, DataGridProvider, useDataGrid, useDataGridState, DataGridContainer, DataGridCell, CellSelectionPlugin, usePlugin, SelectedRangeRects, ActiveCellRect, SelectionBackdrop, DataGridHeader, DataGridHeaderGroup, DataGridRow, LayoutPlugin } from '@basestacks/data-grid';
 import { useMemo, useState } from 'react';
 import { TextInput } from './controls/TextInput';
 import { generateData } from '@/helpers/dataHelpers';
@@ -11,7 +11,7 @@ export function CellSelection() {
         { dataKey: 'age', header: 'Age', cell: (cell) => <TextInput cell={cell} /> },
         { dataKey: 'address', header: 'Address', cell: (cell) => <TextInput cell={cell} /> },
         { dataKey: 'email', header: 'Email', cell: (cell) => <TextInput cell={cell} /> },
-        { dataKey: 'phone', header: 'Phone', cell: (cell) => <TextInput cell={cell} /> },
+        { dataKey: 'phone', header: 'Phone', pinned: 'right', cell: (cell) => <TextInput cell={cell} /> },
     ], []);
 
     const [data, setData] = useState(() => {
@@ -33,13 +33,15 @@ export function CellSelection() {
         data,
         columns,
         columnMinWidth: 200,
-        onChange: setData
+        onChange: setData,
     });
+
+    usePlugin(dataGrid, LayoutPlugin, {});
+
+    const cellSelection = usePlugin(dataGrid, CellSelectionPlugin, {});
 
     const headers = useDataGridState(dataGrid.state.headers);
     const rows = useDataGridState(dataGrid.state.rows);
-
-    const cellSelection = usePlugin(dataGrid, CellSelectionPlugin, {});
 
     return (
         <DataGridProvider dataGrid={dataGrid}>

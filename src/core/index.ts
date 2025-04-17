@@ -10,3 +10,4 @@ export * from './utils/cellUtils';
 export * from './utils/objectUtils';
 
 export * from './plugins/CellSelectionPlugin';
+export * from './plugins/LayoutPlugin';
