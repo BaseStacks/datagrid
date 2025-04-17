@@ -1,4 +1,4 @@
-import type { CellId, Id, RowData } from '../types';
+import type { CellId, ColumnLayout, Id, RowData } from '../types';
 import { getCoordinatesById } from '../utils/cellUtils';
 import { findIdByRect, findRect, getCursorOffset, getRect, type RectType } from '../utils/domRectUtils';
 import { idTypeEquals } from '../utils/idUtils';
@@ -29,6 +29,7 @@ export class DataGridLayout<TRow extends RowData> {
 
     public containerState = new DataGridState<HTMLElement | null>(null);
     public elementsState = new DataGridMapState<Id, HTMLElement>();
+    public columnLayoutsState = new DataGridMapState<Id, ColumnLayout>(new Map(), { useDeepEqual: false });
 
     public get cellRectMap() {
         const cellRectMap = new Map<Id, RectType>();

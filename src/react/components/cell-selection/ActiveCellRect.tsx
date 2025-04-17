@@ -1,18 +1,16 @@
 import { memo } from 'react';
-import type { CellSelectionPlugin } from '../../../core';
 import { useDataGridState } from '../../hooks/atomic/useDataGridState';
+import { useDataGridContext } from '../../hooks/useDataGridContext';
 
 interface ActiveCellRectProps extends React.HTMLAttributes<HTMLElement> {
     readonly as?: React.ElementType;
-    readonly selection: CellSelectionPlugin;
 }
 
-function ActiveCellRectImpl({ as, selection, style, ...props }: ActiveCellRectProps) {
-    const activeCellRect = useDataGridState(selection.state.activeCellRect);
+function ActiveCellRectImpl({ as, style, ...props }: ActiveCellRectProps) {
+    const { selection } = useDataGridContext();
+    const activeCellRect = useDataGridState(selection.activeCellRect);
 
     const Components = as || 'div';
-
-
 
     return (
         <Components

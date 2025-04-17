@@ -1,5 +1,4 @@
-import { mergeRects, type RectType } from '../utils/domRectUtils';
-import { DataGridState } from '../instances/atomic/DataGridState';
+import { mergeRects } from '../utils/domRectUtils';
 import { DataGrid } from '../instances/DataGrid';
 import type { DataGridKeyMap, DataGridPlugin, DataGridPluginOptions, RowData } from '../types';
 import { clearAllTextSelection } from '../utils/domUtils';
@@ -61,7 +60,9 @@ export class CellSelectionPlugin<TRow extends RowData = RowData> implements Data
     }
 
     private handleMouseDown = (event: MouseEvent) => {
+        const { dragging } = this.dataGrid.selection;
         const { activeCell } = this.dataGrid.state;
+        
         const { cleanSelection, startSelection, updateLastSelectedRange } = this.dataGrid.selection;
 
         const clickOutside = !this.container?.contains(event.target as Node);
@@ -102,14 +103,14 @@ export class CellSelectionPlugin<TRow extends RowData = RowData> implements Data
             startSelection(rectInfo.cell.coordinates);
         }
 
-        this.state.dragging.set('start');
+        dragging.set('start');
 
         setTimeout(() => {
-            if (!this.state.dragging.value) {
+            if (!dragging.value) {
                 return;
             }
 
-            this.state.dragging.set('dragging');
+            dragging.set('dragging');
         }, 150);
 
         event.preventDefault();
@@ -117,7 +118,9 @@ export class CellSelectionPlugin<TRow extends RowData = RowData> implements Data
     };
 
     private onMouseMove = (event: MouseEvent) => {
-        if (this.state.dragging.value !== 'dragging') {
+        const { dragging } = this.dataGrid.selection;
+
+        if (dragging.value !== 'dragging') {
             return;
         }
 
@@ -132,11 +135,13 @@ export class CellSelectionPlugin<TRow extends RowData = RowData> implements Data
     };
 
     private stopDragSelect = () => {
-        if (!this.state.dragging.value) {
+        const { dragging } = this.dataGrid.selection;
+
+        if (!dragging.value) {
             return;
         }
 
-        this.state.dragging.set(false);
+        dragging.set(false);
 
         const { selectedRanges } = this.dataGrid.state;
         if (selectedRanges.value.length > 1) {
@@ -210,12 +215,6 @@ export class CellSelectionPlugin<TRow extends RowData = RowData> implements Data
 
     public active = false;
 
-    public state = {
-        selectedRangeRects: new DataGridState<RectType[]>([]),
-        activeCellRect: new DataGridState<RectType | null>(null),
-        dragging: new DataGridState<CellSelectionDraggingStatus>(false),
-    };
-
     public activate = (_options: CellSelectionPluginOptions) => {
         const { keyMap } = _options;
 
@@ -249,7 +248,7 @@ export class CellSelectionPlugin<TRow extends RowData = RowData> implements Data
         this.dataGrid.keyBindings.add(this, mergeKeyMap, handlers);
 
         const { activeCell, selectedRanges } = this.dataGrid.state;
-        const { selectedRangeRects, activeCellRect } = this.state;
+        const { selectedRangeRects, activeCellRect } = this.dataGrid.selection;
 
         const unwatchSelectedRanges = selectedRanges.watch((newSelectedRanges) => {
             if (!newSelectedRanges?.length) {

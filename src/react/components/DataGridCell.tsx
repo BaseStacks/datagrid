@@ -1,16 +1,15 @@
 import { useEffect, useLayoutEffect, useMemo } from 'react';
-import { LayoutPlugin, type Cell } from '../../core';
+import { type Cell } from '../../core';
 import { useDataGridContext } from '../hooks/useDataGridContext';
 import React from 'react';
 
 interface DataGridCellProps<TElement extends HTMLElement> extends React.HTMLAttributes<TElement> {
     readonly as?: string
     readonly cell: Cell;
-    readonly layout: LayoutPlugin;
 }
 
-export function DataGridCell<TElement extends HTMLElement = HTMLElement>({ as, cell, layout, children, ...props }: DataGridCellProps<TElement>) {
-    const dataGrid = useDataGridContext();
+export function DataGridCell<TElement extends HTMLElement = HTMLElement>({ as, cell, children, ...props }: DataGridCellProps<TElement>) {
+    const { layout } = useDataGridContext();
     const ref = React.createRef<TElement>();
 
     const Component = as || 'div' as React.ElementType;
@@ -25,7 +24,7 @@ export function DataGridCell<TElement extends HTMLElement = HTMLElement>({ as, c
     }), [props.style]);
 
     useLayoutEffect(() => {
-        const unwatchColumnLayout = layout.state.columns.watchItem(cell.colId, ({ operation, item }) => {
+        const unwatchColumnLayout = layout.columnLayoutsState.watchItem(cell.colId, ({ operation, item }) => {
             if (!ref.current) {
                 return;
             };
@@ -53,14 +52,14 @@ export function DataGridCell<TElement extends HTMLElement = HTMLElement>({ as, c
         return () => {
             unwatchColumnLayout();
         };
-    }, [cell.colId, layout.state.columns, ref]);
+    }, [cell.colId, layout.columnLayoutsState, ref]);
 
     useEffect(() => {
-        dataGrid.layout.registerElement(cell.id, ref.current!);
+        layout.registerElement(cell.id, ref.current!);
         return () => {
-            dataGrid.layout.removeElement(cell.id);
+            layout.removeElement(cell.id);
         };
-    }, [dataGrid.layout, cell.id, ref]);
+    }, [layout, cell.id, ref]);
 
     return (
         <Component {...props} ref={ref} style={style}>

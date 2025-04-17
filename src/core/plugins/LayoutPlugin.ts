@@ -1,6 +1,5 @@
-import { DataGridMapState } from '../instances/atomic/DataGridMapState';
 import type { DataGrid } from '../instances/DataGrid';
-import type { RowData, DataGridPlugin, ColumnLayout, HeaderId, Id } from '../types';
+import type { RowData, DataGridPlugin, ColumnLayout, HeaderId } from '../types';
 
 export interface LayoutPluginOptions {
 }
@@ -8,19 +7,19 @@ export interface LayoutPluginOptions {
 export class LayoutPlugin<TRow extends RowData = RowData> implements DataGridPlugin<LayoutPluginOptions> {
     private readonly dataGrid: DataGrid<TRow>;
 
-    private calculateLeft = (columns: ColumnLayout[], current: ColumnLayout) => {
-        const currentIndex = columns.findIndex((column) => column === current);
+    private calculateLeft = (columnLayouts: ColumnLayout[], current: ColumnLayout) => {
+        const currentIndex = columnLayouts.findIndex((column) => column === current);
 
-        const prevColumns = columns.slice(0, currentIndex);
+        const prevColumns = columnLayouts.slice(0, currentIndex);
         const prevWidth = prevColumns.reduce((acc, column) => acc + column.width, 0);
 
         return prevWidth;
     };
 
-    private calculateRight = (columns: ColumnLayout[], current: ColumnLayout) => {
-        const currentIndex = columns.findIndex((column) => column === current);
+    private calculateRight = (columnLayouts: ColumnLayout[], current: ColumnLayout) => {
+        const currentIndex = columnLayouts.findIndex((column) => column === current);
 
-        const nextColumns = columns.slice(currentIndex + 1);
+        const nextColumns = columnLayouts.slice(currentIndex + 1);
         const nextWidth = nextColumns.reduce((acc, column) => acc + column.width, 0);
 
         return nextWidth;
@@ -49,20 +48,20 @@ export class LayoutPlugin<TRow extends RowData = RowData> implements DataGridPlu
             columnLayouts.set(columnId, layout);
         });
 
-        this.state.columns.set(columnLayouts);
+        this.dataGrid.layout.columnLayoutsState.set(columnLayouts);
     };
 
     public updateColumnLayouts = () => {
-        const { columns } = this.state;
+        const { columnLayoutsState } = this.dataGrid.layout;
 
         const viewportWidth = this.container.clientWidth;
         const baseLeft = this.container.scrollLeft;
         const baseRight = this.container.scrollWidth - viewportWidth - baseLeft;
 
-        const leftPinnedColumns = Array.from(columns.values().filter((column) => column.header.column.pinned === 'left'));
-        const rightPinnedColumns = Array.from(columns.values().filter((column) => column.header.column.pinned === 'right'));
+        const leftPinnedColumns = Array.from(columnLayoutsState.values().filter((columnLayout) => columnLayout.header.column.pinned === 'left'));
+        const rightPinnedColumns = Array.from(columnLayoutsState.values().filter((columnLayout) => columnLayout.header.column.pinned === 'right'));
 
-        columns.forEach((layout) => {
+        columnLayoutsState.forEach((layout) => {
             const header = layout.header;
             const pinned = header.column.pinned;
 
@@ -76,11 +75,11 @@ export class LayoutPlugin<TRow extends RowData = RowData> implements DataGridPlu
                 right = baseRight + this.calculateRight(rightPinnedColumns, layout);
             }
             else {
-                const prevColumns = Array.from(columns.values()).filter((column) => column.index < layout.index);
+                const prevColumns = Array.from(columnLayoutsState.values()).filter((column) => column.index < layout.index);
                 left = prevColumns.reduce((acc, column) => acc + column.width, 0);
             }
 
-            columns.replaceItem(header.id, {
+            columnLayoutsState.replaceItem(header.id, {
                 ...layout,
                 left: left,
                 right: right
@@ -109,10 +108,6 @@ export class LayoutPlugin<TRow extends RowData = RowData> implements DataGridPlu
     constructor(dataGrid: DataGrid<TRow>) {
         this.dataGrid = dataGrid;
     }
-
-    public state = {
-        columns: new DataGridMapState<Id, ColumnLayout>(new Map(), { useDeepEqual: false })
-    };
 
     public active: boolean = false;
 

@@ -1,16 +1,15 @@
 import React, { memo, useEffect, useLayoutEffect, useMemo } from 'react';
 import { useDataGridContext } from '../hooks/useDataGridContext';
-import type { ColumnHeader, LayoutPlugin } from '../../core';
+import type { ColumnHeader } from '../../core';
 
 interface DataGridHeaderProps<TElement extends HTMLElement> extends React.HTMLAttributes<TElement> {
     readonly as?: string
     readonly header: ColumnHeader;
-    readonly layout: LayoutPlugin;
 }
 
-function DataGridHeaderImpl<TElement extends HTMLElement = HTMLElement>({ as, header, layout, children, ...props }: DataGridHeaderProps<TElement>) {
+function DataGridHeaderImpl<TElement extends HTMLElement = HTMLElement>({ as, header, children, ...props }: DataGridHeaderProps<TElement>) {
     const ref = React.createRef<TElement>();
-    const dataGrid = useDataGridContext();
+    const { layout } = useDataGridContext();
 
     const Component = as || 'div' as React.ElementType;
 
@@ -26,7 +25,7 @@ function DataGridHeaderImpl<TElement extends HTMLElement = HTMLElement>({ as, he
     }, [props.style]);
 
     useLayoutEffect(() => {
-        const unwatchColumnLayout = layout.state.columns.watchItem(header.id, ({ operation, item }) => {
+        const unwatchColumnLayout = layout.columnLayoutsState.watchItem(header.id, ({ operation, item }) => {
             if (!ref.current) {
                 return;
             };
@@ -54,14 +53,14 @@ function DataGridHeaderImpl<TElement extends HTMLElement = HTMLElement>({ as, he
         return () => {
             unwatchColumnLayout();
         };
-    }, [layout.state.columns, dataGrid.options.headerHeight, header.id, ref]);
+    }, [layout.columnLayoutsState, header.id, ref]);
 
     useEffect(() => {
-        dataGrid.layout.registerElement(header.id, ref.current!);
+        layout.registerElement(header.id, ref.current!);
         return () => {
-            dataGrid.layout.removeElement(header.id);
+            layout.removeElement(header.id);
         };
-    }, [dataGrid.layout, header.id, ref]);
+    }, [layout, header.id, ref]);
 
     return (
         <Component {...props} ref={ref} style={style}>

@@ -1,5 +1,8 @@
+import type { CellSelectionDraggingStatus } from '../plugins/CellSelectionPlugin';
 import type { CellCoordinates, CellId, RowData } from '../types';
 import { getCoordinatesById, createCellId } from '../utils/cellUtils';
+import type { RectType } from '../utils/domRectUtils';
+import { DataGridState } from './atomic/DataGridState';
 import { DataGridStates } from './DataGridStates';
 
 type Offset = [number, number];
@@ -50,6 +53,10 @@ export class DataGridSelection<TRow extends RowData> {
     constructor(state: DataGridStates<TRow>) {
         this.state = state;
     }
+
+    public selectedRangeRects = new DataGridState<RectType[]>([]);
+    public activeCellRect = new DataGridState<RectType | null>(null);
+    public dragging = new DataGridState<CellSelectionDraggingStatus>(false);
 
     public navigate = (relativeOffset: Offset) => {
         const { activeCell } = this.state;

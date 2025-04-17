@@ -1,19 +1,18 @@
 import { memo } from 'react';
-import type { CellSelectionPlugin } from '../../../core';
 import { useDataGridState } from '../../hooks/atomic/useDataGridState';
+import { useDataGridContext } from '../../hooks/useDataGridContext';
 
 interface SelectionBackdropProps extends React.HTMLAttributes<HTMLElement> {
     readonly as?: React.ElementType;
-    readonly selection: CellSelectionPlugin;
 }
 
 function SelectionBackdropImpl({
     as,
-    selection,
     style,
     ...props
 }: SelectionBackdropProps) {
-    const dragging = useDataGridState(selection.state.dragging);
+    const { selection } = useDataGridContext();
+    const dragging = useDataGridState(selection.dragging);
 
     if (!dragging) {
         return null;
@@ -23,7 +22,7 @@ function SelectionBackdropImpl({
 
     return (
         <Component
-            style={{ 
+            style={{
                 position: 'absolute',
                 top: 0,
                 left: 0,

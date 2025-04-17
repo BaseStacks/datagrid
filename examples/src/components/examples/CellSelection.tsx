@@ -36,34 +36,34 @@ export function CellSelection() {
         onChange: setData,
     });
 
-    const layout = usePlugin(dataGrid, LayoutPlugin, {});
-    const cellSelection = usePlugin(dataGrid, CellSelectionPlugin, {});
+    usePlugin(dataGrid, LayoutPlugin, {});
+    usePlugin(dataGrid, CellSelectionPlugin, {});
 
     const headers = useDataGridState(dataGrid.state.headers);
     const rows = useDataGridState(dataGrid.state.rows);
-    
+
     return (
         <DataGridProvider dataGrid={dataGrid}>
             <DataGridContainer>
                 <div className={clxs.table}>
-                    <DataGridHeaderGroup layout={layout}>
+                    <DataGridHeaderGroup>
                         {headers.map((header, index) => (
-                            <DataGridHeader key={index} header={header} className={clxs.header} layout={layout} />
+                            <DataGridHeader key={index} header={header} className={clxs.header} />
                         ))}
                     </DataGridHeaderGroup>
                     {rows.map((row, index) => (
-                        <DataGridRow key={index} layout={layout} className={clxs.row}>
+                        <DataGridRow key={index} className={clxs.row}>
                             {row.cells.map((cell) => (
-                                <DataGridCell key={cell.id} cell={cell} className={clxs.cell} layout={layout}>
+                                <DataGridCell key={cell.id} cell={cell} className={clxs.cell}>
                                     {cell.render()}
                                 </DataGridCell>
                             ))}
                         </DataGridRow>
                     ))}
                 </div>
-                <SelectedRangeRects selection={cellSelection} className={clxs.selectedRangeRect} />
-                <ActiveCellRect selection={cellSelection} className={clxs.activeRect} />
-                <SelectionBackdrop selection={cellSelection} />
+                <SelectedRangeRects className={clxs.selectedRangeRect} />
+                <ActiveCellRect className={clxs.activeRect} />
+                <SelectionBackdrop />
             </DataGridContainer>
         </DataGridProvider>
     );

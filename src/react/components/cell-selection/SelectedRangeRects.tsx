@@ -1,14 +1,14 @@
 import { memo } from 'react';
-import type { CellSelectionPlugin } from '../../../core';
 import { useDataGridState } from '../../hooks/atomic/useDataGridState';
+import { useDataGridContext } from '../../hooks/useDataGridContext';
 
 interface SelectedRangeRectsProps extends React.HTMLAttributes<HTMLElement> {
     readonly as?: React.ElementType;
-    readonly selection: CellSelectionPlugin;
 }
 
-function SelectedRangeRectsImpl({ as, selection, style, ...props }: SelectedRangeRectsProps) {
-    const rangeRects = useDataGridState(selection.state.selectedRangeRects);
+function SelectedRangeRectsImpl({ as, style, ...props }: SelectedRangeRectsProps) {
+    const { selection } = useDataGridContext();
+    const rangeRects = useDataGridState(selection.selectedRangeRects);
 
     const Component = as || 'div';
 
