@@ -1,11 +1,4 @@
-import type { CellCoordinates, Id } from '../types';
-
-export interface RectType {
-    readonly width: number;
-    readonly height: number;
-    readonly left: number;
-    readonly top: number;
-}
+import type { CellCoordinates, Id, RectType } from '../types';
 
 export interface CursorOffset {
     x: number;

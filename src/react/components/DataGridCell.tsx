@@ -9,7 +9,7 @@ interface DataGridCellProps<TElement extends HTMLElement> extends React.HTMLAttr
 }
 
 export function DataGridCell<TElement extends HTMLElement = HTMLElement>({ as, cell, children, ...props }: DataGridCellProps<TElement>) {
-    const { layout } = useDataGridContext();
+    const { layout, state } = useDataGridContext();
     const ref = React.createRef<TElement>();
 
     const Component = as || 'div' as React.ElementType;
@@ -21,6 +21,7 @@ export function DataGridCell<TElement extends HTMLElement = HTMLElement>({ as, c
         left: '0',
         width: '100%',
         height: '100%',
+        zIndex: '0',
     }), [props.style]);
 
     useLayoutEffect(() => {
@@ -37,26 +38,29 @@ export function DataGridCell<TElement extends HTMLElement = HTMLElement>({ as, c
             ref.current.style.left = item.left === undefined ? '' : `${item.left}px`;
             ref.current.style.right = item.right === undefined ? '' : `${item.right}px`;
 
-            if (item.header.column.pinned) {
-                ref.current.style.zIndex = '1';
+            if (!item.header.column.pinned) {
+                return;
+            }
 
-                if (item.header.column.pinned === 'left') {
-                    ref.current.style.borderRightWidth = '1px';
-                }
-                else if (item.header.column.pinned === 'right') {
-                    ref.current.style.borderLeftWidth = '1px';
-                }
+            if (item.header.column.pinned === 'left') {
+                ref.current.style.borderRightWidth = '1px';
+                ref.current.style.zIndex = '2';
+            }
+            else if (item.header.column.pinned === 'right') {
+                ref.current.style.borderLeftWidth = '1px';
+                ref.current.style.zIndex = '1';
             }
         });
 
         return () => {
             unwatchColumnLayout();
         };
-    }, [cell.colId, layout.columnLayoutsState, ref]);
+    }, [cell.colId, layout.columnLayoutsState, ref, state.selectedRanges]);
 
     useEffect(() => {
         layout.registerElement(cell.id, ref.current!);
         return () => {
+
             layout.removeElement(cell.id);
         };
     }, [layout, cell.id, ref]);

@@ -62,7 +62,7 @@ export class CellSelectionPlugin<TRow extends RowData = RowData> implements Data
     private handleMouseDown = (event: MouseEvent) => {
         const { dragging } = this.dataGrid.selection;
         const { activeCell } = this.dataGrid.state;
-        
+
         const { cleanSelection, startSelection, updateLastSelectedRange } = this.dataGrid.selection;
 
         const clickOutside = !this.container?.contains(event.target as Node);
@@ -193,12 +193,53 @@ export class CellSelectionPlugin<TRow extends RowData = RowData> implements Data
         }
     };
 
+    private handleContainerScroll = () => {
+        const { activeCell, selectedRanges } = this.dataGrid.state;
+        const { selectedRangeRects, activeCellRect, dragging } = this.dataGrid.selection;
+
+        if (!selectedRanges.value?.length) {
+            selectedRangeRects.set([]);
+            return;
+        }
+
+        const newSelectedRangeRects = selectedRanges.value.map((selectedRange) => {
+            const startRect = this.dataGrid.layout.getRect(selectedRange.start);
+            const endRect = this.dataGrid.layout.getRect(selectedRange.end);
+            if (!startRect || !endRect) {
+                throw new Error('This should never happen!');
+            }
+
+            const startElement = this.dataGrid.layout.elementsState.get(selectedRange.start);
+            const endElement = this.dataGrid.layout.elementsState.get(selectedRange.end);
+            const startZIndex = startElement?.style.zIndex;
+            const endZIndex = endElement?.style.zIndex;
+
+            const maxZIndex = Math.max(
+                startZIndex ? parseInt(startZIndex, 10) : 0,
+                endZIndex ? parseInt(endZIndex, 10) : 0
+            );
+
+            return {
+                ...mergeRects(startRect, endRect),
+                zIndex: maxZIndex + 1
+            };
+        });
+
+        selectedRangeRects.set(newSelectedRangeRects);
+
+        if (activeCell.value) {
+            const rect = this.dataGrid.layout.getRect(activeCell.value.id);
+            activeCellRect.set(rect);
+        }
+    };
+
     private addEventListeners = () => {
         window.addEventListener('mousedown', this.handleMouseDown);
         window.addEventListener('mouseup', this.stopDragSelect);
 
         this.container!.addEventListener('mousemove', this.onMouseMove);
         this.container!.addEventListener('dblclick', this.startFocus);
+        this.container!.addEventListener('scroll', this.handleContainerScroll);
     };
 
     private removeEventListeners = () => {
@@ -207,6 +248,7 @@ export class CellSelectionPlugin<TRow extends RowData = RowData> implements Data
 
         this.container?.removeEventListener('mousemove', this.onMouseMove);
         this.container?.removeEventListener('dblclick', this.startFocus);
+        this.container?.removeEventListener('scroll', this.handleContainerScroll);
     };
 
     constructor(dataGrid: DataGrid<TRow>) {
@@ -263,7 +305,20 @@ export class CellSelectionPlugin<TRow extends RowData = RowData> implements Data
                     throw new Error('This should never happen!');
                 }
 
-                return mergeRects(startRect, endRect);
+                const startElement = this.dataGrid.layout.elementsState.get(newSelectedRange.start);
+                const endElement = this.dataGrid.layout.elementsState.get(newSelectedRange.end);
+                const startZIndex = startElement?.style.zIndex;
+                const endZIndex = endElement?.style.zIndex;
+
+                const maxZIndex = Math.max(
+                    startZIndex ? parseInt(startZIndex, 10) : 0,
+                    endZIndex ? parseInt(endZIndex, 10) : 0
+                );
+
+                return {
+                    ...mergeRects(startRect, endRect),
+                    zIndex: maxZIndex + 1
+                };
             });
 
             selectedRangeRects.set(newSelectedRangeRects);

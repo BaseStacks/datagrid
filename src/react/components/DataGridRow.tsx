@@ -35,11 +35,7 @@ function DataGridRowImpl({
     }, [layout.columnLayoutsState, ref]);
 
     return (
-        <Component
-            {...props}
-            ref={ref}
-            style={style}
-        />
+        <Component {...props} ref={ref} style={style} />
     );
 };
 

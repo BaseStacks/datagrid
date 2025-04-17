@@ -88,6 +88,14 @@ export interface ColumnLayout {
   readonly right?: number;
 }
 
+export type SelectedRangeCorner = 'top-left' | 'left' | 'top' | 'top-right' | 'right' | 'bottom-right' | 'bottom' | 'bottom-left' | 'left';
+
+export interface CellLayout {
+  readonly index: number;
+  readonly selected: boolean;
+  readonly selectedRangeCorners: SelectedRangeCorner[]
+}
+
 export interface Row<TRow extends RowData = RowData> {
   readonly index: number;
   readonly data: TRow;
@@ -169,3 +177,11 @@ export type DataGridPlugin<TOptions extends DataGridPluginOptions = DataGridPlug
   readonly activate: (opts: TOptions) => void;
   readonly deactivate: () => void;
 };
+
+export interface RectType {
+  readonly width: number;
+  readonly height: number;
+  readonly left: number;
+  readonly top: number;
+  readonly zIndex?: number;
+}

@@ -1,7 +1,6 @@
 import type { CellSelectionDraggingStatus } from '../plugins/CellSelectionPlugin';
-import type { CellCoordinates, CellId, RowData } from '../types';
+import type { CellCoordinates, CellId, RowData, RectType } from '../types';
 import { getCoordinatesById, createCellId } from '../utils/cellUtils';
-import type { RectType } from '../utils/domRectUtils';
 import { DataGridState } from './atomic/DataGridState';
 import { DataGridStates } from './DataGridStates';
 
