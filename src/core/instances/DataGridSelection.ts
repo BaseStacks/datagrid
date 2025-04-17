@@ -1,5 +1,5 @@
 import type { CellSelectionDraggingStatus } from '../plugins/CellSelectionPlugin';
-import type { CellCoordinates, CellId, RowData, RectType } from '../types';
+import type { CellCoordinates, CellId, RowData, RectType, SelectedCell } from '../types';
 import { getCoordinatesById, createCellId } from '../utils/cellUtils';
 import { DataGridState } from './atomic/DataGridState';
 import { DataGridStates } from './DataGridStates';
@@ -49,6 +49,39 @@ export class DataGridSelection<TRow extends RowData> {
         return this.state.headers.value.length - 1;
     }
 
+    private getCellsInRange(start: CellId, end: CellId): Map<CellId, SelectedCell> {
+        const startCoord = getCoordinatesById(start);
+        const endCoord = getCoordinatesById(end);
+        const cells = new Map<CellId, SelectedCell>();
+        const startRow = Math.min(startCoord.row, endCoord.row);
+        const endRow = Math.max(startCoord.row, endCoord.row);
+        const startCol = Math.min(startCoord.col, endCoord.col);
+        const endCol = Math.max(startCoord.col, endCoord.col);
+
+        for (let row = startRow; row <= endRow; row++) {
+            for (let col = startCol; col <= endCol; col++) {
+                const cellId = createCellId({ row, col });
+                const cell: SelectedCell = { edges: [] };
+                if (row === startRow) {
+                    cell.edges.push('top');
+                }
+                if (row === endRow) {
+                    cell.edges.push('bottom');
+                }
+                if (col === startCol) {
+                    cell.edges.push('left');
+                }
+                if (col === endCol) {
+                    cell.edges.push('right');
+                }
+                cells.set(cellId, cell);
+            }
+        }
+
+        return cells;
+    }
+
+
     constructor(state: DataGridStates<TRow>) {
         this.state = state;
     }
@@ -76,8 +109,11 @@ export class DataGridSelection<TRow extends RowData> {
         const { activeCell, selectedRanges } = this.state;
         const newSelectedRange = {
             start: createCellId(startPoint),
-            end: createCellId(startPoint)
+            end: createCellId(startPoint),
+            cells: new Map(),
         };
+
+        newSelectedRange.cells.set(newSelectedRange.start, { edges: ['top', 'left', 'bottom', 'right'] });
 
         activeCell.set({
             id: createCellId(startPoint),
@@ -159,7 +195,12 @@ export class DataGridSelection<TRow extends RowData> {
     public selectRange = (start: CellId, end: CellId) => {
         const { selectedRanges } = this.state;
         selectedRanges.set((prevSelectedRanges) => {
-            const newSelectedRange = { start, end };
+            const newSelectedRange = {
+                start,
+                end,
+                cells: new Map(),
+            };
+
             const selectedRanges = [...prevSelectedRanges];
             selectedRanges.push(newSelectedRange);
             return selectedRanges;
@@ -173,7 +214,12 @@ export class DataGridSelection<TRow extends RowData> {
                 return prevSelectedRanges;
             }
             const lastSelectedRange = prevSelectedRanges[prevSelectedRanges.length - 1];
-            const newSelectedRange = { ...lastSelectedRange, end: endCell };
+            const newSelectedRange = {
+                start: lastSelectedRange.start,
+                end: endCell,
+                cells: this.getCellsInRange(lastSelectedRange.start, endCell),
+            };
+
             const selectedRanges = [...prevSelectedRanges];
             selectedRanges[selectedRanges.length - 1] = newSelectedRange;
             return selectedRanges;

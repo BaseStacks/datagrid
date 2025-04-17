@@ -1,4 +1,3 @@
-import { mergeRects } from '../utils/domRectUtils';
 import { DataGrid } from '../instances/DataGrid';
 import type { DataGridKeyMap, DataGridPlugin, DataGridPluginOptions, RowData } from '../types';
 import { clearAllTextSelection } from '../utils/domUtils';
@@ -193,53 +192,12 @@ export class CellSelectionPlugin<TRow extends RowData = RowData> implements Data
         }
     };
 
-    private handleContainerScroll = () => {
-        const { activeCell, selectedRanges } = this.dataGrid.state;
-        const { selectedRangeRects, activeCellRect, dragging } = this.dataGrid.selection;
-
-        if (!selectedRanges.value?.length) {
-            selectedRangeRects.set([]);
-            return;
-        }
-
-        const newSelectedRangeRects = selectedRanges.value.map((selectedRange) => {
-            const startRect = this.dataGrid.layout.getRect(selectedRange.start);
-            const endRect = this.dataGrid.layout.getRect(selectedRange.end);
-            if (!startRect || !endRect) {
-                throw new Error('This should never happen!');
-            }
-
-            const startElement = this.dataGrid.layout.elementsState.get(selectedRange.start);
-            const endElement = this.dataGrid.layout.elementsState.get(selectedRange.end);
-            const startZIndex = startElement?.style.zIndex;
-            const endZIndex = endElement?.style.zIndex;
-
-            const maxZIndex = Math.max(
-                startZIndex ? parseInt(startZIndex, 10) : 0,
-                endZIndex ? parseInt(endZIndex, 10) : 0
-            );
-
-            return {
-                ...mergeRects(startRect, endRect),
-                zIndex: maxZIndex + 1
-            };
-        });
-
-        selectedRangeRects.set(newSelectedRangeRects);
-
-        if (activeCell.value) {
-            const rect = this.dataGrid.layout.getRect(activeCell.value.id);
-            activeCellRect.set(rect);
-        }
-    };
-
     private addEventListeners = () => {
         window.addEventListener('mousedown', this.handleMouseDown);
         window.addEventListener('mouseup', this.stopDragSelect);
 
         this.container!.addEventListener('mousemove', this.onMouseMove);
         this.container!.addEventListener('dblclick', this.startFocus);
-        this.container!.addEventListener('scroll', this.handleContainerScroll);
     };
 
     private removeEventListeners = () => {
@@ -248,7 +206,6 @@ export class CellSelectionPlugin<TRow extends RowData = RowData> implements Data
 
         this.container?.removeEventListener('mousemove', this.onMouseMove);
         this.container?.removeEventListener('dblclick', this.startFocus);
-        this.container?.removeEventListener('scroll', this.handleContainerScroll);
     };
 
     constructor(dataGrid: DataGrid<TRow>) {
@@ -288,53 +245,6 @@ export class CellSelectionPlugin<TRow extends RowData = RowData> implements Data
         };
 
         this.dataGrid.keyBindings.add(this, mergeKeyMap, handlers);
-
-        const { activeCell, selectedRanges } = this.dataGrid.state;
-        const { selectedRangeRects, activeCellRect } = this.dataGrid.selection;
-
-        const unwatchSelectedRanges = selectedRanges.watch((newSelectedRanges) => {
-            if (!newSelectedRanges?.length) {
-                selectedRangeRects.set([]);
-                return;
-            }
-
-            const newSelectedRangeRects = newSelectedRanges.map((newSelectedRange) => {
-                const startRect = this.dataGrid.layout.getRect(newSelectedRange.start);
-                const endRect = this.dataGrid.layout.getRect(newSelectedRange.end);
-                if (!startRect || !endRect) {
-                    throw new Error('This should never happen!');
-                }
-
-                const startElement = this.dataGrid.layout.elementsState.get(newSelectedRange.start);
-                const endElement = this.dataGrid.layout.elementsState.get(newSelectedRange.end);
-                const startZIndex = startElement?.style.zIndex;
-                const endZIndex = endElement?.style.zIndex;
-
-                const maxZIndex = Math.max(
-                    startZIndex ? parseInt(startZIndex, 10) : 0,
-                    endZIndex ? parseInt(endZIndex, 10) : 0
-                );
-
-                return {
-                    ...mergeRects(startRect, endRect),
-                    zIndex: maxZIndex + 1
-                };
-            });
-
-            selectedRangeRects.set(newSelectedRangeRects);
-        });
-
-        const unwatchActiveCell = activeCell.watch((nextActiveCell) => {
-            if (!nextActiveCell) {
-                activeCellRect.set(null);
-                return;
-            }
-
-            const rect = this.dataGrid.layout.getRect(nextActiveCell.id);
-            activeCellRect.set(rect);
-        });
-
-        this.unsubscribes.push(unwatchSelectedRanges, unwatchActiveCell);
     };
 
     public deactivate = () => {

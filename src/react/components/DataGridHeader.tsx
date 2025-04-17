@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useLayoutEffect, useMemo } from 'react';
+import React, { memo, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import { useDataGridContext } from '../hooks/useDataGridContext';
 import type { ColumnHeader } from '../../core';
 
@@ -8,7 +8,7 @@ interface DataGridHeaderProps<TElement extends HTMLElement> extends React.HTMLAt
 }
 
 function DataGridHeaderImpl<TElement extends HTMLElement = HTMLElement>({ as, header, children, ...props }: DataGridHeaderProps<TElement>) {
-    const ref = React.createRef<TElement>();
+    const ref = useRef<TElement>(null);
     const { layout } = useDataGridContext();
 
     const Component = as || 'div' as React.ElementType;
@@ -53,7 +53,7 @@ function DataGridHeaderImpl<TElement extends HTMLElement = HTMLElement>({ as, he
         return () => {
             unwatchColumnLayout();
         };
-    }, [layout.columnLayoutsState, header.id, ref]);
+    }, [layout.columnLayoutsState, header.id]);
 
     useEffect(() => {
         layout.registerElement(header.id, ref.current!);

@@ -25,9 +25,16 @@ export interface ScrollBehavior {
   readonly doNotScrollY?: boolean
 }
 
+export type SelectedRangeEdge = 'top' | 'bottom' | 'left' | 'right';
+
+export interface SelectedCell {
+  readonly edges: SelectedRangeEdge[];
+}
+
 export interface CellSelectedRange {
   readonly start: CellId;
   readonly end: CellId;
+  readonly cells: Map<CellId, SelectedCell>;
 }
 
 export interface SelectionBoundary {
@@ -84,16 +91,12 @@ export interface ColumnLayout {
   readonly index: number;
   readonly header: ColumnHeader;
   readonly width: number;
+  readonly firstLeftPinned: boolean;
+  readonly lastLeftPinned: boolean;
+  readonly firstRightPinned: boolean;
+  readonly lastRightPinned: boolean;
   readonly left?: number;
   readonly right?: number;
-}
-
-export type SelectedRangeCorner = 'top-left' | 'left' | 'top' | 'top-right' | 'right' | 'bottom-right' | 'bottom' | 'bottom-left' | 'left';
-
-export interface CellLayout {
-  readonly index: number;
-  readonly selected: boolean;
-  readonly selectedRangeCorners: SelectedRangeCorner[]
 }
 
 export interface Row<TRow extends RowData = RowData> {

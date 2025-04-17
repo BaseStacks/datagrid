@@ -35,12 +35,19 @@ export class LayoutPlugin<TRow extends RowData = RowData> implements DataGridPlu
         const columnWidth = Math.max(this.dataGrid.options.columnMinWidth, Math.min(defaultColumnWidth, this.dataGrid.options.columnMaxWidth));
 
         const columnLayouts = new Map<HeaderId, ColumnLayout>();
+        const leftPinnedColumnsCount = headers.value.filter((header) => header.column.pinned === 'left').length;
+        const rightPinnedColumnsCount = headers.value.filter((header) => header.column.pinned === 'right').length;
+
         headers.value.forEach((header, index) => {
             const columnId = header.id;
             const layout: ColumnLayout = {
                 index: index,
                 header,
                 width: columnWidth,
+                firstLeftPinned: header.column.pinned === 'left' && index === 0,
+                lastLeftPinned: header.column.pinned === 'left' && index === leftPinnedColumnsCount - 1,
+                firstRightPinned: header.column.pinned === 'right' && index === headers.value.length - rightPinnedColumnsCount,
+                lastRightPinned: header.column.pinned === 'right' && index === headers.value.length - 1,
                 left: undefined,
                 right: undefined
             };

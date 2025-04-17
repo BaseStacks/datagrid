@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useDataGridContext } from '../hooks/useDataGridContext';
 import React from 'react';
 
@@ -14,7 +14,7 @@ export function DataGridContainer({
 
     const Component = (as || 'div') as React.ElementType;
 
-    const containerRef = React.createRef<HTMLElement>();
+    const containerRef = useRef<HTMLElement>(null);
 
     useEffect(() => {
     }, [dataGrid.layout.containerState]);
@@ -29,7 +29,7 @@ export function DataGridContainer({
         return () => {
             dataGrid.layout.removeContainer(container!);
         };
-    }, [containerRef, dataGrid.layout]);
+    }, [dataGrid.layout]);
 
     return (
         <Component

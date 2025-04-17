@@ -1,7 +1,8 @@
-import { Column, DataGridProvider, useDataGrid, useDataGridState, DataGridContainer, DataGridCell, CellSelectionPlugin, usePlugin, SelectedRangeRects, ActiveCellRect, SelectionBackdrop, DataGridHeader, DataGridHeaderGroup, DataGridRow, LayoutPlugin } from '@basestacks/data-grid';
+import { Column, DataGridProvider, useDataGrid, useDataGridState, DataGridContainer, DataGridCell, CellSelectionPlugin, usePlugin, SelectionBackdrop, DataGridHeader, DataGridHeaderGroup, DataGridRow, LayoutPlugin } from '@basestacks/data-grid';
 import { useMemo, useState } from 'react';
 import { TextInput } from './controls/TextInput';
 import { generateData } from '@/helpers/dataHelpers';
+import { cn } from '@/utils/cn';
 
 export function CellSelection() {
     const columns = useMemo((): Column[] => [
@@ -54,15 +55,13 @@ export function CellSelection() {
                     {rows.map((row, index) => (
                         <DataGridRow key={index} className={clxs.row}>
                             {row.cells.map((cell) => (
-                                <DataGridCell key={cell.id} cell={cell} className={clxs.cell}>
+                                <DataGridCell key={cell.id} cell={cell} className={cn(clxs.cell, clxs.cellActive, clxs.cellSelected, clxs.cellPinned)}>
                                     {cell.render()}
                                 </DataGridCell>
                             ))}
                         </DataGridRow>
                     ))}
                 </div>
-                <SelectedRangeRects className={clxs.selectedRangeRect} />
-                <ActiveCellRect className={clxs.activeRect} />
                 <SelectionBackdrop />
             </DataGridContainer>
         </DataGridProvider>
@@ -72,9 +71,27 @@ export function CellSelection() {
 const clxs = {
     table: 'text-sm',
     header: 'bg-white dark:bg-gray-950 flex items-center border-gray-200 p-2 text-left font-medium text-gray-400 dark:border-gray-600 dark:text-gray-200',
-    row: 'overflow-hidden',
-    cell: 'bg-white dark:bg-gray-800 border-b border-gray-100 flex items-center border-gray-100 p-2 text-gray-500 dark:border-gray-700 dark:text-gray-400',
-    activeCell: 'outline outline-blue-500',
+    row: 'overflow-hidden border-b border-gray-200 dark:border-gray-600',
+    cell: 'bg-white flex items-center border border-transparent p-2 text-gray-500 outline-blue-600 dark:text-gray-400 dark:bg-gray-800',
+    cellActive: `
+        data-[active=true]:bg-white 
+        data-[active=true]:outline 
+        data-[active=true]:outline-offset-[-1px]
+        data-[active=true]:bg-gray-800
+        dark:data-[active=true]:bg-gray-800
+    `,
+    cellSelected: `
+        data-[selected=true]:bg-blue-950
+        data-[edge-top=true]:border-t-blue-600
+        data-[edge-left=true]:border-l-blue-600 
+        data-[edge-right=true]:border-r-blue-600 
+        data-[edge-bottom=true]:border-b-blue-600
+    `,
+    cellPinned: `
+        data-[last-left=true]:border-r-gray-600 
+        dark:data-[last-left=true]:border-r-gray-600
+        data-[first-right=true]:border-l-gray-600
+        dark:data-[first-right=true]:border-l-gray-600
+    `,
     selectedRangeRect: 'absolute pointer-events-none outline-2 outline-offset-[-2px] outline-blue-600 bg-blue-600/5',
-    activeRect: 'absolute pointer-events-none outline outline-offset-[-2px] outline-blue-600',
 };
