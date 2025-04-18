@@ -2,14 +2,14 @@ import { useEffect, useRef } from 'react';
 import { useDataGridContext } from '../hooks/useDataGridContext';
 import React from 'react';
 
-export interface DataGridContainerProps extends React.HTMLAttributes<HTMLElement> {
+export interface DataGridScrollAreaProps extends React.HTMLAttributes<HTMLElement> {
     readonly as?: string;
 }
 
-export function DataGridContainer({
+export function DataGridScrollArea({
     as = 'div',
     ...props
-}: React.PropsWithChildren<DataGridContainerProps>) {
+}: React.PropsWithChildren<DataGridScrollAreaProps>) {
     const dataGrid = useDataGridContext();
 
     const Component = (as || 'div') as React.ElementType;
@@ -17,14 +17,14 @@ export function DataGridContainer({
     const containerRef = useRef<HTMLElement>(null);
 
     useEffect(() => {
-    }, [dataGrid.layout.containerState]);
-
-    useEffect(() => {
         const container = containerRef.current!;
-        dataGrid.layout.registerContainer(container!);
+        container.style.setProperty('position', 'relative');
+        container.style.setProperty('overflow', 'auto');
+
+        dataGrid.layout.registerScrollArea(container!);
 
         return () => {
-            dataGrid.layout.removeContainer(container!);
+            dataGrid.layout.removeScrollArea(container!);
         };
     }, [dataGrid.layout]);
 

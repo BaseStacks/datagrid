@@ -1,4 +1,4 @@
-import { Column, DataGridProvider, useDataGrid, useDataGridState, DataGridContainer, DataGridCell, CellSelectionPlugin, usePlugin, DataGridHeader, DataGridHeaderGroup, DataGridRow, LayoutPlugin } from '@basestacks/data-grid';
+import { Column, DataGridProvider, useDataGrid, useDataGridState, DataGridContainer, DataGridCell, CellSelectionPlugin, usePlugin, DataGridHeader, DataGridHeaderGroup, DataGridRow, LayoutPlugin, DataGridScrollArea } from '@basestacks/data-grid';
 import { useMemo, useState } from 'react';
 import { generateData } from '@/helpers/dataHelpers';
 import { cn } from '@/utils/cn';
@@ -44,13 +44,13 @@ export function CellSelection() {
 
     return (
         <DataGridProvider dataGrid={dataGrid}>
-            <DataGridContainer>
-                <div className={clxs.table}>
-                    <DataGridHeaderGroup>
-                        {headers.map((header, index) => (
-                            <DataGridHeader key={index} header={header} className={clxs.header} />
-                        ))}
-                    </DataGridHeaderGroup>
+            <DataGridContainer className={clxs.table}>
+                <DataGridHeaderGroup>
+                    {headers.map((header, index) => (
+                        <DataGridHeader key={index} header={header} className={clxs.header} />
+                    ))}
+                </DataGridHeaderGroup>
+                <DataGridScrollArea className="relative h-[calc(400px-42px)] overflow-x-visible overflow-y-auto">
                     {rows.map((row, index) => (
                         <DataGridRow key={index} className={clxs.row}>
                             {row.cells.map((cell) => (
@@ -60,14 +60,14 @@ export function CellSelection() {
                             ))}
                         </DataGridRow>
                     ))}
-                </div>
+                </DataGridScrollArea>
             </DataGridContainer>
         </DataGridProvider>
     );
 };
 
 const clxs = {
-    table: 'text-sm user-select-none',
+    table: 'text-sm user-select-none max-h-[400px]',
     header: 'bg-white dark:bg-gray-950 flex items-center border-gray-200 p-2 text-left font-medium text-gray-400 dark:border-gray-600 dark:text-gray-200',
     row: 'overflow-hidden border-b border-gray-200 dark:border-gray-600',
     cell: 'bg-white flex items-center border border-transparent p-2 text-gray-500 outline-blue-600 dark:text-gray-400 dark:bg-gray-800',

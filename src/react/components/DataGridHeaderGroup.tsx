@@ -29,10 +29,28 @@ export function DataGridHeaderGroup({
             ref.current.style.width = columns.values().reduce((acc, column) => acc + column.width, 0) + 'px';
         });
 
+        const handleScroll = () => {
+            if (!ref.current) return;
+            const scrollLeft = layout.scrollAreaState.value?.scrollLeft || 0;
+            ref.current.style.transform = `translateX(-${scrollLeft}px)`;
+        };
+
+        let removeScrollHandler: (() => void) | undefined;
+
+        const unwatchScrollArea = layout.scrollAreaState.watch((scrollArea) => {
+            if (!scrollArea) return;
+            layout.scrollAreaState.value?.addEventListener('scroll', handleScroll);
+            removeScrollHandler = () => {
+                scrollArea.removeEventListener('scroll', handleScroll);
+            };
+        });
+
         return () => {
             unwatchColumnLayout();
+            unwatchScrollArea();
+            removeScrollHandler?.();
         };
-    }, [layout.columnLayoutsState, ref]);
+    }, [layout.columnLayoutsState, layout.scrollAreaState, ref]);
 
     return (
         <Component

@@ -7,6 +7,14 @@ export interface LayoutPluginOptions {
 export class LayoutPlugin<TRow extends RowData = RowData> implements DataGridPlugin<LayoutPluginOptions> {
     private readonly dataGrid: DataGrid<TRow>;
 
+    private get container() {
+        return this.dataGrid.layout.containerState.value!;
+    }
+
+    private get scrollArea() {
+        return this.dataGrid.layout.scrollAreaState.value!;
+    }
+
     private _lastScrollTop: number = 0;
 
     private createColumnLayouts = () => {
@@ -45,16 +53,20 @@ export class LayoutPlugin<TRow extends RowData = RowData> implements DataGridPlu
     private updateColumnLayouts = (trigger?: 'scroll-down' | 'scroll-left') => {
         const { columnLayoutsState } = this.dataGrid.layout;
 
-        const viewportWidth = this.container.clientWidth;
-        const baseLeft = this.container.scrollLeft;
-        const baseRight = this.container.scrollWidth - viewportWidth - baseLeft;
+        const viewportWidth = this.scrollArea.clientWidth;
+        const baseLeft = this.scrollArea.scrollLeft;
+        const baseRight = this.scrollArea.scrollWidth - viewportWidth - baseLeft;
 
         const columnsNeedUpdate = columnLayoutsState.values().filter((columnLayout) => {
             if (trigger === 'scroll-left') {
                 return columnLayout.header.column.pinned === 'left' || columnLayout.header.column.pinned === 'right';
             }
 
-            return columnLayout;
+            if (trigger === 'scroll-down') {
+                return false;
+            }
+
+            return true;
         });
 
         let calculatedLeft = baseLeft;
@@ -104,12 +116,8 @@ export class LayoutPlugin<TRow extends RowData = RowData> implements DataGridPlu
         this.createColumnLayouts();
         this.updateColumnLayouts();
 
-        this.container.addEventListener('scroll', this.handleContainerScroll);
+        this.scrollArea.addEventListener('scroll', this.handleContainerScroll);
     };
-
-    private get container() {
-        return this.dataGrid.layout.containerState.value!;
-    }
 
     constructor(dataGrid: DataGrid<TRow>) {
         this.dataGrid = dataGrid;
@@ -136,6 +144,6 @@ export class LayoutPlugin<TRow extends RowData = RowData> implements DataGridPlu
             return;
         }
 
-        this.container?.removeEventListener('scroll', this.handleContainerScroll);
+        this.scrollArea?.removeEventListener('scroll', this.handleContainerScroll);
     };
 }

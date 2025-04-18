@@ -9,6 +9,7 @@ export * from './hooks/debug/useWhatChanged';
 // Components
 export * from './components/DataGridProvider';
 export * from './components/DataGridContainer';
+export * from './components/DataGridScrollArea';
 export * from './components/DataGridCell';
 export * from './components/DataGridRow';
 export * from './components/DataGridHeader';

@@ -28,8 +28,8 @@ export class DataGridLayout<TRow extends RowData> {
     }
 
     public containerState = new DataGridState<HTMLElement | null>(null);
+    public scrollAreaState = new DataGridState<HTMLElement | null>(null);
     public elementsState = new DataGridMapState<Id, HTMLElement>();
-
     public columnLayoutsState = new DataGridMapState<Id, ColumnLayout>(new Map(), { useDeepEqual: false });
 
     public get cellRectMap() {
@@ -92,6 +92,30 @@ export class DataGridLayout<TRow extends RowData> {
         }
 
         this.containerState.set(null);
+    };
+
+    public registerScrollArea = (scrollArea: HTMLElement) => {
+        if (!scrollArea) {
+            return;
+        }
+
+        if (this.scrollAreaState.value) {
+            throw new Error('Container already registered');
+        }
+
+        this.scrollAreaState.set(scrollArea);
+    };
+
+    public removeScrollArea = (scrollArea: HTMLElement) => {
+        if (!this.scrollAreaState.value) {
+            throw new Error('Container not registered');
+        }
+
+        if (scrollArea !== this.scrollAreaState.value) {
+            throw new Error('Container mismatch');
+        }
+
+        this.scrollAreaState.set(null);
     };
 
     /**
