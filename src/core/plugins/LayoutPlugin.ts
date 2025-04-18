@@ -7,23 +7,7 @@ export interface LayoutPluginOptions {
 export class LayoutPlugin<TRow extends RowData = RowData> implements DataGridPlugin<LayoutPluginOptions> {
     private readonly dataGrid: DataGrid<TRow>;
 
-    private calculateLeft = (columnLayouts: ColumnLayout[], current: ColumnLayout) => {
-        const currentIndex = columnLayouts.findIndex((column) => column === current);
-
-        const prevColumns = columnLayouts.slice(0, currentIndex);
-        const prevWidth = prevColumns.reduce((acc, column) => acc + column.width, 0);
-
-        return prevWidth;
-    };
-
-    private calculateRight = (columnLayouts: ColumnLayout[], current: ColumnLayout) => {
-        const currentIndex = columnLayouts.findIndex((column) => column === current);
-
-        const nextColumns = columnLayouts.slice(currentIndex + 1);
-        const nextWidth = nextColumns.reduce((acc, column) => acc + column.width, 0);
-
-        return nextWidth;
-    };
+    private _lastScrollTop: number = 0;
 
     private createColumnLayouts = () => {
         const { headers } = this.dataGrid.state;
@@ -58,17 +42,26 @@ export class LayoutPlugin<TRow extends RowData = RowData> implements DataGridPlu
         this.dataGrid.layout.columnLayoutsState.set(columnLayouts);
     };
 
-    public updateColumnLayouts = () => {
+    private updateColumnLayouts = (trigger?: 'scroll-down' | 'scroll-left') => {
         const { columnLayoutsState } = this.dataGrid.layout;
 
         const viewportWidth = this.container.clientWidth;
         const baseLeft = this.container.scrollLeft;
         const baseRight = this.container.scrollWidth - viewportWidth - baseLeft;
 
-        const leftPinnedColumns = Array.from(columnLayoutsState.values().filter((columnLayout) => columnLayout.header.column.pinned === 'left'));
-        const rightPinnedColumns = Array.from(columnLayoutsState.values().filter((columnLayout) => columnLayout.header.column.pinned === 'right'));
+        const columnsNeedUpdate = columnLayoutsState.values().filter((columnLayout) => {
+            if (trigger === 'scroll-left') {
+                return columnLayout.header.column.pinned === 'left' || columnLayout.header.column.pinned === 'right';
+            }
 
-        columnLayoutsState.forEach((layout) => {
+            return columnLayout;
+        });
+
+        let calculatedLeft = baseLeft;
+        let calculatedBodyLeft = baseLeft;
+        let calculatedRight = baseRight;
+
+        columnsNeedUpdate.forEach((layout) => {
             const header = layout.header;
             const pinned = header.column.pinned;
 
@@ -76,27 +69,33 @@ export class LayoutPlugin<TRow extends RowData = RowData> implements DataGridPlu
             let right: number | undefined = undefined;
 
             if (pinned === 'left') {
-                left = baseLeft + this.calculateLeft(leftPinnedColumns, layout);
+                left = calculatedLeft;
+                calculatedLeft += layout.width;
+                calculatedBodyLeft += layout.width;
             }
             else if (pinned === 'right') {
-                right = baseRight + this.calculateRight(rightPinnedColumns, layout);
+                right = calculatedRight;
+                calculatedRight -= layout.width;
             }
             else {
-                const prevColumns = Array.from(columnLayoutsState.values()).filter((column) => column.index < layout.index);
-                left = prevColumns.reduce((acc, column) => acc + column.width, 0);
+                left = calculatedBodyLeft;
+                calculatedBodyLeft += layout.width;
             }
 
-            columnLayoutsState.replaceItem(header.id, {
-                ...layout,
-                left: left,
-                right: right
-            });
+            const needUpdate = (layout.left !== left || layout.right !== right);
+            if (!needUpdate) {
+                return;
+            }
+
+            columnLayoutsState.replaceItem(header.id, { ...layout, left, right });
         });
     };
 
     private handleContainerScroll = () => {
         this.dataGrid.layout.updateRects();
-        this.updateColumnLayouts();
+        const isScrollingDown = this.container.scrollTop != this._lastScrollTop;
+        this._lastScrollTop = this.container.scrollTop;
+        this.updateColumnLayouts(isScrollingDown ? 'scroll-down' : 'scroll-left');
     };
 
     private doActivate = () => {

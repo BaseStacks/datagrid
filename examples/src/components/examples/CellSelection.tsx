@@ -1,19 +1,18 @@
 import { Column, DataGridProvider, useDataGrid, useDataGridState, DataGridContainer, DataGridCell, CellSelectionPlugin, usePlugin, DataGridHeader, DataGridHeaderGroup, DataGridRow, LayoutPlugin } from '@basestacks/data-grid';
 import { useMemo, useState } from 'react';
-import { TextInput } from './controls/TextInput';
 import { generateData } from '@/helpers/dataHelpers';
 import { cn } from '@/utils/cn';
 
 export function CellSelection() {
     const columns = useMemo((): Column[] => [
         { dataKey: 'id', header: 'ID', pinned: 'left' },
-        { dataKey: 'firstName', header: 'First Name', pinned: 'left', cell: (cell) => <TextInput cell={cell} /> },
-        { dataKey: 'lastName', header: 'Last Name', cell: (cell) => <TextInput cell={cell} /> },
-        { dataKey: 'age', header: 'Age', cell: (cell) => <TextInput cell={cell} /> },
-        { dataKey: 'address', header: 'Address', cell: (cell) => <TextInput cell={cell} /> },
-        { dataKey: 'email', header: 'Email', cell: (cell) => <TextInput cell={cell} /> },
-        { dataKey: 'phone', header: 'Phone', cell: (cell) => <TextInput cell={cell} /> },
-        { dataKey: 'actions', header: 'Actions', pinned: 'right', cell: (cell) => <TextInput cell={cell} /> },
+        { dataKey: 'firstName', header: 'First Name', pinned: 'left' },
+        { dataKey: 'lastName', header: 'Last Name' },
+        { dataKey: 'age', header: 'Age' },
+        { dataKey: 'address', header: 'Address' },
+        { dataKey: 'email', header: 'Email' },
+        { dataKey: 'phone', header: 'Phone' },
+        { dataKey: 'actions', header: 'Actions', pinned: 'right' },
     ], []);
 
     const [data, setData] = useState(() => {
