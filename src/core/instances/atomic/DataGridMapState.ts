@@ -34,6 +34,16 @@ export class DataGridMapState<TItemId, TItem> {
         };
     }
 
+    public watchItems(listener: (operation: DataGridMapStateOperation<TItemId, TItem>) => void): () => void {
+        this._events.on('item_change', listener);
+        this._value.forEach((item, id) => {
+            this._events.emit('item_change', { operation: 'watch', item, id });
+        });
+        return () => {
+            this._events.off('item_change', listener);
+        };
+    }
+
     public watchItem(itemId: TItemId, listener: (operation: DataGridMapStateOperation<TItemId, TItem>) => void): () => void {
         const eventName = this._getItemEventName(itemId);
         this._events.on(eventName, listener);
@@ -77,7 +87,14 @@ export class DataGridMapState<TItemId, TItem> {
 
         this._value.set(itemId, item);
         const eventName = this._getItemEventName(itemId);
-        this._events.emit(eventName, { operation: 'add', item, id: itemId });
+
+        const eventPayload = { 
+            operation: 'add',
+            item,
+            id: itemId
+        };
+        this._events.emit(eventName, eventPayload);
+        this._events.emit('item_change', eventPayload);
     }
 
     public removeItem(itemId: TItemId): void {
@@ -88,7 +105,13 @@ export class DataGridMapState<TItemId, TItem> {
 
         this._value.delete(itemId);
         const eventName = this._getItemEventName(itemId);
-        this._events.emit(eventName, { operation: 'remove', item: removedItem, id: itemId });
+        const eventPayload = { 
+            operation: 'add',
+            item: removedItem,
+            id: itemId
+        };
+        this._events.emit(eventName, eventPayload);
+        this._events.emit('item_change', eventPayload);
     }
 
     public replaceItem(itemId: TItemId, item: TItem): void {
@@ -97,7 +120,13 @@ export class DataGridMapState<TItemId, TItem> {
             throw new Error(`Item with id ${itemId} does not exist`);
         }
         const eventName = this._getItemEventName(itemId);
-        this._events.emit(eventName, { operation: 'replace', item, id: itemId });
+        const eventPayload = { 
+            operation: 'add',
+            item,
+            id: itemId
+        };
+        this._events.emit(eventName, eventPayload);
+        this._events.emit('item_change', eventPayload);
     }
 
     public clear(): void {
@@ -116,6 +145,19 @@ export class DataGridMapState<TItemId, TItem> {
 
     public values() {
         return this._value.values();
+    }
+
+    public entries() {
+        return this._value.entries();
+    }
+
+    public findKey(target: TItem): TItemId | undefined {
+        for (const [key, item] of this._value.entries()) {
+            if (target === item) {
+                return key;
+            }
+        }
+        return undefined;
     }
     //#endregion
 }

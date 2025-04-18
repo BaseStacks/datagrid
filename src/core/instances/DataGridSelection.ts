@@ -49,7 +49,15 @@ export class DataGridSelection<TRow extends RowData> {
         return this.state.headers.value.length - 1;
     }
 
-    private getCellsInRange(start: CellId, end: CellId): Map<CellId, SelectedCell> {
+    constructor(state: DataGridStates<TRow>) {
+        this.state = state;
+    }
+
+    public selectedRangeRects = new DataGridState<RectType[]>([]);
+    public activeCellRect = new DataGridState<RectType | null>(null);
+    public dragging = new DataGridState<CellSelectionDraggingStatus>(false);
+
+    public getCellsInRange(start: CellId, end: CellId): Map<CellId, SelectedCell> {
         const startCoord = getCoordinatesById(start);
         const endCoord = getCoordinatesById(end);
         const cells = new Map<CellId, SelectedCell>();
@@ -80,15 +88,6 @@ export class DataGridSelection<TRow extends RowData> {
 
         return cells;
     }
-
-
-    constructor(state: DataGridStates<TRow>) {
-        this.state = state;
-    }
-
-    public selectedRangeRects = new DataGridState<RectType[]>([]);
-    public activeCellRect = new DataGridState<RectType | null>(null);
-    public dragging = new DataGridState<CellSelectionDraggingStatus>(false);
 
     public navigate = (relativeOffset: Offset) => {
         const { activeCell } = this.state;

@@ -1,4 +1,4 @@
-import { Column, DataGridProvider, useDataGrid, useDataGridState, DataGridContainer, DataGridCell, CellSelectionPlugin, usePlugin, SelectionBackdrop, DataGridHeader, DataGridHeaderGroup, DataGridRow, LayoutPlugin } from '@basestacks/data-grid';
+import { Column, DataGridProvider, useDataGrid, useDataGridState, DataGridContainer, DataGridCell, CellSelectionPlugin, usePlugin, DataGridHeader, DataGridHeaderGroup, DataGridRow, LayoutPlugin } from '@basestacks/data-grid';
 import { useMemo, useState } from 'react';
 import { TextInput } from './controls/TextInput';
 import { generateData } from '@/helpers/dataHelpers';
@@ -62,14 +62,13 @@ export function CellSelection() {
                         </DataGridRow>
                     ))}
                 </div>
-                <SelectionBackdrop />
             </DataGridContainer>
         </DataGridProvider>
     );
 };
 
 const clxs = {
-    table: 'text-sm',
+    table: 'text-sm user-select-none',
     header: 'bg-white dark:bg-gray-950 flex items-center border-gray-200 p-2 text-left font-medium text-gray-400 dark:border-gray-600 dark:text-gray-200',
     row: 'overflow-hidden border-b border-gray-200 dark:border-gray-600',
     cell: 'bg-white flex items-center border border-transparent p-2 text-gray-500 outline-blue-600 dark:text-gray-400 dark:bg-gray-800',

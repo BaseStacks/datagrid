@@ -135,7 +135,7 @@ export const isRangeAdjacent = (rangeA: CellSelectedRange, rangeB: CellSelectedR
  *          - The input array contains only one range
  *          - The selected ranges do not form a perfect rectangle (have gaps or irregular shape)
  */
-export const tryMakeRectangle = (ranges: CellSelectedRange[]) => {
+export const tryMakeRectangle = <TRange extends CellSelectedRange>(ranges: TRange[]) => {
     // If no ranges, return empty array
     if (ranges.length === 0) {
         return null;
@@ -158,10 +158,10 @@ export const tryMakeRectangle = (ranges: CellSelectedRange[]) => {
     }
 
     // Create the potential rectangle range
-    const potentialRectangle: CellSelectedRange = {
+    const potentialRectangle = {
         start: createCellId({ col: minCol, row: minRow }),
         end: createCellId({ col: maxCol, row: maxRow })
-    };
+    } as TRange;
 
     // Calculate the total cells in all input ranges
     const cells: CellCoordinates[] = [];
@@ -190,12 +190,12 @@ export const tryMakeRectangle = (ranges: CellSelectedRange[]) => {
     return null;
 };
 
-type RangeGroup = {
-    members: CellSelectedRange[];
-    mergedRange: CellSelectedRange | null;
+type RangeGroup<TRange extends CellSelectedRange> = {
+    members: TRange[];
+    mergedRange: TRange | null;
 };
 
-const createRangeGroup = (currentRange: CellSelectedRange, others: CellSelectedRange[]): RangeGroup => {
+const createRangeGroup = <TRange extends CellSelectedRange>(currentRange: TRange, others: TRange[]) => {
     const members = [
         currentRange,
         ...others
@@ -203,7 +203,7 @@ const createRangeGroup = (currentRange: CellSelectedRange, others: CellSelectedR
             .filter(other => isRangeAdjacent(currentRange, other) || isRangeOverlapping(currentRange, other))
     ];
 
-    const group: RangeGroup = {
+    const group: RangeGroup<TRange> = {
         members: members,
         mergedRange: tryMakeRectangle(members)
     };
@@ -218,11 +218,11 @@ const createRangeGroup = (currentRange: CellSelectedRange, others: CellSelectedR
  * @param ranges - Array of selected ranges to combine
  * @returns Array of combined rectangle ranges
  */
-export const tryCombineRanges = (ranges: CellSelectedRange[]): CellSelectedRange[] => {
+export const tryCombineRanges = <TRange extends CellSelectedRange>(ranges: TRange[]): TRange[] => {
     // Return early if there's nothing to combine
     if (ranges.length < 2) return ranges;
 
-    const mergedRanges: CellSelectedRange[] = [];
+    const mergedRanges: TRange[] = [];
     let remainingRanges = [...ranges];
 
     // Process ranges until none remain
@@ -253,8 +253,8 @@ export const tryCombineRanges = (ranges: CellSelectedRange[]): CellSelectedRange
     return mergedRanges;
 };
 
-export const tryRemoveDuplicates = (ranges: CellSelectedRange[]): CellSelectedRange[] => {
-    const uniqueRanges: CellSelectedRange[] = [];
+export const tryRemoveDuplicates = <TRange extends CellSelectedRange>(ranges: TRange[]): TRange[] => {
+    const uniqueRanges: TRange[] = [];
 
     ranges.forEach(range => {
         if (!uniqueRanges.some(existingRange => isRangeEqual(existingRange, range))) {

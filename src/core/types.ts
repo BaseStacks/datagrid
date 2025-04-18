@@ -34,6 +34,9 @@ export interface SelectedCell {
 export interface CellSelectedRange {
   readonly start: CellId;
   readonly end: CellId;
+}
+
+export interface CellSelectedRangeWithCells extends CellSelectedRange {
   readonly cells: Map<CellId, SelectedCell>;
 }
 

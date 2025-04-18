@@ -121,7 +121,7 @@ export function DataGridCell<TElement extends HTMLElement = HTMLElement>({ as, c
     }, [cell.colId, cell.id, layout.columnLayoutsState, state.activeCell, state.selectedRanges]);
 
     useEffect(() => {
-        layout.registerElement(cell.id, ref.current!);
+        layout.registerNode(cell.id, ref.current!);
         return () => {
 
             layout.removeElement(cell.id);

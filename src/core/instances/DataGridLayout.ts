@@ -1,4 +1,4 @@
-import type { CellId, ColumnLayout, Id, RowData, RectType, CellLayout } from '../types';
+import type { CellId, ColumnLayout, Id, RowData, RectType } from '../types';
 import { getCoordinatesById } from '../utils/cellUtils';
 import { findIdByRect, findRect, getCursorOffset, getRect } from '../utils/domRectUtils';
 import { idTypeEquals } from '../utils/idUtils';
@@ -31,7 +31,6 @@ export class DataGridLayout<TRow extends RowData> {
     public elementsState = new DataGridMapState<Id, HTMLElement>();
 
     public columnLayoutsState = new DataGridMapState<Id, ColumnLayout>(new Map(), { useDeepEqual: false });
-    public cellLayoutsState = new DataGridMapState<Id, CellLayout>(new Map(), { useDeepEqual: false });
 
     public get cellRectMap() {
         const cellRectMap = new Map<Id, RectType>();
@@ -100,7 +99,7 @@ export class DataGridLayout<TRow extends RowData> {
      * @param id
      * @param element
      */
-    public registerElement = (id: Id, element: HTMLElement) => {
+    public registerNode = (id: Id, element: HTMLElement) => {
         this.elementsState.addItem(id, element);
 
         if (this.containerState.value) {
@@ -173,6 +172,25 @@ export class DataGridLayout<TRow extends RowData> {
         const rect = getRect(this.containerState.value, cellElement);
         if (rect) {
             return rect;
+        }
+
+        return null;
+    };
+
+    public getCellByElement = (element: HTMLElement) => {
+        const registerCell = this.elementsState.findKey(element);
+        if (!registerCell) {
+            return null;
+        }
+
+        const rect = this._rectMap.get(registerCell);
+        if (rect) {
+            return {
+                id: registerCell as CellId,
+                coordinates: getCoordinatesById(registerCell),
+                isActive: this.state.activeCell.value?.id === registerCell,
+                isFocusing: this.state.editing.value && this.state.activeCell.value?.id === registerCell,
+            };
         }
 
         return null;
