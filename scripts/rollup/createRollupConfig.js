@@ -19,7 +19,7 @@ export function createRollupConfig(options, callback) {
       file: outputName,
       format: options.format,
       name: 'SchemaForm',
-      sourcemap: false,
+      sourcemap: true,
       exports: 'named',
     },
     external: ['react', 'react/jsx-runtime', 'react-hook-form'],

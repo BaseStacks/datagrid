@@ -10,7 +10,8 @@ import mdx from '@mdx-js/rollup';
 export default defineConfig({
     resolve: {
         alias: {
-            '@': path.resolve(__dirname, 'src')
+            '@': path.resolve(__dirname, 'src'),
+            '@basestacks/data-grid': path.resolve(__dirname, '../src')
         },
     },
     plugins: [
@@ -20,17 +21,5 @@ export default defineConfig({
         react(),
         tailwindcss(),
         TanStackRouterVite({ target: 'react', autoCodeSplitting: true }),
-    ],
-    build: {
-        rollupOptions: {
-            output: {
-                sourcemap: true,
-                manualChunks: (id) => {
-                    if (id.includes('@basestacks/data-grid')) {
-                        return 'data-grid';
-                    }
-                },
-            },
-        }
-    }
+    ]
 });

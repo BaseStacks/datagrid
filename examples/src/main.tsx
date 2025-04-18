@@ -1,6 +1,6 @@
 import './styles.css';
 
-import React, { cloneElement, HTMLAttributes, StrictMode, TdHTMLAttributes, } from 'react';
+import React, { HTMLAttributes, StrictMode, } from 'react';
 import ReactDOM from 'react-dom/client';
 import { RouterProvider, createRouter } from '@tanstack/react-router';
 import { MDXProvider } from '@mdx-js/react';
@@ -11,7 +11,7 @@ import { CodeBlock } from './components/layout/CodeBlock';
 import { PageHeader } from './components/PageHeader';
 
 // Create a new router instance
-const router = createRouter({ routeTree });
+const router = createRouter({ routeTree } as any);
 
 // Register the router instance for type safety
 declare module '@tanstack/react-router' {

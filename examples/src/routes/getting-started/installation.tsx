@@ -1,7 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/primitive/Tabs';
-import ShikiHighlighter, { useShikiHighlighter } from 'react-shiki';
 import { CodeBlock } from '../../components/layout/CodeBlock';
 
 export const Route = createFileRoute('/getting-started/installation')({
