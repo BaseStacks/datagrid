@@ -1,5 +1,13 @@
 import React from 'react';
 
+export type DataGridEventTypes = {
+  readonly 'execute-action': {
+    readonly action: DataGridAction;
+  }
+};
+
+export type DataGridEventType = keyof DataGridEventTypes;
+
 export type RowData = Record<string, any>;
 export type RowKey<TRow extends RowData> = keyof TRow | ((opts: { rowData: TRow; rowIndex: number }) => TRow[keyof TRow])
 export type Unsubscribe = () => void;
@@ -172,7 +180,7 @@ export type DataGridAction =
   | 'focus'
   ;
 
-export type DataGridKeyMap<TAction extends string> = Partial<Record<TAction, string | string[]>>;
+export type DataGridKeyMap<TAction extends DataGridAction> = Partial<Record<TAction, string | string[]>>;
 
 export interface DataGridPluginOptions {
   readonly enable?: boolean;
@@ -189,5 +197,6 @@ export interface RectType {
   readonly height: number;
   readonly left: number;
   readonly top: number;
-  readonly zIndex?: number;
+  readonly right: number;
+  readonly bottom: number;
 }

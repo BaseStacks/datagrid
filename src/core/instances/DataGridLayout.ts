@@ -56,20 +56,6 @@ export class DataGridLayout<TRow extends RowData> {
         return cellRectMap;
     }
 
-    public updateRects = () => {
-        const container = this.containerState.value;
-        if (!container) {
-            return;
-        }
-
-        this.elementsState.forEach((element, id) => {
-            const rect = getRect(container, element);
-            if (rect) {
-                this._rectMap.set(id, rect);
-            }
-        });
-    };
-
     /**
      * Register the container to the layout
      * @param newContainer
@@ -195,17 +181,17 @@ export class DataGridLayout<TRow extends RowData> {
      * Get the rectangle of the element by id
      * @param id
      */
-    public getRect = (id: Id) => {
+    public getRect = (container: HTMLElement ,id: Id) => {
         if (!this.containerState.value) {
             return null;
         }
 
-        const cellElement = this.elementsState.get(id);
-        if (!cellElement) {
+        const element = this.elementsState.get(id);
+        if (!element) {
             return null;
         }
 
-        const rect = getRect(this.containerState.value, cellElement);
+        const rect = getRect(container, element);
         if (rect) {
             return rect;
         }

@@ -1,20 +1,23 @@
 import { tinykeys } from 'tinykeys';
-import type { DataGridKeyMap, DataGridPlugin, RowData } from '../types';
+import type { DataGridAction, DataGridKeyMap, DataGridPlugin, RowData } from '../types';
 import type { DataGridStates } from './DataGridStates';
+import type { DataGridEvents } from './DataGridEvents';
 
 export type KeyBindingHandler = (event: KeyboardEvent) => void | boolean;
 
 export class DataGridKeyBindings<TRow extends RowData> {
     // @ts-expect-error - Unused state
     private state: DataGridStates<TRow>;
+    private events: DataGridEvents<TRow>;
 
     private deregisterMap = new Map<string, any>();
 
-    constructor(state: DataGridStates<TRow>) {
+    constructor(state: DataGridStates<TRow>, events: DataGridEvents<TRow>) {
         this.state = state;
+        this.events = events;
     }
 
-    public add = <TKeyMap extends string>(source: DataGridPlugin, keyMap: DataGridKeyMap<TKeyMap>, handlers: Record<TKeyMap, KeyBindingHandler>) => {
+    public add = <TKeyMap extends DataGridAction>(source: DataGridPlugin, keyMap: DataGridKeyMap<TKeyMap>, handlers: Record<TKeyMap, KeyBindingHandler>) => {
         const keyBindingMap: Record<string, KeyBindingHandler> = {};
 
         const addKeybinding = (action: TKeyMap, handler: (event: KeyboardEvent) => void | boolean) => {
@@ -26,6 +29,7 @@ export class DataGridKeyBindings<TRow extends RowData> {
             keys.forEach(key => {
                 keyBindingMap[key] = ((event: KeyboardEvent) => {
                     const handled = handler(event);
+                    this.events.emit('execute-action', { action });
                     if (handled === false) {
                         return;
                     }

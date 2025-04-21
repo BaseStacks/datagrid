@@ -7,8 +7,6 @@ interface DataGridHeaderProps<TElement extends HTMLElement> extends React.HTMLAt
     readonly header: ColumnHeader;
 }
 
-const scrollbarWidth = 15;
-
 function DataGridHeaderImpl<TElement extends HTMLElement = HTMLElement>({ as, header, children, ...props }: DataGridHeaderProps<TElement>) {
     const ref = useRef<TElement>(null);
     const { layout } = useDataGridContext();

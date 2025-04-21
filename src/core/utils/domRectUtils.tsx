@@ -24,7 +24,9 @@ export const getRect = (container: HTMLElement, start?: HTMLElement, end?: HTMLE
         const height = bottom - top;
         return {
             left,
+            right,
             top,
+            bottom,
             width,
             height
         };
@@ -32,10 +34,11 @@ export const getRect = (container: HTMLElement, start?: HTMLElement, end?: HTMLE
 
     if (start) {
         const startRect = start.getBoundingClientRect();
-
         return {
-            left: startRect.left - containerRect.left + scrollLeft,
-            top: startRect.top - containerRect.top + scrollTop,
+            left: startRect.left - containerRect.left,
+            top: startRect.top - containerRect.top,
+            right: startRect.right - containerRect.left,
+            bottom: startRect.bottom - containerRect.top,
             width: startRect.width,
             height: startRect.height
         };
@@ -51,6 +54,8 @@ export const getRect = (container: HTMLElement, start?: HTMLElement, end?: HTMLE
     return {
         left,
         top,
+        right,
+        bottom,
         width,
         height
     };
@@ -77,6 +82,8 @@ export const mergeRects = (...rects: RectType[]): RectType => {
         return {
             left: 0,
             top: 0,
+            right: 0,
+            bottom: 0,
             width: 0,
             height: 0
         };
@@ -89,7 +96,9 @@ export const mergeRects = (...rects: RectType[]): RectType => {
 
     return {
         left,
+        right,
         top,
+        bottom,
         width: right - left,
         height: bottom - top
     };

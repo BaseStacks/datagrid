@@ -4,6 +4,7 @@ import { createCellId } from '../utils/cellUtils';
 import { createId } from '../utils/idUtils';
 import { updateRowData } from '../utils/rowUtils';
 import { calculateRangeBoundary } from '../utils/selectionUtils';
+import { DataGridEvents } from './DataGridEvents';
 import { DataGridKeyBindings } from './DataGridKeyBindings';
 import { DataGridLayout } from './DataGridLayout';
 import { DataGridSelection } from './DataGridSelection';
@@ -108,9 +109,10 @@ export class DataGrid<TRow extends RowData = RowData> {
         this.options = { ...(defaultOptions as any), ...options, };
 
         this.state = new DataGridStates<TRow>();
+        this.events = new DataGridEvents<TRow>(this.state);
         this.selection = new DataGridSelection(this.state);
         this.layout = new DataGridLayout(this.state);
-        this.keyBindings = new DataGridKeyBindings(this.state);
+        this.keyBindings = new DataGridKeyBindings(this.state, this.events);
 
         this.initialize();
     }
@@ -120,6 +122,7 @@ export class DataGrid<TRow extends RowData = RowData> {
     public selection: DataGridSelection<TRow>;
     public layout: DataGridLayout<TRow>;
     public keyBindings: DataGridKeyBindings<TRow>;
+    public events: DataGridEvents<TRow>;
 
     public updateOptions = (newOptions: DataGridOptions<TRow>) => {
         const { columns, data } = newOptions;
