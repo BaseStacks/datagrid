@@ -24,7 +24,9 @@ export function DataGridHeaderGroup({
 
     useLayoutEffect(() => {
         const unwatchColumnLayout = layout.columnLayoutsState.watch((columns) => {
-            if (!ref.current) return;
+            if (!ref.current) {
+                return;
+            };
 
             ref.current.style.width = columns.values().reduce((acc, column) => acc + column.width, 0) + 'px';
         });

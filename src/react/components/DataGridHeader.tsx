@@ -7,6 +7,8 @@ interface DataGridHeaderProps<TElement extends HTMLElement> extends React.HTMLAt
     readonly header: ColumnHeader;
 }
 
+const scrollbarWidth = 15;
+
 function DataGridHeaderImpl<TElement extends HTMLElement = HTMLElement>({ as, header, children, ...props }: DataGridHeaderProps<TElement>) {
     const ref = useRef<TElement>(null);
     const { layout } = useDataGridContext();
@@ -34,9 +36,19 @@ function DataGridHeaderImpl<TElement extends HTMLElement = HTMLElement>({ as, he
                 return;
             }
 
-            ref.current.style.width = `${item.width}px`;
+            let width = item.width;
+            if (item.lastRightPinned) {
+                width += layout.scrollbarWidth;
+            }
+
+            let right = item.right;
+            if (item.lastRightPinned) {
+                right! -= layout.scrollbarWidth;
+            }
+
+            ref.current.style.width = `${width}px`;
             ref.current.style.left = item.left === undefined ? '' : `${item.left}px`;
-            ref.current.style.right = item.right === undefined ? '' : `${item.right}px`;
+            ref.current.style.right = right === undefined ? '' : `${right}px`;
 
             if (item.header.column.pinned) {
                 ref.current.style.zIndex = '1';
@@ -53,7 +65,7 @@ function DataGridHeaderImpl<TElement extends HTMLElement = HTMLElement>({ as, he
         return () => {
             unwatchColumnLayout();
         };
-    }, [layout.columnLayoutsState, header.id]);
+    }, [layout.columnLayoutsState, header.id, layout.scrollbarWidth]);
 
     useEffect(() => {
         layout.registerNode(header.id, ref.current!);

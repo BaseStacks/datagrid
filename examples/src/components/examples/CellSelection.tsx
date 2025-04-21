@@ -45,17 +45,18 @@ export function CellSelection() {
     return (
         <DataGridProvider dataGrid={dataGrid}>
             <DataGridContainer className={clxs.table}>
-                <DataGridHeaderGroup>
+                <DataGridHeaderGroup className={clxs.headerGroup}>
                     {headers.map((header, index) => (
                         <DataGridHeader key={index} header={header} className={clxs.header} />
                     ))}
+                    <span className="absolute right-0 w-[-15px] h-full bg-white dark:bg-gray-950"/>
                 </DataGridHeaderGroup>
                 <DataGridScrollArea className="relative h-[calc(400px-42px)] overflow-x-visible overflow-y-auto">
                     {rows.map((row, index) => (
                         <DataGridRow key={index} className={clxs.row}>
                             {row.cells.map((cell) => (
                                 <DataGridCell key={cell.id} cell={cell} className={cn(clxs.cell, clxs.cellActive, clxs.cellSelected, clxs.cellPinned)}>
-                                    {cell.render()}
+                                    <span className="overflow-hidden line-clamp-1 break-words">{cell.render()}</span>
                                 </DataGridCell>
                             ))}
                         </DataGridRow>
@@ -67,10 +68,11 @@ export function CellSelection() {
 };
 
 const clxs = {
-    table: 'text-sm user-select-none max-h-[400px]',
+    table: 'text-sm max-h-[400px]',
+    headerGroup: 'bg-white dark:bg-gray-950',
     header: 'bg-white dark:bg-gray-950 flex items-center border-gray-200 p-2 text-left font-medium text-gray-400 dark:border-gray-600 dark:text-gray-200',
     row: 'overflow-hidden border-b border-gray-200 dark:border-gray-600',
-    cell: 'bg-white flex items-center border border-transparent p-2 text-gray-500 outline-blue-600 dark:text-gray-400 dark:bg-gray-800',
+    cell: 'user-select-none bg-white flex items-center border border-transparent p-2 text-gray-500 outline-blue-600 dark:text-gray-400 dark:bg-gray-800',
     cellActive: `
         data-[active=true]:bg-white 
         data-[active=true]:outline 

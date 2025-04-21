@@ -27,6 +27,18 @@ export class DataGridLayout<TRow extends RowData> {
         this.state = state;
     }
 
+    public get scrollbarWidth() {
+        if (!this.scrollAreaState.value) {
+            return 0;
+        }
+
+        const scrollArea = this.scrollAreaState.value;
+        const scrollWidth = scrollArea.scrollWidth;
+        const clientWidth = scrollArea.clientWidth;
+
+        return scrollWidth > clientWidth ? scrollWidth - clientWidth : 0;
+    }
+
     public containerState = new DataGridState<HTMLElement | null>(null);
     public scrollAreaState = new DataGridState<HTMLElement | null>(null);
     public elementsState = new DataGridMapState<Id, HTMLElement>();
