@@ -27,10 +27,15 @@ export class DataGridState<TValue> {
 
     public watch(listener: (value: TValue) => void): () => void {
         this._events.on('update_value', listener);
+
+        // Emit the initial value
+        this._events.emit('update_value', this.value);
+
         return () => {
             this._events.off('update_value', listener);
         };
     }
+
     public set(
         newValue: TValue | ((oldValue: TValue) => TValue),
         options: DataGridStateSetOptions = {}

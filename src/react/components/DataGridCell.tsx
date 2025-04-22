@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef } from 'react';
+import { memo, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import { type Cell } from '../../core';
 import { useDataGridContext } from '../hooks/useDataGridContext';
 import React from 'react';
@@ -8,9 +8,10 @@ interface DataGridCellProps<TElement extends HTMLElement> extends React.HTMLAttr
     readonly cell: Cell;
 }
 
-export function DataGridCell<TElement extends HTMLElement = HTMLElement>({ as, cell, children, ...props }: DataGridCellProps<TElement>) {
+function DataGridCellImpl<TElement extends HTMLElement = HTMLElement>({ as, cell, children, ...props }: DataGridCellProps<TElement>) {
     const { layout, state } = useDataGridContext();
     const ref = useRef<TElement>(null);
+    const positionRef = useRef<{ left: number; width: number; }>(null);
 
     const Component = as || 'div' as React.ElementType;
 
@@ -18,10 +19,9 @@ export function DataGridCell<TElement extends HTMLElement = HTMLElement>({ as, c
         ...props.style,
         position: 'absolute',
         top: '0',
-        left: '0',
-        width: '100%',
+        left: positionRef.current?.left,
+        width: positionRef.current?.width,
         height: '100%',
-        zIndex: '0',
     }), [props.style]);
 
     useLayoutEffect(() => {
@@ -33,6 +33,11 @@ export function DataGridCell<TElement extends HTMLElement = HTMLElement>({ as, c
             if (operation === 'remove') {
                 return;
             }
+
+            positionRef.current = {
+                left: item.left ?? 0,
+                width: item.width
+            };
 
             ref.current.style.width = `${item.width}px`;
             ref.current.style.left = item.left === undefined ? '' : `${item.left}px`;
@@ -52,15 +57,6 @@ export function DataGridCell<TElement extends HTMLElement = HTMLElement>({ as, c
             ref.current.setAttribute('data-last-left', item.lastLeftPinned ? 'true' : 'false');
             ref.current.setAttribute('data-first-right', item.firstRightPinned ? 'true' : 'false');
             ref.current.setAttribute('data-last-right', item.lastRightPinned ? 'true' : 'false');
-
-            if (item.header.column.pinned === 'left') {
-                ref.current.style.borderRightWidth = '1px';
-                ref.current.style.zIndex = '2';
-            }
-            else if (item.header.column.pinned === 'right') {
-                ref.current.style.borderLeftWidth = '1px';
-                ref.current.style.zIndex = '1';
-            }
         });
 
         const unwatchActiveCell = state.activeCell.watch((activeCell) => {
@@ -123,10 +119,13 @@ export function DataGridCell<TElement extends HTMLElement = HTMLElement>({ as, c
     useEffect(() => {
         layout.registerNode(cell.id, ref.current!);
         return () => {
-
             layout.removeElement(cell.id);
         };
-    }, [layout, cell.id, ref]);
+    }, [layout, cell.id]);
+
+    useEffect(() => {
+        console.log('cell', cell.id, cell.rowId, cell.colId);
+    }, []);
 
     return (
         <Component {...props} ref={ref} style={style}>
@@ -134,3 +133,5 @@ export function DataGridCell<TElement extends HTMLElement = HTMLElement>({ as, c
         </Component>
     );
 };
+
+export const DataGridCell = memo(DataGridCellImpl) as typeof DataGridCellImpl;

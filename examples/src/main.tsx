@@ -34,10 +34,8 @@ const rootElement = document.getElementById('root')!;
 if (!rootElement.innerHTML) {
     const root = ReactDOM.createRoot(rootElement);
     root.render(
-        <StrictMode>
-            <MDXProvider components={mdxComponents}>
-                <RouterProvider router={router} />
-            </MDXProvider>
-        </StrictMode>,
+        <MDXProvider components={mdxComponents}>
+            <RouterProvider router={router} />
+        </MDXProvider>
     );
 }

@@ -1,4 +1,4 @@
-import { Column, DataGridProvider, useDataGrid, useDataGridState, DataGridContainer, DataGridCell, CellSelectionPlugin, usePlugin, DataGridHeader, DataGridHeaderGroup, DataGridRow, LayoutPlugin, DataGridScrollArea } from '@basestacks/data-grid';
+import { Column, DataGridProvider, useDataGrid, useDataGridState, DataGridContainer, DataGridCell, CellSelectionPlugin, usePlugin, DataGridHeader, DataGridHeaderGroup, DataGridRow, LayoutPlugin, DataGridScrollArea, StayInViewPlugin } from '@basestacks/data-grid';
 import { useMemo, useState } from 'react';
 import { generateData } from '@/helpers/dataHelpers';
 import { cn } from '@/utils/cn';
@@ -36,8 +36,9 @@ export function CellSelection() {
         onChange: setData,
     });
 
-    usePlugin(dataGrid, LayoutPlugin, {});
-    usePlugin(dataGrid, CellSelectionPlugin, {});
+    usePlugin(dataGrid, LayoutPlugin);
+    usePlugin(dataGrid, CellSelectionPlugin);
+    usePlugin(dataGrid, StayInViewPlugin);
 
     const headers = useDataGridState(dataGrid.state.headers);
     const rows = useDataGridState(dataGrid.state.rows);
@@ -49,7 +50,7 @@ export function CellSelection() {
                     {headers.map((header, index) => (
                         <DataGridHeader key={index} header={header} className={clxs.header} />
                     ))}
-                    <span className="absolute right-0 w-[-15px] h-full bg-white dark:bg-gray-950"/>
+                    <span className="absolute right-0 w-[-15px] h-full bg-white dark:bg-gray-950" />
                 </DataGridHeaderGroup>
                 <DataGridScrollArea className="relative h-[calc(400px-42px)] overflow-x-visible overflow-y-auto">
                     {rows.map((row, index) => (
@@ -88,9 +89,11 @@ const clxs = {
         data-[edge-bottom=true]:border-b-blue-600
     `,
     cellPinned: `
+        data-[pinned=left]:z-10
+        data-[pinned=right]:z-9
         data-[last-left=true]:border-r-gray-600 
-        dark:data-[last-left=true]:border-r-gray-600
         data-[first-right=true]:border-l-gray-600
+        dark:data-[last-left=true]:border-r-gray-600
         dark:data-[first-right=true]:border-l-gray-600
     `,
     selectedRangeRect: 'absolute pointer-events-none outline-2 outline-offset-[-2px] outline-blue-600 bg-blue-600/5',

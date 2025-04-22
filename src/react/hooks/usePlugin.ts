@@ -20,7 +20,7 @@ export const usePlugin = <
 >(
         dataGrid: DataGrid<TRow>,
         Plugin: new (dataGrid: DataGrid<TRow>) => TPlugin,
-        options: TOptions
+        options?: TOptions,
     ): TPlugin => {
     const [pluginOptions] = useDeepEqualState(options);
 

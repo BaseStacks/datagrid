@@ -181,7 +181,7 @@ export class DataGridLayout<TRow extends RowData> {
      * Get the rectangle of the element by id
      * @param id
      */
-    public getRect = (container: HTMLElement ,id: Id) => {
+    public getRect = (container: HTMLElement, id: Id) => {
         if (!this.containerState.value) {
             return null;
         }
@@ -216,5 +216,90 @@ export class DataGridLayout<TRow extends RowData> {
         }
 
         return null;
+    };
+
+    public calculateScrollToCell = (targetId: CellId) => {
+        const scrollArea = this.scrollAreaState.value;
+        if (!scrollArea) {
+            throw new Error('Scroll area not found');
+        }
+
+        const leftPinnedColumns = this.columnLayoutsState.values().filter((layout) => layout.header.column.pinned === 'left');
+        const rightPinnedColumns = this.columnLayoutsState.values().filter((layout) => layout.header.column.pinned === 'right');
+
+        const leftWidth = leftPinnedColumns.reduce((acc, layout) => acc + layout.width, 0);
+        const rightWidth = rightPinnedColumns.reduce((acc, layout) => acc + layout.width, 0);
+
+        const centerWidth = scrollArea.clientWidth - leftWidth - rightWidth;
+        const centerRect: RectType = {
+            left: leftWidth,
+            top: 0,
+            right: leftWidth + centerWidth,
+            bottom: scrollArea.clientHeight,
+            width: centerWidth,
+            height: scrollArea.clientHeight,
+        };
+
+        const activeRect = this.getRect(scrollArea, targetId);
+
+        if (!activeRect) {
+            throw new Error('Active cell rect not found');
+        }
+
+        let nextScrollLeft: undefined | number;
+        let nextScrollTop: undefined | number;
+
+        const needScrollVertical = activeRect.top < centerRect.top || activeRect.bottom > centerRect.bottom;
+        if (needScrollVertical) {
+            const scrollTop = scrollArea.scrollTop;
+            const scrollHeight = scrollArea.scrollHeight;
+            const clientHeight = scrollArea.clientHeight;
+            const scrollableHeight = scrollHeight - clientHeight;
+            const scrollTopDelta = activeRect.top - centerRect.top;
+
+            const isTopIntersecting = activeRect.top < centerRect.top;
+            const needScrollTop = isTopIntersecting && scrollTopDelta < 0;
+            if (needScrollTop) {
+                const newScrollTop = scrollTop + scrollTopDelta;
+                nextScrollTop = Math.max(0, Math.min(newScrollTop, scrollableHeight));
+            }
+
+            const scrollBottomDelta = activeRect.bottom - centerRect.bottom;
+            const isBottomIntersecting = activeRect.bottom > centerRect.bottom;
+            const needScrollBottom = isBottomIntersecting && scrollBottomDelta > 0;
+            if (needScrollBottom) {
+                const newScrollTop = scrollTop + scrollBottomDelta;
+                nextScrollTop = Math.max(0, Math.min(newScrollTop, scrollableHeight));
+            }
+        }
+
+        const needScrollHorizontal = activeRect.left < centerRect.left || activeRect.right > centerRect.right;
+        if (needScrollHorizontal) {
+
+            const scrollLeft = scrollArea.scrollLeft;
+            const scrollWidth = scrollArea.scrollWidth;
+            const clientWidth = scrollArea.clientWidth;
+            const scrollableWidth = scrollWidth - clientWidth;
+            const scrollLeftDelta = activeRect.left - centerRect.left;
+
+            const isLeftIntersecting = activeRect.left < centerRect.left;
+            const needScrollLeft = isLeftIntersecting && scrollLeftDelta < 0;
+            if (needScrollLeft) {
+                const newScrollLeft = scrollLeft + scrollLeftDelta;
+                nextScrollLeft = Math.max(0, Math.min(newScrollLeft, scrollableWidth));
+            }
+
+            const scrollRightDelta = activeRect.right - centerRect.right;
+            const isRightIntersecting = activeRect.right > centerRect.right;
+            const needScrollRight = isRightIntersecting && scrollRightDelta > 0;
+            if (needScrollRight) {
+                const newScrollLeft = scrollLeft + scrollRightDelta;
+                nextScrollLeft = Math.max(0, Math.min(newScrollLeft, scrollableWidth));
+            }
+        }
+        return {
+            left: nextScrollLeft,
+            top: nextScrollTop,
+        };
     };
 };

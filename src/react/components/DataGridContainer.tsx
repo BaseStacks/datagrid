@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { memo, useEffect, useRef } from 'react';
 import { useDataGridContext } from '../hooks/useDataGridContext';
 import React from 'react';
 
@@ -6,7 +6,7 @@ export interface DataGridContainerProps extends React.HTMLAttributes<HTMLElement
     readonly as?: string;
 }
 
-export function DataGridContainer({
+function DataGridContainerImpl({
     as = 'div',
     ...props
 }: React.PropsWithChildren<DataGridContainerProps>) {
@@ -15,9 +15,6 @@ export function DataGridContainer({
     const Component = (as || 'div') as React.ElementType;
 
     const containerRef = useRef<HTMLElement>(null);
-
-    useEffect(() => {
-    }, [dataGrid.layout.containerState]);
 
     useEffect(() => {
         const container = containerRef.current!;
@@ -35,3 +32,6 @@ export function DataGridContainer({
         />
     );
 };
+
+export const DataGridContainer = memo(DataGridContainerImpl) as typeof DataGridContainerImpl;
+

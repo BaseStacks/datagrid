@@ -180,7 +180,7 @@ export class CellSelectionPlugin<TRow extends RowData = RowData> implements Data
         window.addEventListener('mousedown', this.handleContainerMouseDown);
         window.addEventListener('mouseup', this.handleContainerMouseUp);
 
-        const watchElements = this.dataGrid.layout.elementsState.watchItems(({ id, item, operation }) => {            
+        const watchElements = this.dataGrid.layout.elementsState.watchItems(({ id, item, operation }) => {
             const isCell = idTypeEquals(id, 'cell');
             if (!isCell) {
                 return;
@@ -210,11 +210,12 @@ export class CellSelectionPlugin<TRow extends RowData = RowData> implements Data
     constructor(dataGrid: DataGrid<TRow>) {
         this.dataGrid = dataGrid;
     }
-
+    public options: CellSelectionPluginOptions = {};
     public active = false;
 
-    public activate = (_options: CellSelectionPluginOptions) => {
-        const { keyMap } = _options;
+    public activate = (_options?: CellSelectionPluginOptions) => {
+        this.options = { ...this.options, ..._options };
+        const { keyMap } = this.options;
 
         this.active = true;
 
