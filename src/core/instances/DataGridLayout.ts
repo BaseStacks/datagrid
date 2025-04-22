@@ -133,7 +133,7 @@ export class DataGridLayout<TRow extends RowData> {
      * Remove the element from the layout
      * @param id 
      */
-    public removeElement = (id: Id) => {
+    public removeNode = (id: Id) => {
         this.elementsState.removeItem(id);
         this._rectMap.delete(id);
         this.updateRect(id, null);

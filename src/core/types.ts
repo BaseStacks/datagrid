@@ -9,7 +9,7 @@ export type DataGridEventTypes = {
 export type DataGridEventType = keyof DataGridEventTypes;
 
 export type RowData = Record<string, any>;
-export type RowKey<TRow extends RowData> = keyof TRow | ((opts: { rowData: TRow; rowIndex: number }) => TRow[keyof TRow])
+export type RowKey = string | number;
 export type Unsubscribe = () => void;
 
 export type ColumnKey = string | number;
@@ -126,7 +126,7 @@ export interface DataGridOptions<TRow extends RowData = RowData> {
   readonly data: TRow[]
   readonly columns: Column[]
 
-  readonly rowKey?: RowKey<TRow>;
+  readonly rowKey?: RowKey;
   readonly lockRows?: boolean;
 
   // Layout
@@ -181,16 +181,6 @@ export type DataGridAction =
   ;
 
 export type DataGridKeyMap<TAction extends DataGridAction> = Partial<Record<TAction, string | string[]>>;
-
-export interface DataGridPluginOptions {
-  readonly enable?: boolean;
-}
-
-export type DataGridPlugin<TOptions extends DataGridPluginOptions = DataGridPluginOptions> = {
-  readonly active: boolean;
-  readonly activate: (opts?: TOptions) => void;
-  readonly deactivate: () => void;
-};
 
 export interface RectType {
   readonly width: number;

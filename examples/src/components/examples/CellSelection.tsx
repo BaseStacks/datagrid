@@ -1,5 +1,5 @@
-import { Column, DataGridProvider, useDataGrid, useDataGridState, DataGridContainer, DataGridCell, CellSelectionPlugin, usePlugin, DataGridHeader, DataGridHeaderGroup, DataGridRow, LayoutPlugin, DataGridScrollArea, StayInViewPlugin } from '@basestacks/data-grid';
-import { useMemo, useState } from 'react';
+import { Column, DataGridProvider, useDataGrid, useDataGridState, DataGridContainer, DataGridCell, CellSelectionPlugin, DataGridHeader, DataGridHeaderGroup, DataGridRow, LayoutPlugin, DataGridScrollArea, StayInViewPlugin, StickableRowPlugin, RowKey } from '@basestacks/data-grid';
+import { useEffect, useMemo, useState } from 'react';
 import { generateData } from '@/helpers/dataHelpers';
 import { cn } from '@/utils/cn';
 
@@ -30,15 +30,31 @@ export function CellSelection() {
         });
     });
 
+    const [stickedTopRows] = useState<RowKey[]>(() => data.slice(0, 2).map((row) => row.id as RowKey));
+    const [stickedBottomRows] = useState<RowKey[]>(() => data.slice(-2).map((row) => row.id as RowKey));
+
     const dataGrid = useDataGrid({
         data,
         columns,
-        onChange: setData,
+        onChange: setData
     });
 
-    usePlugin(dataGrid, LayoutPlugin);
-    usePlugin(dataGrid, CellSelectionPlugin);
-    usePlugin(dataGrid, StayInViewPlugin);
+    useEffect(() => {
+        dataGrid.addPlugin(LayoutPlugin);
+        dataGrid.addPlugin(CellSelectionPlugin);
+        dataGrid.addPlugin(StayInViewPlugin);
+    }, [dataGrid]);
+
+    useEffect(() => {
+        dataGrid.addPlugin(StickableRowPlugin, {
+            stickedTopRows,
+            stickedBottomRows
+        });
+
+        return () => {
+            dataGrid.removePlugin(StickableRowPlugin);
+        };
+    }, [dataGrid, stickedTopRows, stickedBottomRows]);
 
     const headers = useDataGridState(dataGrid.state.headers);
     const rows = useDataGridState(dataGrid.state.rows);

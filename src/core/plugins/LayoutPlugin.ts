@@ -1,11 +1,10 @@
-import type { DataGrid } from '../instances/DataGrid';
-import type { RowData, DataGridPlugin, ColumnLayout, HeaderId } from '../types';
+import { DataGridPlugin } from '../instances/atomic/DataGridPlugin';
+import type { ColumnLayout, HeaderId } from '../types';
 
 export interface LayoutPluginOptions {
 }
 
-export class LayoutPlugin<TRow extends RowData = RowData> implements DataGridPlugin<LayoutPluginOptions> {
-    private readonly dataGrid: DataGrid<TRow>;
+export class LayoutPlugin extends DataGridPlugin<LayoutPluginOptions> {
 
     private get container() {
         return this.dataGrid.layout.containerState.value!;
@@ -16,7 +15,6 @@ export class LayoutPlugin<TRow extends RowData = RowData> implements DataGridPlu
     }
 
     private _lastScrollTop: number = 0;
-    private _unsubscribes: (() => void)[] = [];
 
     private createColumnLayouts = () => {
         const { headers } = this.dataGrid.state;
@@ -116,49 +114,22 @@ export class LayoutPlugin<TRow extends RowData = RowData> implements DataGridPlu
         this.updateColumnLayouts();
     };
 
-    constructor(dataGrid: DataGrid<TRow>) {
-        this.dataGrid = dataGrid;
-    }
-
     public options: LayoutPluginOptions = {};
     public active: boolean = false;
 
-    public activate = (_opts?: LayoutPluginOptions) => {
-        this.options = { ...this.options, ..._opts };
+    public handleActivate = () => {
+        this.createColumnLayouts();
+        this.updateColumnLayouts();
 
-        const unwatchContainer = this.dataGrid.layout.containerState.watch((container) => {
-            if (this.active) {
-                this.deactivate();
-            }
-
-            if (!container) {
-                return;
-            }
-
-            this.active = true;
-
-            this.createColumnLayouts();
-            this.updateColumnLayouts();
-
-            this.scrollArea.addEventListener('scroll', this.handleContainerScroll);
-            this._unsubscribes.push(() => {
-                this.scrollArea.removeEventListener('scroll', this.handleContainerScroll);
-            });
-
-            const resizeObserver = new ResizeObserver(this.handleContainerResize);
-            resizeObserver.observe(this.container);
-            this._unsubscribes.push(() => {
-                resizeObserver.disconnect();
-            });
+        this.scrollArea.addEventListener('scroll', this.handleContainerScroll);
+        this.unsubscribes.push(() => {
+            this.scrollArea.removeEventListener('scroll', this.handleContainerScroll);
         });
 
-        this._unsubscribes.push(unwatchContainer);
-    };
-
-    public deactivate = () => {
-        this._unsubscribes.forEach(unsubscribe => unsubscribe());
-        this._unsubscribes = [];
-
-        this.active = false;
+        const resizeObserver = new ResizeObserver(this.handleContainerResize);
+        resizeObserver.observe(this.container);
+        this.unsubscribes.push(() => {
+            resizeObserver.disconnect();
+        });
     };
 }

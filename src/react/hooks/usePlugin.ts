@@ -15,16 +15,15 @@ const useDeepEqualState = <T>(value: T) => {
 
 export const usePlugin = <
     TRow extends RowData,
-    TOptions extends DataGridPluginOptions,
-    TPlugin extends DataGridPlugin<TOptions>
+    TOptions extends DataGridPluginOptions
 >(
         dataGrid: DataGrid<TRow>,
-        Plugin: new (dataGrid: DataGrid<TRow>) => TPlugin,
+        Plugin: new (dataGrid: DataGrid<TRow>) => DataGridPlugin<TOptions>,
         options?: TOptions,
-    ): TPlugin => {
+    ) => {
     const [pluginOptions] = useDeepEqualState(options);
 
-    const plugin = useRef<TPlugin>(new Plugin(dataGrid));
+    const plugin = useRef(new Plugin(dataGrid));
 
     useEffect(() => {
         if (!plugin.current) {

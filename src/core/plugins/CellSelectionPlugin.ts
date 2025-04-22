@@ -1,5 +1,5 @@
-import { DataGrid } from '../instances/DataGrid';
-import type { DataGridKeyMap, DataGridPlugin, DataGridPluginOptions, RowData } from '../types';
+import { DataGridPlugin, type DataGridPluginOptions } from '../instances/atomic/DataGridPlugin';
+import type { DataGridKeyMap } from '../types';
 import { clearAllTextSelection } from '../utils/domUtils';
 import { idTypeEquals } from '../utils/idUtils';
 import { breakRangeToSmallerPart, isRangeInsideOthers, tryCombineRanges, tryRemoveDuplicates } from '../utils/selectionUtils';
@@ -47,10 +47,7 @@ export const defaultKeyMap: DataGridKeyMap<CellSelectionPluginShortcut> = {
     exit: 'Escape'
 };
 
-export class CellSelectionPlugin<TRow extends RowData = RowData> implements DataGridPlugin<CellSelectionPluginOptions> {
-    private readonly dataGrid: DataGrid<TRow>;
-    private unsubscribes: (() => void)[] = [];
-
+export class CellSelectionPlugin extends DataGridPlugin<CellSelectionPluginOptions> {
     private get container() {
         return this.dataGrid.layout.containerState.value;
     }
@@ -176,7 +173,9 @@ export class CellSelectionPlugin<TRow extends RowData = RowData> implements Data
         selection.updateLastSelectedRange(cell.id);
     };
 
-    private addEventListeners = () => {
+    public handleActivate = () => {
+        const { keyMap } = this.options;
+
         window.addEventListener('mousedown', this.handleContainerMouseDown);
         window.addEventListener('mouseup', this.handleContainerMouseUp);
 
@@ -196,31 +195,7 @@ export class CellSelectionPlugin<TRow extends RowData = RowData> implements Data
             item.addEventListener('mouseenter', this.handleCellMouseEnter);
         });
 
-        this.unsubscribes.push(watchElements);
-    };
-
-    private removeEventListeners = () => {
-        window.removeEventListener('mousedown', this.handleContainerMouseDown);
-        window.removeEventListener('mouseup', this.handleContainerMouseUp);
-
-        this.unsubscribes.forEach(unsubscribe => unsubscribe());
-        this.unsubscribes = [];
-    };
-
-    constructor(dataGrid: DataGrid<TRow>) {
-        this.dataGrid = dataGrid;
-    }
-    public options: CellSelectionPluginOptions = {};
-    public active = false;
-
-    public activate = (_options?: CellSelectionPluginOptions) => {
-        this.options = { ...this.options, ..._options };
-        const { keyMap } = this.options;
-
-        this.active = true;
-
-        this.addEventListeners();
-
+        
         const handlers: Record<CellSelectionPluginShortcut, () => void> = {
             activeLeft: this.dataGrid.selection.moveLeft,
             activeRight: this.dataGrid.selection.moveRight,
@@ -245,16 +220,16 @@ export class CellSelectionPlugin<TRow extends RowData = RowData> implements Data
         };
 
         this.dataGrid.keyBindings.add(this, mergeKeyMap, handlers);
-    };
 
-    public deactivate = () => {
-        if (!this.active) {
-            return;
-        }
+        this.unsubscribes.push(watchElements);
+        this.unsubscribes.push(() => {
+            this.dataGrid.keyBindings.remove(this);
 
-        this.removeEventListeners();
-        this.dataGrid.keyBindings.remove(this);
-        this.cellRectMap.clear();
-        this.active = false;
+            window.removeEventListener('mousedown', this.handleContainerMouseDown);
+            window.removeEventListener('mouseup', this.handleContainerMouseUp);
+
+            this.unsubscribes.forEach(unsubscribe => unsubscribe());
+            this.unsubscribes = [];
+        });
     };
 };

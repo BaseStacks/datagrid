@@ -68,7 +68,7 @@ function DataGridHeaderImpl<TElement extends HTMLElement = HTMLElement>({ as, he
     useEffect(() => {
         layout.registerNode(header.id, ref.current!);
         return () => {
-            layout.removeElement(header.id);
+            layout.removeNode(header.id);
         };
     }, [layout, header.id, ref]);
 
