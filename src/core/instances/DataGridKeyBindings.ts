@@ -1,7 +1,8 @@
 import { tinykeys } from 'tinykeys';
-import type { DataGridAction, DataGridKeyMap, DataGridPlugin, RowData } from '../types';
+import type { DataGridAction, DataGridKeyMap, RowData } from '../types';
 import type { DataGridStates } from './DataGridStates';
 import type { DataGridEvents } from './DataGridEvents';
+import type { DataGridPlugin } from './atomic/DataGridPlugin';
 
 export type KeyBindingHandler = (event: KeyboardEvent) => void | boolean;
 

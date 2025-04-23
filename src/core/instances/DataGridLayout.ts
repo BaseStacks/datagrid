@@ -122,11 +122,13 @@ export class DataGridLayout<TRow extends RowData> {
      * @param element
      */
     public registerNode = (id: Id, element: HTMLElement) => {
-        this.elementsState.addItem(id, element);
+        const existingElement = this.elementsState.get(id);
 
-        if (this.containerState.value) {
-            this.updateRect(id, element);
+        if (existingElement && existingElement === element) {
+            return;
         }
+
+        this.elementsState.addItem(id, element);
     };
 
     /**

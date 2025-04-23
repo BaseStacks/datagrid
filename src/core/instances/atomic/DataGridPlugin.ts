@@ -4,7 +4,7 @@ import type { DataGrid } from '../DataGrid';
 export interface DataGridPluginOptions {
 }
 
-export abstract class DataGridPlugin<TOptions extends DataGridPluginOptions, TRow extends RowData = RowData> {
+export abstract class DataGridPlugin<TOptions extends DataGridPluginOptions = DataGridPluginOptions, TRow extends RowData = RowData> {
     public unsubscribes: (() => void)[] = [];
     public active: boolean = false;
 

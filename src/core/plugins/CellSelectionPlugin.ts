@@ -52,10 +52,6 @@ export class CellSelectionPlugin extends DataGridPlugin<CellSelectionPluginOptio
         return this.dataGrid.layout.containerState.value;
     }
 
-    private get cellRectMap() {
-        return this.dataGrid.layout.cellRectMap;
-    }
-
     private handleContainerMouseDown = (event: MouseEvent) => {
         const isClickOutside = !this.container?.contains(event.target as Node);
         if (isClickOutside) {

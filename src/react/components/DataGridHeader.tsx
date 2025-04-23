@@ -48,16 +48,21 @@ function DataGridHeaderImpl<TElement extends HTMLElement = HTMLElement>({ as, he
             ref.current.style.left = item.left === undefined ? '' : `${item.left}px`;
             ref.current.style.right = right === undefined ? '' : `${right}px`;
 
-            if (item.header.column.pinned) {
-                ref.current.style.zIndex = '1';
 
-                if (item.header.column.pinned === 'left') {
-                    ref.current.style.borderRightWidth = '1px';
-                }
-                else if (item.header.column.pinned === 'right') {
-                    ref.current.style.borderLeftWidth = '1px';
-                }
+            if (!item.header.column.pinned) {
+                ref.current.removeAttribute('data-pinned');
+                ref.current.removeAttribute('data-first-left');
+                ref.current.removeAttribute('data-last-left');
+                ref.current.removeAttribute('data-first-right');
+                ref.current.removeAttribute('data-last-right');
+                return;
             }
+
+            ref.current.setAttribute('data-pinned', item.header.column.pinned);
+            ref.current.setAttribute('data-first-left', item.firstLeftPinned ? 'true' : 'false');
+            ref.current.setAttribute('data-last-left', item.lastLeftPinned ? 'true' : 'false');
+            ref.current.setAttribute('data-first-right', item.firstRightPinned ? 'true' : 'false');
+            ref.current.setAttribute('data-last-right', item.lastRightPinned ? 'true' : 'false');
         });
 
         return () => {

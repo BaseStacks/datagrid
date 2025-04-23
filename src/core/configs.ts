@@ -10,7 +10,7 @@ export const defaultOptions: Required<DataGridOptions<RowData>> = {
     disableSmartDelete: false,
     lockRows: false,
     onChange: () => { },
-    rowKey: () => { throw new Error('Row key is not defined. Please provide a row key function.'); },
+    rowKey: 'id',
     headerHeight: 42,
     rowHeight: 42
 };

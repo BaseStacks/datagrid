@@ -25,8 +25,6 @@ function DataGridCellImpl<TElement extends HTMLElement = HTMLElement>({ as, cell
     }), [props.style]);
 
     useLayoutEffect(() => {
-        console.log('render cell', cell.id, cell.colId);
-        
         const unwatchColumnLayout = layout.columnLayoutsState.watchItem(cell.colId, ({ operation, item }) => {
             if (!ref.current) {
                 return;
@@ -35,8 +33,6 @@ function DataGridCellImpl<TElement extends HTMLElement = HTMLElement>({ as, cell
             if (operation === 'remove') {
                 return;
             }
-
-            console.log(item);
 
             positionRef.current = {
                 left: item.left ?? 0,

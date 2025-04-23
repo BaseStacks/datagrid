@@ -106,7 +106,7 @@ export class DataGridMapState<TItemId, TItem> {
         this._value.delete(itemId);
         const eventName = this._getItemEventName(itemId);
         const eventPayload = { 
-            operation: 'add',
+            operation: 'remove',
             item: removedItem,
             id: itemId
         };
@@ -119,9 +119,12 @@ export class DataGridMapState<TItemId, TItem> {
         if (!hasItem) {
             throw new Error(`Item with id ${itemId} does not exist`);
         }
+
+        this._value.set(itemId, item);
+
         const eventName = this._getItemEventName(itemId);
         const eventPayload = { 
-            operation: 'add',
+            operation: 'replace',
             item,
             id: itemId
         };
