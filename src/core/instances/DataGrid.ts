@@ -27,8 +27,11 @@ export class DataGrid<TRow extends RowData = RowData> {
             if (oldRow?.data === newRowData) {
                 return oldRow;
             }
-
+            const rowKey = newRowData[this.options.rowKey];
+            const rowId = createId({ type: 'row', row: rowKey}) as RowId;
             return {
+                id: rowId,
+                key: rowKey,
                 index: rowIndex,
                 data: newRowData,
                 cells: columns.map((column, columnIndex) => {
@@ -97,7 +100,7 @@ export class DataGrid<TRow extends RowData = RowData> {
                         },
                     };
                 }),
-            };
+            } as Row<TRow>;
         });
     };
 

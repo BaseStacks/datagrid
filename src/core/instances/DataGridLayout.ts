@@ -1,4 +1,4 @@
-import type { CellId, ColumnLayout, Id, RowData, RectType } from '../types';
+import type { CellId, ColumnLayout, Id, RowData, RectType, RowLayout, RowId } from '../types';
 import { getCoordinatesById } from '../utils/cellUtils';
 import { findIdByRect, findRect, getCursorOffset, getRect } from '../utils/domRectUtils';
 import { idTypeEquals } from '../utils/idUtils';
@@ -43,6 +43,7 @@ export class DataGridLayout<TRow extends RowData> {
     public scrollAreaState = new DataGridState<HTMLElement | null>(null);
     public elementsState = new DataGridMapState<Id, HTMLElement>();
     public columnLayoutsState = new DataGridMapState<Id, ColumnLayout>(new Map(), { useDeepEqual: false });
+    public rowLayoutsState = new DataGridMapState<RowId, RowLayout>(new Map(), { useDeepEqual: false });
 
     public get cellRectMap() {
         const cellRectMap = new Map<Id, RectType>();
@@ -136,8 +137,8 @@ export class DataGridLayout<TRow extends RowData> {
      * @param id 
      */
     public removeNode = (id: Id) => {
-        this.elementsState.removeItem(id);
         this._rectMap.delete(id);
+        this.elementsState.removeItem(id);
         this.updateRect(id, null);
     };
 

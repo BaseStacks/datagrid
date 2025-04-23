@@ -1,4 +1,4 @@
-import { Column, DataGridProvider, useDataGrid, useDataGridState, DataGridContainer, DataGridCell, CellSelectionPlugin, DataGridHeader, DataGridHeaderGroup, DataGridRow, LayoutPlugin, DataGridScrollArea, StayInViewPlugin, StickableRowPlugin, RowKey } from '@basestacks/data-grid';
+import { Column, DataGridProvider, useDataGrid, useDataGridState, DataGridContainer, DataGridCell, CellSelectionPlugin, DataGridHeader, DataGridHeaderGroup, DataGridRow, LayoutPlugin, DataGridScrollArea, StayInViewPlugin, RowPiningPlugin, RowKey } from '@basestacks/data-grid';
 import { useEffect, useMemo, useState } from 'react';
 import { generateData } from '@/helpers/dataHelpers';
 import { cn } from '@/utils/cn';
@@ -18,7 +18,7 @@ export function CellSelection() {
     const [data, setData] = useState(() => {
         return generateData({
             fields: [
-                { name: 'id', type: 'number', required: true },
+                { name: 'id', type: 'uuid', required: true },
                 { name: 'firstName', type: 'firstName', required: true },
                 { name: 'lastName', type: 'lastName', required: true },
                 { name: 'age', type: 'number', min: 18, max: 99, required: false },
@@ -30,8 +30,8 @@ export function CellSelection() {
         });
     });
 
-    const [stickedTopRows] = useState<RowKey[]>(() => data.slice(0, 2).map((row) => row.id as RowKey));
-    const [stickedBottomRows] = useState<RowKey[]>(() => data.slice(-2).map((row) => row.id as RowKey));
+    const [pinnedTopRows] = useState<RowKey[]>(() => data.slice(0, 2).map((row) => row.id as RowKey));
+    const [pinnedBottomRows] = useState<RowKey[]>(() => data.slice(-2).map((row) => row.id as RowKey));
 
     const dataGrid = useDataGrid({
         data,
@@ -46,15 +46,15 @@ export function CellSelection() {
     }, [dataGrid]);
 
     useEffect(() => {
-        dataGrid.addPlugin(StickableRowPlugin, {
-            stickedTopRows,
-            stickedBottomRows
+        dataGrid.addPlugin(RowPiningPlugin, {
+            pinnedTopRows,
+            pinnedBottomRows
         });
 
         return () => {
-            dataGrid.removePlugin(StickableRowPlugin);
+            dataGrid.removePlugin(RowPiningPlugin);
         };
-    }, [dataGrid, stickedTopRows, stickedBottomRows]);
+    }, [dataGrid, pinnedTopRows, pinnedBottomRows]);
 
     const headers = useDataGridState(dataGrid.state.headers);
     const rows = useDataGridState(dataGrid.state.rows);
@@ -68,16 +68,18 @@ export function CellSelection() {
                     ))}
                     <span className="absolute right-0 w-[-15px] h-full bg-white dark:bg-gray-950" />
                 </DataGridHeaderGroup>
-                <DataGridScrollArea className="relative h-[calc(400px-42px)] overflow-x-visible overflow-y-auto">
-                    {rows.map((row, index) => (
-                        <DataGridRow key={index} className={clxs.row}>
-                            {row.cells.map((cell) => (
-                                <DataGridCell key={cell.id} cell={cell} className={cn(clxs.cell, clxs.cellActive, clxs.cellSelected, clxs.cellPinned)}>
-                                    <span className="overflow-hidden line-clamp-1 break-words">{cell.render()}</span>
-                                </DataGridCell>
-                            ))}
-                        </DataGridRow>
-                    ))}
+                <DataGridScrollArea className="h-[300px] overflow-x-visible overflow-y-auto">
+                    <div className="relative h-[420px]">
+                        {rows.map((row) => (
+                            <DataGridRow key={row.id} row={row} className={cn(clxs.row, clxs.rowPinned)}>
+                                {row.cells.map((cell) => (
+                                    <DataGridCell key={cell.id} cell={cell} className={cn(clxs.cell, clxs.cellActive, clxs.cellSelected, clxs.cellPinned)}>
+                                        <span className="overflow-hidden line-clamp-1 break-words">{cell.render()}</span>
+                                    </DataGridCell>
+                                ))}
+                            </DataGridRow>
+                        ))}
+                    </div>
                 </DataGridScrollArea>
             </DataGridContainer>
         </DataGridProvider>
@@ -86,19 +88,24 @@ export function CellSelection() {
 
 const clxs = {
     table: 'text-sm max-h-[400px]',
-    headerGroup: 'bg-white dark:bg-gray-950',
+    headerGroup: 'bg-white dark:bg-gray-950 ',
     header: 'bg-white dark:bg-gray-950 flex items-center border border-transparent p-2 text-left font-medium text-gray-400 dark:text-gray-200',
-    row: 'overflow-hidden border-b border-gray-200 dark:border-gray-600',
+    row: 'relative overflow-hidden border-gray-200 dark:border-gray-600',
+    rowPinned: `
+        data-pinned:z-20
+        data-last-top:border-b-2
+        data-first-bottom:border-t-2
+    `,
     cell: 'user-select-none bg-white flex items-center border border-transparent p-2 text-gray-500 outline-blue-600 dark:text-gray-400 dark:bg-gray-800',
     cellActive: `
-        data-[active=true]:bg-white 
-        data-[active=true]:outline 
-        data-[active=true]:outline-offset-[-1px]
-        data-[active=true]:bg-gray-800
-        dark:data-[active=true]:bg-gray-800
+        data-active:bg-white 
+        data-active:outline 
+        data-active:outline-offset-[-1px]
+        data-active:bg-gray-800
+        dark:data-active:bg-gray-800
     `,
     cellSelected: `
-        data-[selected=true]:bg-blue-950
+        data-selected:bg-blue-950
         data-[edge-top=true]:border-t-blue-600
         data-[edge-left=true]:border-l-blue-600 
         data-[edge-right=true]:border-r-blue-600 

@@ -110,7 +110,22 @@ export interface ColumnLayout {
   readonly right?: number;
 }
 
+export interface RowLayout {
+  readonly index: number;
+  readonly row: Row;
+  readonly height: number;
+  readonly top?: number;
+  readonly bottom?: number;
+  readonly pinned?: 'top' | 'bottom';
+  readonly firstPinnedTop?: true;
+  readonly lastPinnedTop?: true;
+  readonly firstPinnedBottom?: true;
+  readonly lastPinnedBottom?: true;
+}
+
 export interface Row<TRow extends RowData = RowData> {
+  readonly id: RowId;
+  readonly key: RowKey;
   readonly index: number;
   readonly data: TRow;
   readonly cells: Cell[];

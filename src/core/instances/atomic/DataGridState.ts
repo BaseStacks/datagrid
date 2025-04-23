@@ -29,7 +29,7 @@ export class DataGridState<TValue> {
         this._events.on('update_value', listener);
 
         // Emit the initial value
-        this._events.emit('update_value', this.value);
+        listener(this.value);
 
         return () => {
             this._events.off('update_value', listener);

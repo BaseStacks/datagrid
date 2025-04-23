@@ -2,8 +2,15 @@ import { deepEqual } from '../../utils/objectUtils';
 import type { DataGridStateOptions, DataGridStateSetOptions } from './DataGridState';
 import { EventEmitter } from './EventEmitter';
 
+type MapOperation = 
+    | 'add'
+    | 'remove'
+    | 'replace'
+    | 'watch' // When use "watchItems" or "watchItem", it will emit "watch" event for each item in the map
+    | 'init'; // When use "set" to set the value of the map, it will emit "init" event for each item in the map
+
 export interface DataGridMapStateOperation<TItemId, TItemData> {
-    operation: 'add' | 'remove' | 'replace' | 'watch';
+    operation: MapOperation;
     id: TItemId;
     item: TItemData;
 }
@@ -36,9 +43,11 @@ export class DataGridMapState<TItemId, TItem> {
 
     public watchItems(listener: (operation: DataGridMapStateOperation<TItemId, TItem>) => void): () => void {
         this._events.on('item_change', listener);
+
         this._value.forEach((item, id) => {
-            this._events.emit('item_change', { operation: 'watch', item, id });
+            listener({ operation: 'watch', item, id });
         });
+
         return () => {
             this._events.off('item_change', listener);
         };
@@ -49,7 +58,7 @@ export class DataGridMapState<TItemId, TItem> {
         this._events.on(eventName, listener);
 
         if (this._value.has(itemId)) {
-            this._events.emit(eventName, { operation: 'watch', item: this._value.get(itemId), id: itemId });
+            listener({ operation: 'watch', item: this._value.get(itemId)!, id: itemId });
         }
 
         return () => {
@@ -76,6 +85,13 @@ export class DataGridMapState<TItemId, TItem> {
 
         if (!silent) {
             this._events.emit('update_value', this.value);
+
+            for (const [itemId, item] of this._value.entries()) {
+                const eventName = this._getItemEventName(itemId);
+
+                this._events.emit(eventName, { operation: 'init', item, id: itemId });
+                this._events.emit('item_change', { operation: 'init', item, id: itemId });
+            }
         }
     }
 
@@ -88,7 +104,7 @@ export class DataGridMapState<TItemId, TItem> {
         this._value.set(itemId, item);
         const eventName = this._getItemEventName(itemId);
 
-        const eventPayload = { 
+        const eventPayload = {
             operation: 'add',
             item,
             id: itemId
@@ -105,7 +121,7 @@ export class DataGridMapState<TItemId, TItem> {
 
         this._value.delete(itemId);
         const eventName = this._getItemEventName(itemId);
-        const eventPayload = { 
+        const eventPayload = {
             operation: 'remove',
             item: removedItem,
             id: itemId
@@ -123,7 +139,7 @@ export class DataGridMapState<TItemId, TItem> {
         this._value.set(itemId, item);
 
         const eventName = this._getItemEventName(itemId);
-        const eventPayload = { 
+        const eventPayload = {
             operation: 'replace',
             item,
             id: itemId
@@ -138,6 +154,10 @@ export class DataGridMapState<TItemId, TItem> {
     }
 
     //#region Helpers
+    public get size() {
+        return this._value.size;
+    }
+
     public get(id: TItemId): TItem | undefined {
         return this._value.get(id);
     }
