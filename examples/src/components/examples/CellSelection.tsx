@@ -1,5 +1,5 @@
-import { Column, DataGridProvider, useDataGrid, useDataGridState, DataGridContainer, DataGridCell, CellSelectionPlugin, DataGridHeader, DataGridHeaderGroup, DataGridRow, DataGridScrollArea, StayInViewPlugin, RowPinningPlugin, RowKey, DataGridRows, ColumnPinningPlugin } from '@basestacks/data-grid';
-import { useEffect, useMemo, useState } from 'react';
+import { Column, DataGridProvider, useDataGrid, useDataGridState, DataGridContainer, DataGridCell, CellSelectionPlugin, DataGridHeader, DataGridHeaderGroup, DataGridRow, DataGridScrollArea, StayInViewPlugin, RowPinningPlugin, RowKey, DataGridRows, ColumnPinningPlugin, usePlugin } from '@basestacks/data-grid';
+import { useMemo, useState } from 'react';
 import { generateData } from '@/helpers/dataHelpers';
 import { cn } from '@/utils/cn';
 
@@ -39,25 +39,13 @@ export function CellSelection() {
         onChange: setData
     });
 
-    useEffect(() => {
-        dataGrid.addPlugin(CellSelectionPlugin);
-        dataGrid.addPlugin(StayInViewPlugin);
-    }, [dataGrid]);
-
-    useEffect(() => {
-        dataGrid.addPlugin(ColumnPinningPlugin);
-    }, [dataGrid]);
-
-    useEffect(() => {
-        dataGrid.addPlugin(RowPinningPlugin, {
-            pinnedTopRows,
-            pinnedBottomRows
-        });
-
-        return () => {
-            dataGrid.removePlugin(RowPinningPlugin);
-        };
-    }, [dataGrid, pinnedTopRows, pinnedBottomRows]);
+    usePlugin(dataGrid, CellSelectionPlugin);
+    usePlugin(dataGrid, StayInViewPlugin);
+    usePlugin(dataGrid, ColumnPinningPlugin);
+    usePlugin(dataGrid, RowPinningPlugin, {
+        pinnedTopRows,
+        pinnedBottomRows
+    });
 
     const headers = useDataGridState(dataGrid.state.headers);
     const rows = useDataGridState(dataGrid.state.rows);

@@ -1,41 +1,25 @@
-import { useEffect, useRef, useState } from 'react';
-import { DataGrid, deepEqual, type DataGridPlugin, type DataGridPluginOptions, type RowData } from '../../core';
-
-const useDeepEqualState = <T>(value: T) => {
-    const [state, setState] = useState(value);
-    const previousValue = useRef(value);
-    useEffect(() => {
-        if (!deepEqual(previousValue.current, value)) {
-            setState(value);
-        }
-        previousValue.current = value;
-    }, [value]);
-    return [state, setState] as const;
-};
+import { useEffect, useRef } from 'react';
+import { DataGrid, type DataGridPlugin, type DataGridPluginConstructor, type DataGridPluginOptions, type RowData } from '../../core';
 
 export const usePlugin = <
     TRow extends RowData,
-    TOptions extends DataGridPluginOptions
+    TOptions extends DataGridPluginOptions,
+    TPlugin extends DataGridPlugin<Partial<TOptions>, TRow> = DataGridPlugin<Partial<TOptions>, TRow>,
 >(
         dataGrid: DataGrid<TRow>,
-        Plugin: new (dataGrid: DataGrid<TRow>) => DataGridPlugin<TOptions>,
+        Plugin: DataGridPluginConstructor<TRow, TOptions, TPlugin>,
         options?: TOptions,
     ) => {
-    const [pluginOptions] = useDeepEqualState(options);
 
-    const plugin = useRef(new Plugin(dataGrid));
+    const plugin = useRef<TPlugin>(null);
 
     useEffect(() => {
-        if (!plugin.current) {
-            plugin.current = new Plugin(dataGrid);
-        }
-
-        plugin.current!.activate(pluginOptions);
+        plugin.current = dataGrid.addPlugin(Plugin, options);
 
         return () => {
-            plugin.current!.deactivate();
+            dataGrid.removePlugin(Plugin);
         };
-    }, [Plugin, dataGrid, pluginOptions]);
+    }, [Plugin, dataGrid, options]);
 
     return plugin.current;
 };

@@ -1,35 +1,37 @@
 import { DataGridPlugin, type DataGridPluginOptions } from '../instances/atomic/DataGridPlugin';
+import type { DataGridEventTypes } from '../types';
 export interface StayInViewPluginOptions extends DataGridPluginOptions {
     readonly scrollBehavior?: ScrollBehavior;
 }
 
 export class StayInViewPlugin extends DataGridPlugin<StayInViewPluginOptions> {
-    public handleActivate = () => {
-        const actionExecListener = this.dataGrid.events.addListener('execute-action', ({ action }) => {
-            let cellId = this.dataGrid.state.activeCell.value?.id;
+    private handleActionExecuted = ({ action }: DataGridEventTypes['action-executed']) => {
+        let cellId = this.dataGrid.state.activeCell.value?.id;
 
-            const isExpandSelected = ['expandUpper', 'expandLower', 'expandRight', 'expandLeft'].includes(action);
-            if (isExpandSelected) {
-                cellId = this.dataGrid.state.selectedRanges.value[0].end;
-            }
+        const isExpandSelected = ['expandUpper', 'expandLower', 'expandRight', 'expandLeft'].includes(action);
+        if (isExpandSelected) {
+            cellId = this.dataGrid.state.selectedRanges.value[0].end;
+        }
 
-            if (!cellId) {
-                return;
-            }
+        if (!cellId) {
+            return;
+        }
 
-            const scrollDelta = this.dataGrid.layout.calculateScrollToCell(cellId);
+        const scrollDelta = this.dataGrid.layout.calculateScrollToCell(cellId);
 
-            if (!scrollDelta) {
-                return;
-            }
+        if (!scrollDelta) {
+            return;
+        }
 
-            this.scrollArea.scrollTo({
-                left: scrollDelta.left,
-                top: scrollDelta.top,
-                behavior: 'smooth',
-            });
+        this.scrollArea.scrollTo({
+            left: scrollDelta.left,
+            top: scrollDelta.top,
+            behavior: 'smooth',
         });
+    };
 
-        this.unsubscribes.push(actionExecListener);
+    public handleActivate = () => {
+        this.dataGrid.events.addListener('action-executed', this.handleActionExecuted);
+        this.unsubscribes.push(() => this.dataGrid.events.removeListener('action-executed', this.handleActionExecuted));
     };
 }

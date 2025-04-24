@@ -219,9 +219,6 @@ export class CellSelectionPlugin extends DataGridPlugin<CellSelectionPluginOptio
 
             window.removeEventListener('mousedown', this.handleContainerMouseDown);
             window.removeEventListener('mouseup', this.handleContainerMouseUp);
-
-            this.unsubscribes.forEach(unsubscribe => unsubscribe());
-            this.unsubscribes = [];
         });
     };
 };

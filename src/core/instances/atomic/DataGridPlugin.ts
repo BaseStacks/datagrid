@@ -1,11 +1,15 @@
 import type { RowData } from '../../types';
 import type { DataGrid } from '../DataGrid';
 
+export type DataGridPluginConstructor<TRow extends RowData, TOptions, TInstance extends DataGridPlugin<Partial<TOptions>, TRow>> = new (
+    dataGrid: DataGrid<TRow>,
+    options: Partial<TOptions>
+) => TInstance;
+
 export interface DataGridPluginOptions {
 }
 
 export abstract class DataGridPlugin<TOptions extends DataGridPluginOptions = DataGridPluginOptions, TRow extends RowData = RowData> {
-
     constructor(public dataGrid: DataGrid<TRow>, public options: TOptions) {
     }
 
@@ -16,12 +20,12 @@ export abstract class DataGridPlugin<TOptions extends DataGridPluginOptions = Da
     public get scrollArea() {
         return this.dataGrid.layout.scrollAreaState.value!;
     }
-    
+
     public unsubscribes: (() => void)[] = [];
     public active: boolean = false;
 
     public abstract handleActivate: () => void;
-   
+
     public activate = (_opts?: TOptions) => {
         this.active = true;
         this.handleActivate();

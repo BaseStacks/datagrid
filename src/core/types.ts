@@ -1,7 +1,7 @@
 import React from 'react';
 
 export type DataGridEventTypes = {
-  readonly 'execute-action': {
+  readonly 'action-executed': {
     readonly action: DataGridAction;
   }
 };

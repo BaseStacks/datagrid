@@ -4,7 +4,7 @@ import { createCellId } from '../utils/cellUtils';
 import { createId } from '../utils/idUtils';
 import { updateRowData } from '../utils/rowUtils';
 import { calculateRangeBoundary } from '../utils/selectionUtils';
-import type { DataGridPlugin, DataGridPluginOptions } from './atomic/DataGridPlugin';
+import type { DataGridPlugin, DataGridPluginConstructor, DataGridPluginOptions } from './atomic/DataGridPlugin';
 import { DataGridEvents } from './DataGridEvents';
 import { DataGridKeyBindings } from './DataGridKeyBindings';
 import { DataGridLayout } from './DataGridLayout';
@@ -406,19 +406,20 @@ export class DataGrid<TRow extends RowData = RowData> {
         );
     };
 
-    public addPlugin = <TOptions extends DataGridPluginOptions, TInstance extends DataGridPlugin<Partial<TOptions>, TRow>>(
-        PluginClass: new (dataGrid: DataGrid<TRow>, options: Partial<TOptions>) => TInstance,
+    public addPlugin = <TOptions extends DataGridPluginOptions, TPlugin extends DataGridPlugin<Partial<TOptions>, TRow>>(
+        PluginClass: DataGridPluginConstructor<TRow, TOptions, TPlugin>,
         options?: Partial<TOptions>
     ) => {
         const existingPlugin = this.plugins.get(PluginClass.name);
 
         if (existingPlugin) {
-            return;
+            return existingPlugin as TPlugin;
         }
 
         const newPlugin = new PluginClass(this, options ?? {});
         this.plugins.set(PluginClass.name, newPlugin);
         newPlugin.activate();
+        return newPlugin;
     };
 
     public removePlugin = (PluginClass: new (dataGrid: DataGrid<TRow>, options: Partial<DataGridPluginOptions>) => DataGridPlugin<any, TRow>) => {

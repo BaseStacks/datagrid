@@ -30,7 +30,7 @@ export class DataGridKeyBindings<TRow extends RowData> {
             keys.forEach(key => {
                 keyBindingMap[key] = ((event: KeyboardEvent) => {
                     const handled = handler(event);
-                    this.events.emit('execute-action', { action });
+                    this.events.emit('action-executed', { action });
                     if (handled === false) {
                         return;
                     }
