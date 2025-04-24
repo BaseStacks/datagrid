@@ -1,4 +1,4 @@
-import { Column, DataGridProvider, useDataGrid, useDataGridState, DataGridContainer, DataGridCell, CellSelectionPlugin, DataGridHeader, DataGridHeaderGroup, DataGridRow, LayoutPlugin, DataGridScrollArea, StayInViewPlugin, RowPiningPlugin, RowKey } from '@basestacks/data-grid';
+import { Column, DataGridProvider, useDataGrid, useDataGridState, DataGridContainer, DataGridCell, CellSelectionPlugin, DataGridHeader, DataGridHeaderGroup, DataGridRow, LayoutPlugin, DataGridScrollArea, StayInViewPlugin, RowPiningPlugin, RowKey, DataGridRows } from '@basestacks/data-grid';
 import { useEffect, useMemo, useState } from 'react';
 import { generateData } from '@/helpers/dataHelpers';
 import { cn } from '@/utils/cn';
@@ -68,8 +68,8 @@ export function CellSelection() {
                     ))}
                     <span className="absolute right-0 w-[-15px] h-full bg-white dark:bg-gray-950" />
                 </DataGridHeaderGroup>
-                <DataGridScrollArea className="h-[300px] overflow-x-visible overflow-y-auto">
-                    <div className="relative h-[420px]">
+                <DataGridScrollArea className="h-[300px] overflow-auto">
+                    <DataGridRows className="relative">
                         {rows.map((row) => (
                             <DataGridRow key={row.id} row={row} className={cn(clxs.row, clxs.rowPinned)}>
                                 {row.cells.map((cell) => (
@@ -79,7 +79,7 @@ export function CellSelection() {
                                 ))}
                             </DataGridRow>
                         ))}
-                    </div>
+                    </DataGridRows>
                 </DataGridScrollArea>
             </DataGridContainer>
         </DataGridProvider>

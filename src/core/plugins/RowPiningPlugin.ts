@@ -36,7 +36,7 @@ export class RowPiningPlugin extends DataGridPlugin<RowPiningPluginOptions> {
                 index: index,
                 row,
                 height: this.dataGrid.options.rowHeight,
-                top: (rowLayoutMap.size || 0) * this.dataGrid.options.rowHeight + index * this.dataGrid.options.rowHeight,
+                top: (index + this._topRows.length) * this.dataGrid.options.rowHeight,
                 pinned: undefined,
             };
 
@@ -50,9 +50,7 @@ export class RowPiningPlugin extends DataGridPlugin<RowPiningPluginOptions> {
                 row,
                 height: this.dataGrid.options.rowHeight,
                 bottom: (bottomRows.length - index) * this.dataGrid.options.rowHeight,
-                pinned: 'bottom',
-                firstPinnedBottom: (index === 0) && true || undefined,
-                lastPinnedBottom: (index === bottomRows.length - 1) && true || undefined,
+                pinned: 'bottom'
             };
 
             rowLayoutMap.set(rowId, layout);
@@ -67,13 +65,9 @@ export class RowPiningPlugin extends DataGridPlugin<RowPiningPluginOptions> {
             return;
         }
 
-        const viewportHeight = scrollAreaState.value?.clientHeight || 0;
         const baseTop = scrollAreaState.value!.scrollTop || 0;
-        const baseBottom = scrollAreaState.value!.scrollHeight - viewportHeight - baseTop;
-
 
         let calculatedTop = baseTop;
-        let calculatedBottom = baseBottom;
 
         this._topRows.forEach((row) => {
             const rowLayout = rowLayoutsState.get(row.id)!;
@@ -94,12 +88,16 @@ export class RowPiningPlugin extends DataGridPlugin<RowPiningPluginOptions> {
             });
         });
 
-        this._bottomRows.forEach((row) => {
+        const viewportHeight = scrollAreaState.value?.clientHeight || 0;
+        const baseBottom = scrollAreaState.value!.scrollHeight - viewportHeight - baseTop;
+        let calculatedBottom = baseBottom;
+
+        this._bottomRows.forEach((row, index, bottomRows) => {
             const rowLayout = rowLayoutsState.get(row.id)!;
 
             let bottom: number | undefined = undefined;
             bottom = calculatedBottom;
-            calculatedBottom -= rowLayout.height;
+            calculatedBottom += rowLayout.height;
 
             const needUpdate = rowLayout.bottom !== bottom;
             if (!needUpdate) {
@@ -108,6 +106,8 @@ export class RowPiningPlugin extends DataGridPlugin<RowPiningPluginOptions> {
 
             rowLayoutsState.replaceItem(rowLayout.row.id, {
                 ...rowLayout,
+                firstPinnedBottom: (index === 0) && true || undefined,
+                lastPinnedBottom: (index === bottomRows.length - 1) && true || undefined,
                 bottom
             });
         });
@@ -130,7 +130,8 @@ export class RowPiningPlugin extends DataGridPlugin<RowPiningPluginOptions> {
             this._topRows = newRows.filter((row) => this.options.pinnedTopRows?.includes(row.key));
             this._bodyRows = newRows.filter((row) => !this.options.pinnedTopRows?.includes(row.key) && !this.options.pinnedBottomRows?.includes(row.key));
             this._bottomRows = newRows.filter((row) => this.options.pinnedBottomRows?.includes(row.key));
-
+            console.log(this._bottomRows);
+            
             this.createRowLayouts();
             this.updateRowLayouts();
         });
