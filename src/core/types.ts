@@ -1,5 +1,3 @@
-import React from 'react';
-
 export type DataGridEventTypes = {
   readonly 'action-executed': {
     readonly action: DataGridAction;
@@ -53,11 +51,6 @@ export interface SelectionBoundary {
   readonly max: CellCoordinates
 }
 
-export interface RowSize {
-  readonly height: number;
-  readonly top: number
-}
-
 export interface CellProps<TValue = any> {
   readonly id: CellId;
   readonly rowId: RowId;
@@ -72,17 +65,17 @@ export interface CellProps<TValue = any> {
   readonly onBlur: (callback: () => void) => Unsubscribe;
 }
 
-export interface Cell<TValue = any> {
+export interface CellRender {
   readonly id: CellId;
   readonly rowId: RowId;
   readonly colId: HeaderId;
-  readonly render: () => TValue;
+  readonly render: () => any;
 }
 
 export interface ColumnHeader {
   readonly id: HeaderId;
   readonly column: Column;
-  readonly render: () => string | React.ReactNode;
+  readonly render: () => any;
 }
 
 export interface Column<TValue = any> {
@@ -128,7 +121,7 @@ export interface Row<TRow extends RowData = RowData> {
   readonly key: RowKey;
   readonly index: number;
   readonly data: TRow;
-  readonly cells: Cell[];
+  readonly cells: CellRender[];
 }
 
 export interface RowOperation {
@@ -141,7 +134,7 @@ export interface DataGridOptions<TRow extends RowData = RowData> {
   readonly data: TRow[]
   readonly columns: Column[]
 
-  readonly rowKey?: RowKey;
+  readonly rowKey: RowKey;
   readonly lockRows?: boolean;
 
   // Layout
@@ -168,7 +161,10 @@ export interface CellWithId {
   readonly row: number
 }
 
-export interface SelectionWithId { readonly min: CellWithId; readonly max: CellWithId }
+export interface SelectionWithId {
+  readonly min: CellWithId;
+  readonly max: CellWithId
+}
 
 export interface DragSelection {
   readonly active: boolean;

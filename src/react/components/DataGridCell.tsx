@@ -1,11 +1,11 @@
 import { memo, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
-import { type Cell } from '../../core';
+import { type CellRender } from '../../core';
 import { useDataGridContext } from '../hooks/useDataGridContext';
 import React from 'react';
 
 interface DataGridCellProps<TElement extends HTMLElement> extends React.HTMLAttributes<TElement> {
     readonly as?: string
-    readonly cell: Cell;
+    readonly cell: CellRender;
 }
 
 function DataGridCellImpl<TElement extends HTMLElement = HTMLElement>({ as, cell, children, ...props }: DataGridCellProps<TElement>) {

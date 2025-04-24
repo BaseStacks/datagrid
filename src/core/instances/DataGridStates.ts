@@ -1,8 +1,9 @@
-import type { CellCoordinates, ColumnHeader, CellSelectedRangeWithCells, Row, RowData, WithId, CellId } from '../types';
+import type { CellCoordinates, ColumnHeader, CellSelectedRangeWithCells, Row, RowData, WithId, CellId, DataGridOptions } from '../types';
 import { DataGridState } from './atomic/DataGridState';
 
 export class DataGridStates<TRow extends RowData> {
-    constructor() {}
+    constructor(public options: DataGridOptions<TRow>) {
+    }
     public editing = new DataGridState(false);
     public activeCell = new DataGridState<WithId<CellId, CellCoordinates> | null>(null);
     public lastEditingCell = new DataGridState<WithId<CellId, CellCoordinates> | null>(null);

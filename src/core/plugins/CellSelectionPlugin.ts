@@ -1,5 +1,6 @@
 import { DataGridPlugin, type DataGridPluginOptions } from '../instances/atomic/DataGridPlugin';
-import type { DataGridKeyMap } from '../types';
+import type { CellId, DataGridKeyMap } from '../types';
+import { getCoordinatesById } from '../utils/cellUtils';
 import { clearAllTextSelection } from '../utils/domUtils';
 import { idTypeEquals } from '../utils/idUtils';
 import { breakRangeToSmallerPart, isRangeInsideOthers, tryCombineRanges, tryRemoveDuplicates } from '../utils/selectionUtils';
@@ -98,16 +99,21 @@ export class CellSelectionPlugin extends DataGridPlugin<CellSelectionPluginOptio
     };
 
     private handleCellMouseDown = (event: MouseEvent) => {
-        const { dragging } = this.dataGrid.selection;
-        const { activeCell } = this.dataGrid.state;
-        const clickedCell = this.dataGrid.layout.getCellByElement(event.currentTarget as HTMLElement);
-        if (!clickedCell) {
-            throw new Error('Cell not found');
+        const nodeInfo = this.dataGrid.layout.getNodeByElement(event.currentTarget as HTMLElement);
+        if (!nodeInfo) {
+            throw new Error('Node not found');
         }
+        
+        const { dragging } = this.dataGrid.selection;
+        const { activeCell, editing } = this.dataGrid.state;
+
+        const cellId = nodeInfo.id as CellId;
+        const isFocusing = activeCell.value?.id === cellId && editing.value;
+        const coordinates = getCoordinatesById(cellId);
 
         const { cleanSelection, startSelection, updateLastSelectedRange } = this.dataGrid.selection;
 
-        if (clickedCell.isFocusing) {
+        if (isFocusing) {
             cleanSelection({
                 maintainActiveCell: true,
                 maintainEditing: true,
@@ -120,18 +126,18 @@ export class CellSelectionPlugin extends DataGridPlugin<CellSelectionPluginOptio
 
         if (expandSelection) {
             if (activeCell.value) {
-                updateLastSelectedRange(clickedCell.id);
+                updateLastSelectedRange(cellId);
             }
             else {
-                startSelection(clickedCell.coordinates);
+                startSelection(coordinates);
             }
         }
         else if (createNewRange) {
-            startSelection(clickedCell.coordinates);
+            startSelection(coordinates);
         }
         else {
             cleanSelection();
-            startSelection(clickedCell.coordinates);
+            startSelection(coordinates);
         }
 
         dragging.set('start');
@@ -157,12 +163,12 @@ export class CellSelectionPlugin extends DataGridPlugin<CellSelectionPluginOptio
 
         const { selection } = this.dataGrid;
 
-        const cell = this.dataGrid.layout.getCellByElement(event.currentTarget as HTMLElement);
-        if (!cell) {
-            throw new Error('Cell not found');
+        const node = this.dataGrid.layout.getNodeByElement(event.currentTarget as HTMLElement);
+        if (!node || node.type !== 'cell') {
+            return;
         }
 
-        selection.updateLastSelectedRange(cell.id);
+        selection.updateLastSelectedRange(node.id as CellId);
     };
 
     public handleActivate = () => {
@@ -186,7 +192,6 @@ export class CellSelectionPlugin extends DataGridPlugin<CellSelectionPluginOptio
             item.addEventListener('mousedown', this.handleCellMouseDown);
             item.addEventListener('mouseenter', this.handleCellMouseEnter);
         });
-
         
         const handlers: Record<CellSelectionPluginShortcut, () => void> = {
             activeLeft: this.dataGrid.selection.moveLeft,
