@@ -1,13 +1,18 @@
 import { DataGridPlugin } from '../instances/atomic/DataGridPlugin';
-import type { HeaderId, ColumnKey, ColumnLayout } from '../types';
+import type { HeaderId, ColumnKey, ColumnLayout, ColumnHeader } from '../types';
 
 export interface ColumnPinningPluginOptions {
     readonly pinnedLeftColumns?: ColumnKey[];
-    readonly pinnedBottomColumns?: ColumnKey[];
+    readonly pinnedRightColumns?: ColumnKey[];
 }
 
 export class ColumnPinningPlugin extends DataGridPlugin<ColumnPinningPluginOptions> {
     private _lastScrollLeft: number = 0;
+
+    private _leftHeaders: ColumnHeader[] = [];
+    private _bodyHeaders: ColumnHeader[] = [];
+    private _rightHeaders: ColumnHeader[] = [];
+    private _rightHeadersDesc: ColumnHeader[] = [];
 
     private createColumnLayouts = () => {
         const { headers } = this.dataGrid.state;
@@ -19,24 +24,44 @@ export class ColumnPinningPlugin extends DataGridPlugin<ColumnPinningPluginOptio
         const columnWidth = Math.max(this.dataGrid.options.columnMinWidth, Math.min(defaultColumnWidth, this.dataGrid.options.columnMaxWidth));
 
         const columnLayouts = new Map<HeaderId, ColumnLayout>();
-        const leftPinnedColumnsCount = headers.value.filter((header) => header.column.pinned === 'left').length;
-        const rightPinnedColumnsCount = headers.value.filter((header) => header.column.pinned === 'right').length;
 
-        headers.value.forEach((header, index) => {
+        this._leftHeaders.forEach((header, index, leftHeaders) => {
+            const layout: ColumnLayout = {
+                index,
+                header,
+                width: columnWidth,
+                pinned: 'left',
+                firstLeftPinned: index === 0,
+                lastLeftPinned: index === leftHeaders.length - 1,
+            };
+
+            columnLayouts.set(header.id, layout);
+        });
+
+        this._bodyHeaders.forEach((header, index) => {
             const columnId = header.id;
 
             const layout: ColumnLayout = {
-                index: index,
+                index,
                 header,
                 width: columnWidth,
-                firstLeftPinned: header.column.pinned === 'left' && index === 0,
-                lastLeftPinned: header.column.pinned === 'left' && index === leftPinnedColumnsCount - 1,
-                firstRightPinned: header.column.pinned === 'right' && index === headers.value.length - rightPinnedColumnsCount,
-                lastRightPinned: header.column.pinned === 'right' && index === headers.value.length - 1,
-                left: undefined,
-                right: undefined,
+                left: (index + this._leftHeaders.length) * columnWidth
             };
 
+            columnLayouts.set(columnId, layout);
+        });
+
+        this._rightHeaders.forEach((header, index, rightHeaders) => {
+            const columnId = header.id;
+
+            const layout: ColumnLayout = {
+                index,
+                header,
+                width: columnWidth,
+                pinned: 'right',
+                firstRightPinned: index == 0,
+                lastRightPinned: index === rightHeaders.length - 1
+            };
 
             columnLayouts.set(columnId, layout);
         });
@@ -44,52 +69,48 @@ export class ColumnPinningPlugin extends DataGridPlugin<ColumnPinningPluginOptio
         this.dataGrid.layout.columnLayoutsState.set(columnLayouts);
     };
 
-    private updateColumnLayouts = (trigger?: 'scroll-left') => {
+    private updateColumnLayouts = () => {
         const { columnLayoutsState } = this.dataGrid.layout;
 
         const viewportWidth = this.scrollArea.clientWidth;
         const baseLeft = this.scrollArea.scrollLeft;
         const baseRight = this.scrollArea.scrollWidth - viewportWidth - baseLeft;
 
-        const columnsNeedUpdate = columnLayoutsState.values().filter((columnLayout) => {
-            if (trigger === 'scroll-left') {
-                return columnLayout.header.column.pinned === 'left' || columnLayout.header.column.pinned === 'right';
-            }
-
-            return true;
-        });
-
         let calculatedLeft = baseLeft;
-        let calculatedBodyLeft = baseLeft;
         let calculatedRight = baseRight;
 
-        columnsNeedUpdate.forEach((layout) => {
-            const header = layout.header;
-            const pinned = header.column.pinned;
-
-            let left: number | undefined = undefined;
-            let right: number | undefined = undefined;
-
-            if (pinned === 'left') {
-                left = calculatedLeft;
-                calculatedLeft += layout.width;
-                calculatedBodyLeft += layout.width;
-            }
-            else if (pinned === 'right') {
-                right = calculatedRight;
-                calculatedRight -= layout.width;
-            }
-            else {
-                left = calculatedBodyLeft;
-                calculatedBodyLeft += layout.width;
+        this._leftHeaders.forEach((header) => {
+            const layout = this.dataGrid.layout.columnLayoutsState.get(header.id);
+            if (!layout) {
+                throw new Error('Column layout not found');
             }
 
-            const needUpdate = (layout.left !== left || layout.right !== right);
+            const left = calculatedLeft;
+            calculatedLeft += layout.width;
+
+            const needUpdate = layout.left !== left;
             if (!needUpdate) {
                 return;
             }
 
-            columnLayoutsState.replaceItem(header.id, { ...layout, left, right });
+            columnLayoutsState.replaceItem(header.id, { ...layout, left });
+        });
+
+        this._rightHeadersDesc.forEach((header) => {
+            const layout = this.dataGrid.layout.columnLayoutsState.get(header.id);
+            if (!layout) {
+                throw new Error('Column layout not found');
+            }
+
+            const right = calculatedRight;
+            calculatedRight += layout.width;
+
+            const needUpdate = layout.right !== right;
+            if (!needUpdate) {
+                return;
+            }
+
+            columnLayoutsState.replaceItem(header.id, { ...layout, right });
         });
     };
 
@@ -100,10 +121,6 @@ export class ColumnPinningPlugin extends DataGridPlugin<ColumnPinningPluginOptio
         }
 
         this._lastScrollLeft = this.scrollArea.scrollLeft;
-        this.updateColumnLayouts('scroll-left');
-    };
-
-    private handleContainerResize = () => {
         this.updateColumnLayouts();
     };
 
@@ -113,12 +130,22 @@ export class ColumnPinningPlugin extends DataGridPlugin<ColumnPinningPluginOptio
             this.scrollArea.removeEventListener('scroll', this.handleContainerScroll);
         });
 
-        this.dataGrid.state.headers.watch(() => {
+        const watchHeaders = this.dataGrid.state.headers.watch((newHeaders) => {
+            const { pinnedRightColumns, pinnedLeftColumns } = this.options;
+
+            this._leftHeaders = pinnedLeftColumns ? newHeaders.filter((header) => pinnedLeftColumns.includes(header.column.dataKey)) : [];
+            this._rightHeaders = pinnedRightColumns ? newHeaders.filter((header) => pinnedRightColumns.includes(header.column.dataKey)) : [];
+            this._bodyHeaders = newHeaders.filter(header => !this._leftHeaders.includes(header) && !this._rightHeaders.includes(header));
+            this._rightHeadersDesc = [...this._rightHeaders].reverse();
+            
             this.createColumnLayouts();
             this.updateColumnLayouts();
         });
+        this.unsubscribes.push(watchHeaders);
 
-        const resizeObserver = new ResizeObserver(this.handleContainerResize);
+        const resizeObserver = new ResizeObserver(() => {
+            this.updateColumnLayouts();
+        });
         resizeObserver.observe(this.scrollArea);
         this.unsubscribes.push(() => {
             resizeObserver.disconnect();

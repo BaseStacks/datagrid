@@ -86,12 +86,11 @@ export interface ColumnHeader {
 }
 
 export interface Column<TValue = any> {
-  readonly dataKey?: string;
+  readonly dataKey: string;
   readonly header?: string | (() => any);
   readonly cell?: string | ((opts: CellProps<TValue>) => React.ReactNode)
   readonly footer?: string | (() => any);
   readonly disabled?: boolean | ((opts: { value: RowData; rowIndex: number }) => boolean);
-  readonly pinned?: 'left' | 'right';
   readonly prePasteValues?: (values: string[]) => TValue[];
   readonly pasteValue?: (opts: { value: TValue; rowData: RowData; rowIndex: number }) => TValue | Promise<TValue>;
   readonly isCellEmpty?: (opts: { value: RowData; rowIndex: number }) => boolean;
@@ -102,10 +101,11 @@ export interface ColumnLayout {
   readonly index: number;
   readonly header: ColumnHeader;
   readonly width: number;
-  readonly firstLeftPinned: boolean;
-  readonly lastLeftPinned: boolean;
-  readonly firstRightPinned: boolean;
-  readonly lastRightPinned: boolean;
+  readonly pinned?: 'left' | 'right';
+  readonly firstLeftPinned?: boolean;
+  readonly lastLeftPinned?: boolean;
+  readonly firstRightPinned?: boolean;
+  readonly lastRightPinned?: boolean;
   readonly left?: number;
   readonly right?: number;
 }

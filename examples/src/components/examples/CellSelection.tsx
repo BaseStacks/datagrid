@@ -5,14 +5,14 @@ import { cn } from '@/utils/cn';
 
 export function CellSelection() {
     const columns = useMemo((): Column[] => [
-        { dataKey: 'id', header: 'ID', pinned: 'left' },
-        { dataKey: 'firstName', header: 'First Name', pinned: 'left' },
+        { dataKey: 'id', header: 'ID'},
+        { dataKey: 'firstName', header: 'First Name' },
         { dataKey: 'lastName', header: 'Last Name' },
         { dataKey: 'age', header: 'Age' },
         { dataKey: 'address', header: 'Address' },
         { dataKey: 'email', header: 'Email' },
         { dataKey: 'phone', header: 'Phone' },
-        { dataKey: 'actions', header: 'Actions', pinned: 'right' },
+        { dataKey: 'actions', header: 'Actions' },
     ], []);
 
     const [data, setData] = useState(() => {
@@ -30,6 +30,9 @@ export function CellSelection() {
         });
     });
 
+    const [pinnedLeftColumns] = useState<RowKey[]>(() => columns.slice(0, 2).map((col) => col.dataKey as RowKey));
+    const [pinnedRightColumns] = useState<RowKey[]>(() => columns.slice(-2).map((col) => col.dataKey as RowKey));
+
     const [pinnedTopRows] = useState<RowKey[]>(() => data.slice(0, 2).map((row) => row.id as RowKey));
     const [pinnedBottomRows] = useState<RowKey[]>(() => data.slice(-2).map((row) => row.id as RowKey));
 
@@ -41,7 +44,10 @@ export function CellSelection() {
 
     usePlugin(dataGrid, CellSelectionPlugin);
     usePlugin(dataGrid, StayInViewPlugin);
-    usePlugin(dataGrid, ColumnPinningPlugin);
+    usePlugin(dataGrid, ColumnPinningPlugin, {
+        pinnedLeftColumns,
+        pinnedRightColumns
+    });
     usePlugin(dataGrid, RowPinningPlugin, {
         pinnedTopRows,
         pinnedBottomRows

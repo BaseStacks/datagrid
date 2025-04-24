@@ -43,7 +43,7 @@ function DataGridCellImpl<TElement extends HTMLElement = HTMLElement>({ as, cell
             ref.current.style.left = item.left === undefined ? '' : `${item.left}px`;
             ref.current.style.right = item.right === undefined ? '' : `${item.right}px`;
 
-            if (!item.header.column.pinned) {
+            if (!item.pinned) {
                 ref.current.removeAttribute('data-pinned');
                 ref.current.removeAttribute('data-first-left');
                 ref.current.removeAttribute('data-last-left');
@@ -52,11 +52,12 @@ function DataGridCellImpl<TElement extends HTMLElement = HTMLElement>({ as, cell
                 return;
             }
 
-            ref.current.setAttribute('data-pinned', item.header.column.pinned);
-            ref.current.setAttribute('data-first-left', item.firstLeftPinned ? 'true' : 'false');
-            ref.current.setAttribute('data-last-left', item.lastLeftPinned ? 'true' : 'false');
-            ref.current.setAttribute('data-first-right', item.firstRightPinned ? 'true' : 'false');
-            ref.current.setAttribute('data-last-right', item.lastRightPinned ? 'true' : 'false');
+            ref.current.setAttribute('data-pinned', item.pinned);
+
+            item.firstLeftPinned && ref.current.setAttribute('data-first-left', 'true');
+            item.lastLeftPinned && ref.current.setAttribute('data-last-left', 'true');
+            item.firstRightPinned && ref.current.setAttribute('data-first-right', 'true');
+            item.lastRightPinned && ref.current.setAttribute('data-last-right', 'true');
         });
 
         const unwatchActiveCell = state.activeCell.watch((activeCell) => {

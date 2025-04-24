@@ -227,8 +227,13 @@ export class DataGridLayout<TRow extends RowData> {
             throw new Error('Scroll area not found');
         }
 
-        const leftPinnedColumns = this.columnLayoutsState.values().filter((layout) => layout.header.column.pinned === 'left');
-        const rightPinnedColumns = this.columnLayoutsState.values().filter((layout) => layout.header.column.pinned === 'right');
+        const topPinnedRows = this.rowLayoutsState.values().filter((layout) => layout.pinned === 'top');
+        const bottomPinnedRows = this.rowLayoutsState.values().filter((layout) => layout.pinned === 'bottom');
+        const leftPinnedColumns = this.columnLayoutsState.values().filter((layout) => layout.pinned === 'left');
+        const rightPinnedColumns = this.columnLayoutsState.values().filter((layout) => layout.pinned === 'right');
+
+        const topHeight = topPinnedRows.reduce((acc, layout) => acc + layout.height, 0);
+        const bottomWidth = bottomPinnedRows.reduce((acc, layout) => acc + layout.height, 0);
 
         const leftWidth = leftPinnedColumns.reduce((acc, layout) => acc + layout.width, 0);
         const rightWidth = rightPinnedColumns.reduce((acc, layout) => acc + layout.width, 0);
@@ -236,9 +241,9 @@ export class DataGridLayout<TRow extends RowData> {
         const centerWidth = scrollArea.clientWidth - leftWidth - rightWidth;
         const centerRect: RectType = {
             left: leftWidth,
-            top: 0,
+            top: topHeight,
             right: leftWidth + centerWidth,
-            bottom: scrollArea.clientHeight,
+            bottom: scrollArea.clientHeight - bottomWidth,
             width: centerWidth,
             height: scrollArea.clientHeight,
         };
