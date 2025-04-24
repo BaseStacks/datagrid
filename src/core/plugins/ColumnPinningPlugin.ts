@@ -1,28 +1,21 @@
 import { DataGridPlugin } from '../instances/atomic/DataGridPlugin';
-import type { ColumnLayout, HeaderId } from '../types';
+import type { HeaderId, ColumnKey, ColumnLayout } from '../types';
 
-export interface LayoutPluginOptions {
+export interface ColumnPinningPluginOptions {
+    readonly pinnedLeftColumns?: ColumnKey[];
+    readonly pinnedBottomColumns?: ColumnKey[];
 }
 
-export class LayoutPlugin extends DataGridPlugin<LayoutPluginOptions> {
-
-    private get container() {
-        return this.dataGrid.layout.containerState.value!;
-    }
-
-    private get scrollArea() {
-        return this.dataGrid.layout.scrollAreaState.value!;
-    }
-
-    private _lastScrollTop: number = 0;
+export class ColumnPinningPlugin extends DataGridPlugin<ColumnPinningPluginOptions> {
+    private _lastScrollLeft: number = 0;
 
     private createColumnLayouts = () => {
         const { headers } = this.dataGrid.state;
 
-        // Set default column width based on container width
-        const containerWidth = this.container.clientWidth;
+        // Set default column width based on scrollArea width
+        const scrollAreaWidth = this.scrollArea.clientWidth;
         const columnCount = headers.value.length;
-        const defaultColumnWidth = Math.floor(containerWidth / columnCount);
+        const defaultColumnWidth = Math.floor(scrollAreaWidth / columnCount);
         const columnWidth = Math.max(this.dataGrid.options.columnMinWidth, Math.min(defaultColumnWidth, this.dataGrid.options.columnMaxWidth));
 
         const columnLayouts = new Map<HeaderId, ColumnLayout>();
@@ -51,7 +44,7 @@ export class LayoutPlugin extends DataGridPlugin<LayoutPluginOptions> {
         this.dataGrid.layout.columnLayoutsState.set(columnLayouts);
     };
 
-    private updateColumnLayouts = (trigger?: 'scroll-down' | 'scroll-left') => {
+    private updateColumnLayouts = (trigger?: 'scroll-left') => {
         const { columnLayoutsState } = this.dataGrid.layout;
 
         const viewportWidth = this.scrollArea.clientWidth;
@@ -61,10 +54,6 @@ export class LayoutPlugin extends DataGridPlugin<LayoutPluginOptions> {
         const columnsNeedUpdate = columnLayoutsState.values().filter((columnLayout) => {
             if (trigger === 'scroll-left') {
                 return columnLayout.header.column.pinned === 'left' || columnLayout.header.column.pinned === 'right';
-            }
-
-            if (trigger === 'scroll-down') {
-                return false;
             }
 
             return true;
@@ -105,29 +94,32 @@ export class LayoutPlugin extends DataGridPlugin<LayoutPluginOptions> {
     };
 
     private handleContainerScroll = () => {
-        const isScrollingDown = this.container.scrollTop != this._lastScrollTop;
-        this._lastScrollTop = this.container.scrollTop;
-        this.updateColumnLayouts(isScrollingDown ? 'scroll-down' : 'scroll-left');
+        const isScrollingLeft = this.scrollArea.scrollLeft != this._lastScrollLeft;
+        if (!isScrollingLeft) {
+            return;
+        }
+
+        this._lastScrollLeft = this.scrollArea.scrollLeft;
+        this.updateColumnLayouts('scroll-left');
     };
 
     private handleContainerResize = () => {
         this.updateColumnLayouts();
     };
 
-    public options: LayoutPluginOptions = {};
-    public active: boolean = false;
-
     public handleActivate = () => {
-        this.createColumnLayouts();
-        this.updateColumnLayouts();
-
         this.scrollArea.addEventListener('scroll', this.handleContainerScroll);
         this.unsubscribes.push(() => {
             this.scrollArea.removeEventListener('scroll', this.handleContainerScroll);
         });
 
+        this.dataGrid.state.headers.watch(() => {
+            this.createColumnLayouts();
+            this.updateColumnLayouts();
+        });
+
         const resizeObserver = new ResizeObserver(this.handleContainerResize);
-        resizeObserver.observe(this.container);
+        resizeObserver.observe(this.scrollArea);
         this.unsubscribes.push(() => {
             resizeObserver.disconnect();
         });

@@ -1,19 +1,18 @@
 import { DataGridPlugin } from '../instances/atomic/DataGridPlugin';
 import type { Row, RowId, RowKey, RowLayout } from '../types';
 
-export interface RowPiningPluginOptions {
+export interface RowPinningPluginOptions {
     readonly pinnedTopRows?: RowKey[];
     readonly pinnedBottomRows?: RowKey[];
 }
 
-export class RowPiningPlugin extends DataGridPlugin<RowPiningPluginOptions> {
+export class RowPinningPlugin extends DataGridPlugin<RowPinningPluginOptions> {
     private lastScrollTop = 0;
 
     private _topRows: Row[] = [];
     private _bodyRows: Row[] = [];
     private _bottomRows: Row[] = [];
     private _bottomRowsDescending: Row[] = [];
-
 
     private createRowLayouts = () => {
         const rowLayoutMap = new Map<RowId, RowLayout>();
@@ -44,7 +43,7 @@ export class RowPiningPlugin extends DataGridPlugin<RowPiningPluginOptions> {
 
             rowLayoutMap.set(rowId, layout);
         });
-        
+
         this._bottomRows.forEach((row, index, bottomRows) => {
             const rowId = row.id as RowId;
             const layout: RowLayout = {
@@ -64,12 +63,12 @@ export class RowPiningPlugin extends DataGridPlugin<RowPiningPluginOptions> {
     };
 
     private updateRowLayouts = () => {
-        const { rowLayoutsState, scrollAreaState } = this.dataGrid.layout;
+        const { rowLayoutsState } = this.dataGrid.layout;
         if (!this._topRows.length && !this._topRows.length) {
             return;
         }
 
-        const baseTop = scrollAreaState.value!.scrollTop || 0;
+        const baseTop = this.scrollArea.scrollTop || 0;
 
         let calculatedTop = baseTop;
 
@@ -92,8 +91,8 @@ export class RowPiningPlugin extends DataGridPlugin<RowPiningPluginOptions> {
             });
         });
 
-        const viewportHeight = scrollAreaState.value?.clientHeight || 0;
-        const baseBottom = scrollAreaState.value!.scrollHeight - viewportHeight - baseTop;
+        const viewportHeight = this.scrollArea.clientHeight || 0;
+        const baseBottom = this.scrollArea.scrollHeight - viewportHeight - baseTop;
         let calculatedBottom = baseBottom;
 
         this._bottomRowsDescending.forEach((row) => {
@@ -116,17 +115,20 @@ export class RowPiningPlugin extends DataGridPlugin<RowPiningPluginOptions> {
     };
 
     private handleScroll = () => {
-        const isVerticalScroll = this.dataGrid.layout.scrollAreaState.value?.scrollTop !== this.lastScrollTop;
+        const isVerticalScroll = this.scrollArea.scrollTop !== this.lastScrollTop;
         if (!isVerticalScroll) {
             return;
         }
 
-        this.lastScrollTop = this.dataGrid.layout.scrollAreaState.value?.scrollTop || 0;
+        this.lastScrollTop = this.scrollArea.scrollTop || 0;
         this.updateRowLayouts();
     };
 
     public handleActivate = () => {
-        this.dataGrid.layout.scrollAreaState.value?.addEventListener('scroll', this.handleScroll);
+        this.scrollArea.addEventListener('scroll', this.handleScroll);
+        this.unsubscribes.push(() => {
+            this.scrollArea.removeEventListener('scroll', this.handleScroll);
+        });
 
         const unwatchRowLayouts = this.dataGrid.state.rows.watch((newRows) => {
             const { pinnedTopRows, pinnedBottomRows } = this.options;

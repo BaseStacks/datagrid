@@ -48,10 +48,6 @@ export const defaultKeyMap: DataGridKeyMap<CellSelectionPluginShortcut> = {
 };
 
 export class CellSelectionPlugin extends DataGridPlugin<CellSelectionPluginOptions> {
-    private get container() {
-        return this.dataGrid.layout.containerState.value;
-    }
-
     private handleContainerMouseDown = (event: MouseEvent) => {
         const isClickOutside = !this.container?.contains(event.target as Node);
         if (isClickOutside) {

@@ -12,6 +12,6 @@ export * from './utils/cellUtils';
 export * from './utils/objectUtils';
 
 export * from './plugins/CellSelectionPlugin';
-export * from './plugins/LayoutPlugin';
 export * from './plugins/StayInViewPlugin';
-export * from './plugins/RowPiningPlugin';
+export * from './plugins/RowPinningPlugin';
+export * from './plugins/ColumnPinningPlugin';

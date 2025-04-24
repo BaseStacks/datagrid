@@ -4,10 +4,6 @@ export interface StayInViewPluginOptions extends DataGridPluginOptions {
 }
 
 export class StayInViewPlugin extends DataGridPlugin<StayInViewPluginOptions> {
-    private get scrollArea() {
-        return this.dataGrid.layout.scrollAreaState.value!;
-    }
-
     public handleActivate = () => {
         const actionExecListener = this.dataGrid.events.addListener('execute-action', ({ action }) => {
             let cellId = this.dataGrid.state.activeCell.value?.id;

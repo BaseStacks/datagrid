@@ -5,14 +5,23 @@ export interface DataGridPluginOptions {
 }
 
 export abstract class DataGridPlugin<TOptions extends DataGridPluginOptions = DataGridPluginOptions, TRow extends RowData = RowData> {
-    public unsubscribes: (() => void)[] = [];
-    public active: boolean = false;
-
-    abstract handleActivate: () => void;
 
     constructor(public dataGrid: DataGrid<TRow>, public options: TOptions) {
     }
 
+    public get container() {
+        return this.dataGrid.layout.containerState.value!;
+    }
+
+    public get scrollArea() {
+        return this.dataGrid.layout.scrollAreaState.value!;
+    }
+    
+    public unsubscribes: (() => void)[] = [];
+    public active: boolean = false;
+
+    public abstract handleActivate: () => void;
+   
     public activate = (_opts?: TOptions) => {
         this.active = true;
         this.handleActivate();
