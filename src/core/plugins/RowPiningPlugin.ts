@@ -12,6 +12,8 @@ export class RowPiningPlugin extends DataGridPlugin<RowPiningPluginOptions> {
     private _topRows: Row[] = [];
     private _bodyRows: Row[] = [];
     private _bottomRows: Row[] = [];
+    private _bottomRowsDescending: Row[] = [];
+
 
     private createRowLayouts = () => {
         const rowLayoutMap = new Map<RowId, RowLayout>();
@@ -42,14 +44,16 @@ export class RowPiningPlugin extends DataGridPlugin<RowPiningPluginOptions> {
 
             rowLayoutMap.set(rowId, layout);
         });
-
-        this._bottomRows?.forEach((row, index, bottomRows) => {
+        
+        this._bottomRows.forEach((row, index, bottomRows) => {
             const rowId = row.id as RowId;
             const layout: RowLayout = {
                 index: index,
                 row,
                 height: this.dataGrid.options.rowHeight,
                 bottom: (bottomRows.length - index) * this.dataGrid.options.rowHeight,
+                firstPinnedBottom: (index === 0) && true || undefined,
+                lastPinnedBottom: (index === bottomRows.length - 1) && true || undefined,
                 pinned: 'bottom'
             };
 
@@ -92,7 +96,7 @@ export class RowPiningPlugin extends DataGridPlugin<RowPiningPluginOptions> {
         const baseBottom = scrollAreaState.value!.scrollHeight - viewportHeight - baseTop;
         let calculatedBottom = baseBottom;
 
-        this._bottomRows.forEach((row, index, bottomRows) => {
+        this._bottomRowsDescending.forEach((row) => {
             const rowLayout = rowLayoutsState.get(row.id)!;
 
             let bottom: number | undefined = undefined;
@@ -106,8 +110,6 @@ export class RowPiningPlugin extends DataGridPlugin<RowPiningPluginOptions> {
 
             rowLayoutsState.replaceItem(rowLayout.row.id, {
                 ...rowLayout,
-                firstPinnedBottom: (index === 0) && true || undefined,
-                lastPinnedBottom: (index === bottomRows.length - 1) && true || undefined,
                 bottom
             });
         });
@@ -127,11 +129,17 @@ export class RowPiningPlugin extends DataGridPlugin<RowPiningPluginOptions> {
         this.dataGrid.layout.scrollAreaState.value?.addEventListener('scroll', this.handleScroll);
 
         const unwatchRowLayouts = this.dataGrid.state.rows.watch((newRows) => {
-            this._topRows = newRows.filter((row) => this.options.pinnedTopRows?.includes(row.key));
-            this._bodyRows = newRows.filter((row) => !this.options.pinnedTopRows?.includes(row.key) && !this.options.pinnedBottomRows?.includes(row.key));
-            this._bottomRows = newRows.filter((row) => this.options.pinnedBottomRows?.includes(row.key));
-            console.log(this._bottomRows);
-            
+            const { pinnedTopRows, pinnedBottomRows } = this.options;
+
+            this._topRows = pinnedTopRows ? pinnedTopRows.map(o => newRows.find((row) => row.key === o)).filter(o => !!o) : [];
+            this._bottomRows = pinnedBottomRows ? pinnedBottomRows.map(o => newRows.find((row) => row.key === o)).filter(o => !!o) : [];
+            this._bottomRowsDescending = [...this._bottomRows].reverse();
+
+            this._bodyRows = newRows.filter((row) => {
+                const rowId = row.id as RowId;
+                return !this._topRows.some((topRow) => topRow.id === rowId) && !this._bottomRows.some((bottomRow) => bottomRow.id === rowId);
+            });
+
             this.createRowLayouts();
             this.updateRowLayouts();
         });
