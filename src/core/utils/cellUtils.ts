@@ -10,7 +10,7 @@ export const createCellId = ({ row, col}: CellCoordinates) => {
     }) as CellId;
 };
 
-export const getCoordinatesById = (id: string) => {
+export const getCoordinatesById = (id: CellId) => {
     const idData = extractId(id);
     if (idData.type !== 'cell') {
         throw new Error(`Invalid cell id: ${id}`);

@@ -1,22 +1,53 @@
-import type { CellId, ColumnLayout, Id, RowData, RectType, RowLayout, RowId } from '../types';
+import { platform } from 'os';
+import type { CellId, ColumnLayout, Id, RowData, RectType, RowLayout, RowId, CellCoordinates, HeaderId, HeaderGroupId } from '../types';
+import { getCoordinatesById } from '../utils/cellUtils';
 import { getRect } from '../utils/domRectUtils';
 import { extractId } from '../utils/idUtils';
 import { DataGridMapState } from './atomic/DataGridMapState';
 import { DataGridState } from './atomic/DataGridState';
 import { DataGridStates } from './DataGridStates';
+import type { DataGridPlugin } from './atomic/DataGridPlugin';
 
-export interface DataGridLayoutNode {
-    readonly id: Id;
-    readonly type: 'header' | 'row' | 'cell',
+export interface DataGridLayoutNodeBase {
     readonly element: HTMLElement;
-    readonly attributes: Record<string, string>;
-    readonly rect?: RectType;
+    readonly rect: Partial<RectType>;
+    readonly attributes: Record<string, any>;
 }
 
-export class DataGridLayout<TRow extends RowData> {
-    constructor(private state: DataGridStates<TRow>) {
-        this.state = state;
+export interface DataGridCellNode extends DataGridLayoutNodeBase {
+    readonly id: CellId;
+    readonly type: 'cell',
+    readonly coordinates: CellCoordinates;
+    readonly active?: boolean;
+    readonly focused?: boolean;
+}
+
+export interface DataGridHeaderNode extends DataGridLayoutNodeBase {
+    readonly id: HeaderId;
+    readonly type: 'header',
+    readonly pinned?: {
+        side: 'left' | 'right';
+        firstLeft?: boolean;
+        lastLeft?: boolean;
+        firstRight?: boolean;
+        lastRight?: boolean;
     }
+}
+
+export interface DataGridRowNode extends DataGridLayoutNodeBase {
+    readonly id: RowId;
+    readonly type: 'row',
+}
+
+export interface DataGridHeaderGroupNode extends DataGridLayoutNodeBase {
+    readonly id: HeaderGroupId;
+    readonly type: 'headerGroup',
+}
+
+export type DataGridLayoutNode = DataGridCellNode | DataGridHeaderGroupNode | DataGridHeaderNode | DataGridRowNode;
+
+export class DataGridLayout<TRow extends RowData> {
+    constructor(private state: DataGridStates<TRow>) { }
 
     public get scrollbarWidth() {
         if (!this.scrollAreaState.value) {
@@ -38,6 +69,8 @@ export class DataGridLayout<TRow extends RowData> {
     public elementsState = new DataGridMapState<Id, HTMLElement>();
     public columnLayoutsState = new DataGridMapState<Id, ColumnLayout>(new Map(), { useDeepEqual: false });
     public rowLayoutsState = new DataGridMapState<RowId, RowLayout>(new Map(), { useDeepEqual: false });
+
+    public pluginAttributesMap = new Map<DataGridPlugin, string[]>();
 
     /**
      * Register the container to the layout
@@ -114,12 +147,64 @@ export class DataGridLayout<TRow extends RowData> {
         this.elementsState.addItem(id, element);
 
         const { type } = extractId(id);
-        this.layoutNodesState.addItem(id, {
-            id,
-            type,
+
+        const rect: RectType = {
+            left: 0,
+            top: 0,
+            right: 0,
+            bottom: 0,
+            width: 0,
+            height: 0,
+        };
+
+        const nodeBase = {
+            rect,
             attributes: {},
-            element: element
-        });
+            element,
+        };
+
+        if (type === 'cell') {
+            const cellId = id as CellId;
+            this.layoutNodesState.addItem(cellId, {
+                ...nodeBase,
+                id: id as CellId,
+                type: 'cell',
+                coordinates: getCoordinatesById(cellId),
+            });
+            return;
+        };
+
+        if (type === 'header') {
+            const headerId = id as HeaderId;
+            this.layoutNodesState.addItem(headerId, {
+                ...nodeBase,
+                id: id as HeaderId,
+                type: 'header'
+            });
+            return;
+        }
+
+        if (type === 'row') {
+            const rowId = id as RowId;
+            this.layoutNodesState.addItem(rowId, {
+                ...nodeBase,
+                id: id as RowId,
+                type: 'row',
+            });
+            return;
+        }
+
+        if (type === 'headerGroup') {
+            const headerGroupId = id as HeaderGroupId;
+            this.layoutNodesState.addItem(headerGroupId, {
+                ...nodeBase,
+                id: headerGroupId,
+                type: 'headerGroup',
+            });
+            return;
+        }
+
+        throw new Error(`Invalid node type: ${type}`);
     };
 
     /**
@@ -247,4 +332,48 @@ export class DataGridLayout<TRow extends RowData> {
             top: nextScrollTop,
         };
     };
-};
+
+    public registerAttributes = (plugin: DataGridPlugin, attributes: Record<string, any>) => {
+        this.pluginAttributesMap.set(plugin, Object.keys(attributes));
+    };
+
+    public updateNodeAttributes = (plugin: DataGridPlugin, id: Id, attributes: Record<string, any>) => {
+        const node = this.layoutNodesState.get(id);
+        if (!node) {
+            return;
+        }
+
+        const registerAttributes = this.pluginAttributesMap.get(plugin);
+        if (!registerAttributes) {
+            throw new Error('Attributes not registered');
+        }
+
+        const updatedAttributes = registerAttributes.reduce((acc, key) => {
+            acc[key] = attributes[key] ?? node.attributes[key] ?? undefined;
+            return acc;
+        }, {} as Record<string, any>);
+
+        this.layoutNodesState.replaceItem(id, {
+            ...node,
+            attributes: {
+                ...node.attributes,
+                ...updatedAttributes
+            }
+        });
+    };
+
+    public updateNodeRect = (id: Id, rect: Partial<RectType>) => {
+        const node = this.layoutNodesState.get(id);
+        if (!node) {
+            return;
+        }
+
+        this.layoutNodesState.replaceItem(id, {
+            ...node,
+            rect: {
+                ...node.rect,
+                ...rect
+            }
+        });
+    };
+}

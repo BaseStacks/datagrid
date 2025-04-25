@@ -1,6 +1,7 @@
 import React, { memo, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import { useDataGridContext } from '../hooks/useDataGridContext';
-import type { ColumnHeader } from '../../core';
+import type { ColumnHeader, DataGridHeaderNode } from '../../core';
+import { setAttributes } from '../../dom';
 
 interface DataGridHeaderProps<TElement extends HTMLElement> extends React.HTMLAttributes<TElement> {
     readonly as?: string
@@ -25,50 +26,35 @@ function DataGridHeaderImpl<TElement extends HTMLElement = HTMLElement>({ as, he
     }, [props.style]);
 
     useLayoutEffect(() => {
-        const unwatchColumnLayout = layout.columnLayoutsState.watchItem(header.id, ({ operation, item }) => {
-            if (!ref.current) {
+        const unwatchLayout = layout.layoutNodesState.watchItem(header.id, ({ operation, item }) => {
+            if (!ref.current || operation === 'remove') {
                 return;
             };
 
-            if (operation === 'remove') {
-                return;
-            }
+            const { rect, pinned } = item as DataGridHeaderNode;
 
-            let width = item.width;
-            if (item.lastRightPinned) {
+            let width = rect.width!;
+
+            if (pinned?.lastRight) {
                 width += layout.scrollbarWidth;
             }
 
-            let right = item.right;
-            if (item.lastRightPinned) {
+            let right = rect.right;
+            if (pinned?.lastLeft) {
                 right! -= layout.scrollbarWidth;
             }
 
             ref.current.style.width = `${width}px`;
-            ref.current.style.left = item.left === undefined ? '' : `${item.left}px`;
+            ref.current.style.left = rect.left === undefined ? '' : `${rect.left}px`;
             ref.current.style.right = right === undefined ? '' : `${right}px`;
 
-            if (!item.pinned) {
-                ref.current.removeAttribute('data-pinned');
-                ref.current.removeAttribute('data-first-left');
-                ref.current.removeAttribute('data-last-left');
-                ref.current.removeAttribute('data-first-right');
-                ref.current.removeAttribute('data-last-right');
-                return;
-            }
-
-            ref.current.setAttribute('data-pinned', item.pinned);
-
-            item.firstLeftPinned && ref.current.setAttribute('data-first-left', 'true');
-            item.lastLeftPinned && ref.current.setAttribute('data-last-left', 'true');
-            item.firstRightPinned && ref.current.setAttribute('data-first-right', 'true');
-            item.lastRightPinned && ref.current.setAttribute('data-last-right', 'true');
+            setAttributes(ref.current, item.attributes);
         });
 
         return () => {
-            unwatchColumnLayout();
+            unwatchLayout();
         };
-    }, [layout.columnLayoutsState, header.id, layout.scrollbarWidth]);
+    }, [header.id, layout.scrollbarWidth, layout.layoutNodesState]);
 
     useEffect(() => {
         layout.registerNode(header.id, ref.current!);

@@ -1,5 +1,6 @@
 import { DataGridPlugin } from '../instances/atomic/DataGridPlugin';
-import type { HeaderId, ColumnKey, ColumnLayout, ColumnHeader } from '../types';
+import type { DataGridHeaderNode } from '../instances/DataGridLayout';
+import type { ColumnKey, ColumnHeader } from '../types';
 
 export interface ColumnPinningPluginOptions {
     readonly pinnedLeftColumns?: ColumnKey[];
@@ -14,8 +15,9 @@ export class ColumnPinningPlugin extends DataGridPlugin<ColumnPinningPluginOptio
     private _rightHeaders: ColumnHeader[] = [];
     private _rightHeadersDesc: ColumnHeader[] = [];
 
-    private createColumnLayouts = () => {
+    private setupHeaderNodes = () => {
         const { headers } = this.dataGrid.state;
+        const { layoutNodesState, updateNodeAttributes } = this.dataGrid.layout;
 
         // Set default column width based on scrollArea width
         const scrollAreaWidth = this.scrollArea.clientWidth;
@@ -23,54 +25,40 @@ export class ColumnPinningPlugin extends DataGridPlugin<ColumnPinningPluginOptio
         const defaultColumnWidth = Math.floor(scrollAreaWidth / columnCount);
         const columnWidth = Math.max(this.dataGrid.options.columnMinWidth, Math.min(defaultColumnWidth, this.dataGrid.options.columnMaxWidth));
 
-        const columnLayouts = new Map<HeaderId, ColumnLayout>();
-
         this._leftHeaders.forEach((header, index, leftHeaders) => {
-            const layout: ColumnLayout = {
-                index,
-                header,
-                width: columnWidth,
-                pinned: 'left',
-                firstLeftPinned: index === 0,
-                lastLeftPinned: index === leftHeaders.length - 1,
-            };
+            const headerNode = layoutNodesState.get(header.id) as DataGridHeaderNode;
 
-            columnLayouts.set(header.id, layout);
+            updateNodeAttributes(this, headerNode.id, {
+                'data-pinned': 'left',
+                'data-fist-left': index === 0,
+                'data-last-left': index === leftHeaders.length - 1,
+            });
         });
 
         this._bodyHeaders.forEach((header, index) => {
-            const columnId = header.id;
+            const headerNode = layoutNodesState.get(header.id) as DataGridHeaderNode;
 
-            const layout: ColumnLayout = {
-                index,
-                header,
-                width: columnWidth,
-                left: (index + this._leftHeaders.length) * columnWidth
-            };
-
-            columnLayouts.set(columnId, layout);
+            layoutNodesState.replaceItem(headerNode.id, {
+                ...headerNode,
+                rect: {
+                    left: (index + this._leftHeaders.length) * columnWidth
+                }
+            });
         });
 
         this._rightHeaders.forEach((header, index, rightHeaders) => {
-            const columnId = header.id;
+            const headerNode = layoutNodesState.get(header.id) as DataGridHeaderNode;
 
-            const layout: ColumnLayout = {
-                index,
-                header,
-                width: columnWidth,
-                pinned: 'right',
-                firstRightPinned: index == 0,
-                lastRightPinned: index === rightHeaders.length - 1
-            };
-
-            columnLayouts.set(columnId, layout);
+            updateNodeAttributes(this, headerNode.id, {
+                'data-pinned': 'right',
+                'data-fist-right': index === 0,
+                'data-last-right': index === rightHeaders.length - 1,
+            });
         });
-
-        this.dataGrid.layout.columnLayoutsState.set(columnLayouts);
     };
 
-    private updateColumnLayouts = () => {
-        const { columnLayoutsState } = this.dataGrid.layout;
+    private updateHeaderNodes = () => {
+        const { layoutNodesState } = this.dataGrid.layout;
 
         const viewportWidth = this.scrollArea.clientWidth;
         const baseLeft = this.scrollArea.scrollLeft;
@@ -80,37 +68,49 @@ export class ColumnPinningPlugin extends DataGridPlugin<ColumnPinningPluginOptio
         let calculatedRight = baseRight;
 
         this._leftHeaders.forEach((header) => {
-            const layout = this.dataGrid.layout.columnLayoutsState.get(header.id);
-            if (!layout) {
-                throw new Error('Column layout not found');
+            const headerNode = layoutNodesState.get(header.id);
+            if (!headerNode) {
+                return;
             }
 
             const left = calculatedLeft;
-            calculatedLeft += layout.width;
+            calculatedLeft += headerNode.rect.width!;
 
-            const needUpdate = layout.left !== left;
+            const needUpdate = headerNode.rect.left !== left;
             if (!needUpdate) {
                 return;
             }
 
-            columnLayoutsState.replaceItem(header.id, { ...layout, left });
+            layoutNodesState.replaceItem(header.id, {
+                ...headerNode,
+                rect: {
+                    ...headerNode.rect,
+                    left
+                }
+            });
         });
 
         this._rightHeadersDesc.forEach((header) => {
-            const layout = this.dataGrid.layout.columnLayoutsState.get(header.id);
-            if (!layout) {
-                throw new Error('Column layout not found');
+            const headerNode = layoutNodesState.get(header.id);
+            if (!headerNode) {
+                return;
             }
 
             const right = calculatedRight;
-            calculatedRight += layout.width;
+            calculatedRight += headerNode.rect.width!;
 
-            const needUpdate = layout.right !== right;
+            const needUpdate = headerNode.rect.right !== right;
             if (!needUpdate) {
                 return;
             }
 
-            columnLayoutsState.replaceItem(header.id, { ...layout, right });
+            layoutNodesState.replaceItem(header.id, {
+                ...headerNode,
+                rect: {
+                    ...headerNode.rect,
+                    right
+                }
+            });
         });
     };
 
@@ -121,10 +121,12 @@ export class ColumnPinningPlugin extends DataGridPlugin<ColumnPinningPluginOptio
         }
 
         this._lastScrollLeft = this.scrollArea.scrollLeft;
-        this.updateColumnLayouts();
+        this.updateHeaderNodes();
     };
 
     public handleActivate = () => {
+        this.dataGrid.layout.registerAttributes(this, ['data-pinned', 'data-fist-left', 'data-last-left', 'data-first-right', 'data-last-right']);
+
         this.scrollArea.addEventListener('scroll', this.handleContainerScroll);
         this.unsubscribes.push(() => {
             this.scrollArea.removeEventListener('scroll', this.handleContainerScroll);
@@ -137,14 +139,14 @@ export class ColumnPinningPlugin extends DataGridPlugin<ColumnPinningPluginOptio
             this._rightHeaders = pinnedRightColumns ? newHeaders.filter((header) => pinnedRightColumns.includes(header.column.dataKey)) : [];
             this._bodyHeaders = newHeaders.filter(header => !this._leftHeaders.includes(header) && !this._rightHeaders.includes(header));
             this._rightHeadersDesc = [...this._rightHeaders].reverse();
-            
-            this.createColumnLayouts();
-            this.updateColumnLayouts();
+
+            this.setupHeaderNodes();
+            this.updateHeaderNodes();
         });
         this.unsubscribes.push(watchHeaders);
 
         const resizeObserver = new ResizeObserver(() => {
-            this.updateColumnLayouts();
+            this.updateHeaderNodes();
         });
         resizeObserver.observe(this.scrollArea);
         this.unsubscribes.push(() => {

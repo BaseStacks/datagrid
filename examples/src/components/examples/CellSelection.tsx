@@ -1,4 +1,4 @@
-import { Column, DataGridProvider, useDataGrid, useDataGridState, DataGridContainer, DataGridCell, CellSelectionPlugin, DataGridHeader, DataGridHeaderGroup, DataGridRow, DataGridScrollArea, StayInViewPlugin, RowPinningPlugin, RowKey, DataGridRows, ColumnPinningPlugin, usePlugin } from '@basestacks/data-grid';
+import { Column, DataGridProvider, useDataGrid, useDataGridState, DataGridContainer, DataGridCell, CellSelectionPlugin, DataGridHeader, DataGridHeaderGroup, DataGridRow, DataGridScrollArea, StayInViewPlugin, RowPinningPlugin, RowKey, DataGridRows, ColumnPinningPlugin, usePlugin, LayoutPlugin } from '@basestacks/data-grid';
 import { useMemo, useState } from 'react';
 import { generateData } from '@/helpers/dataHelpers';
 import { cn } from '@/utils/cn';
@@ -39,9 +39,11 @@ export function CellSelection() {
     const dataGrid = useDataGrid({
         data,
         columns,
+        rowKey: 'id',
         onChange: setData
     });
 
+    usePlugin(dataGrid, LayoutPlugin);
     usePlugin(dataGrid, CellSelectionPlugin);
     usePlugin(dataGrid, StayInViewPlugin);
     usePlugin(dataGrid, ColumnPinningPlugin, {

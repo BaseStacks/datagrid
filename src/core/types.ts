@@ -13,11 +13,12 @@ export type Unsubscribe = () => void;
 export type ColumnKey = string | number;
 export type RowDataKey = string | number;
 
+export type HeaderGroupId = `headerGroup:${string}`;
 export type HeaderId = `header:${ColumnKey}`;
 export type RowId = `row:${RowDataKey}`;
 export type CellId = `cell:${RowDataKey}-${ColumnKey}`;
 
-export type Id = HeaderId | RowId | CellId;
+export type Id = HeaderGroupId | HeaderId | RowId | CellId;
 
 export type WithId<TId, TData> = TData & { readonly id: TId };
 

@@ -1,9 +1,10 @@
-import { useLayoutEffect, useMemo, useRef } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import { useDataGridContext } from '../hooks/useDataGridContext';
 
 export interface DataGridHeaderGroupProps extends React.HTMLAttributes<HTMLElement> {
     readonly as?: string;
 }
+
 
 export function DataGridHeaderGroup({
     as = 'div',
@@ -23,12 +24,12 @@ export function DataGridHeaderGroup({
     }, [options.headerHeight, props.style]);
 
     useLayoutEffect(() => {
-        const unwatchColumnLayout = layout.columnLayoutsState.watch((columns) => {
+        const unwatchHeaderGroupNode = layout.layoutNodesState.watchItem('headerGroup:1', ({ item }) => {
             if (!ref.current) {
                 return;
             };
 
-            ref.current.style.width = columns.values().reduce((acc, column) => acc + column.width, 0) + 'px';
+            ref.current.style.width = item.rect.width + 'px';
         });
 
         const handleScroll = () => {
@@ -48,11 +49,18 @@ export function DataGridHeaderGroup({
         });
 
         return () => {
-            unwatchColumnLayout();
+            unwatchHeaderGroupNode();
             unwatchScrollArea();
             removeScrollHandler?.();
         };
-    }, [layout.columnLayoutsState, layout.scrollAreaState, ref]);
+    }, [layout.layoutNodesState, layout.scrollAreaState, ref]);
+
+    useEffect(() => {
+        layout.registerNode('headerGroup:1', ref.current!);
+        return () => {
+            layout.removeNode('headerGroup:1');
+        };
+    }, [layout]);
 
     return (
         <Component
