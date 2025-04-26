@@ -63,12 +63,9 @@ export class ColumnPinningPlugin extends DataGridPlugin<ColumnPinningPluginOptio
     private updateHeaderNodes = () => {
         const { layoutNodesState, updateNode } = this.dataGrid.layout;
 
-        const viewportWidth = this.scrollArea.clientWidth;
         const baseLeft = this.scrollArea.scrollLeft;
-        const baseRight = this.scrollArea.scrollWidth - viewportWidth - baseLeft;
 
-        let calculatedLeft = baseLeft;
-        let calculatedRight = baseRight;
+        let pinnedLeftOffset = baseLeft;
 
         this._leftHeaders.forEach((header) => {
             const headerNode = layoutNodesState.get(header.id);
@@ -76,41 +73,40 @@ export class ColumnPinningPlugin extends DataGridPlugin<ColumnPinningPluginOptio
                 return;
             }
 
-            const left = calculatedLeft;
-            calculatedLeft += headerNode.size.width!;
+            const nodeOffset = pinnedLeftOffset;
+            pinnedLeftOffset += headerNode.size.width!;
 
-            const needUpdate = headerNode.offset.left !== left;
+            const needUpdate = headerNode.offset.left !== nodeOffset;
             if (!needUpdate) {
                 return;
             }
 
             updateNode(this, header.id, {
-                ...headerNode,
                 offset: {
-                    left
+                    left: nodeOffset
                 }
             });
         });
 
+        const viewportWidth = this.scrollArea.clientWidth;
+        let pinnedRightOffset = baseLeft + viewportWidth;
         this._rightHeadersDesc.forEach((header) => {
             const headerNode = layoutNodesState.get(header.id);
             if (!headerNode) {
                 return;
             }
 
-            const right = calculatedRight;
-            calculatedRight += headerNode.size.width!;
+            pinnedRightOffset -= headerNode.size.width!;
+            const nodeOffset = pinnedRightOffset;
 
-            const needUpdate = headerNode.offset.right !== right;
+            const needUpdate = headerNode.offset.left !== nodeOffset;
             if (!needUpdate) {
                 return;
             }
 
             updateNode(this, header.id, {
-                ...headerNode,
                 offset: {
-                    left: undefined,
-                    right
+                    left: nodeOffset
                 }
             });
         });
@@ -129,8 +125,7 @@ export class ColumnPinningPlugin extends DataGridPlugin<ColumnPinningPluginOptio
 
             updateNode(this, cellNode.id, {
                 offset: {
-                    left: headerNode.offset.left,
-                    right: headerNode.offset.right,
+                    left: headerNode.offset.left
                 },
                 attributes: headerNode.attributes
             });

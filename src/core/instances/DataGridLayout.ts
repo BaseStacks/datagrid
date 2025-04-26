@@ -15,8 +15,6 @@ export interface DataGridLayoutNodeBase {
     readonly offset: {
         readonly top?: number;
         readonly left?: number;
-        readonly right?: number;
-        readonly bottom?: number;
     },
     readonly attributes: Record<string, any>;
 }

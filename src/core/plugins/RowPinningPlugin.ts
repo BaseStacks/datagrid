@@ -28,8 +28,7 @@ export class RowPinningPlugin extends DataGridPlugin<RowPinningPluginOptions> {
                     height: this.dataGrid.options.rowHeight
                 },
                 offset: {
-                    top: index * this.dataGrid.options.rowHeight,
-                    bottom: undefined,
+                    top: index * this.dataGrid.options.rowHeight
                 },
                 attributes: {
                     'data-pinned': 'top',
@@ -50,8 +49,7 @@ export class RowPinningPlugin extends DataGridPlugin<RowPinningPluginOptions> {
                     height: this.dataGrid.options.rowHeight,
                 },
                 offset: {
-                    top: (index + this._topRows.length) * this.dataGrid.options.rowHeight,
-                    bottom: undefined,
+                    top: (index + this._topRows.length) * this.dataGrid.options.rowHeight
                 },
                 attributes: {}
             });
@@ -68,8 +66,7 @@ export class RowPinningPlugin extends DataGridPlugin<RowPinningPluginOptions> {
                     height: this.dataGrid.options.rowHeight,
                 },
                 offset: {
-                    top: (index + this._topRows.length + this._bodyRows.length) * this.dataGrid.options.rowHeight,
-                    bottom: undefined,
+                    top: (index + this._topRows.length + this._bodyRows.length) * this.dataGrid.options.rowHeight
                 },
                 attributes: {
                     'data-pinned': 'bottom',
@@ -88,54 +85,47 @@ export class RowPinningPlugin extends DataGridPlugin<RowPinningPluginOptions> {
         }
 
         const baseTop = this.scrollArea.scrollTop || 0;
-
-
-        let calculatedTop = baseTop;
-
+        let calculatedTopOffset = baseTop;
         this._topRows.forEach((row) => {
             const node = layoutNodesState.get(row.id);
             if (!node) {
                 return;
             }
 
-            const top = calculatedTop;
-            calculatedTop += node.size.height!;
+            const pinnedOffset = calculatedTopOffset;
+            calculatedTopOffset += node.size.height!;
 
-            const needUpdate = node.offset.top !== top;
+            const needUpdate = node.offset.top !== pinnedOffset;
             if (!needUpdate) {
                 return;
             }
 
             updateNode(this, node.id, {
                 offset: {
-                    top
+                    top: pinnedOffset
                 }
             });
         });
 
-        const viewportHeight = this.scrollArea.clientHeight || 0;
-        const baseBottom = this.scrollArea.scrollHeight - viewportHeight - baseTop;
-
-        let calculatedBottom = baseBottom;
-
+        const viewportHeight = this.scrollArea.clientHeight;
+        let calculatedBottomOffset = baseTop + viewportHeight;
         this._bottomRowsDescending.forEach((row) => {
             const node = layoutNodesState.get(row.id);
             if (!node) {
                 return;
             }
 
-            const bottom = calculatedBottom;
-            calculatedBottom += node.size.height!;
+            calculatedBottomOffset -= node.size.height!;
+            const bottomOffset = calculatedBottomOffset;
 
-            const needUpdate = node.offset.bottom !== bottom;
+            const needUpdate = node.offset.top !== bottomOffset;
             if (!needUpdate) {
                 return;
             }
 
             updateNode(this, node.id, {
                 offset: {
-                    top: undefined,
-                    bottom
+                    top: bottomOffset
                 }
             });
         });
