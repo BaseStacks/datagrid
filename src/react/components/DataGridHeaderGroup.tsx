@@ -29,7 +29,7 @@ export function DataGridHeaderGroup({
                 return;
             };
 
-            ref.current.style.width = item.rect.width + 'px';
+            ref.current.style.width = item.size.width + 'px';
         });
 
         const handleScroll = () => {

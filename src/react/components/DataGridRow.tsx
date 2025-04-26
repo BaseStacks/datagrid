@@ -31,17 +31,17 @@ function DataGridRowImpl({
                 return;
             }
 
-            const { top, bottom, width, height } = item.rect;
-            
-            ref.current.style.width = width + 'px';
-            ref.current.style.height = height + 'px';
+            const { offset, size } = item;
 
-            if (top !== undefined) {
-                ref.current.style.top = top + 'px';
+            ref.current.style.width = size.width + 'px';
+            ref.current.style.height = size.height + 'px';
+
+            if (offset.top !== undefined) {
+                ref.current.style.top = offset.top + 'px';
                 ref.current.style.bottom = '';
             }
-            else if (bottom !== undefined) {
-                ref.current.style.bottom = bottom + 'px';
+            else if (offset.bottom !== undefined) {
+                ref.current.style.bottom = offset.bottom + 'px';
                 ref.current.style.top = '';
             }
 

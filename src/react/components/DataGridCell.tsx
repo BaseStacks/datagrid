@@ -28,11 +28,11 @@ function DataGridCellImpl<TElement extends HTMLElement = HTMLElement>({ as, cell
                 return;
             };
 
-            const { width, left, right } = item.rect;
+            const { size, offset } = item;
 
-            ref.current.style.width = `${width}px`;
-            ref.current.style.left = left === undefined ? '' : `${left}px`;
-            ref.current.style.right = right === undefined ? '' : `${right}px`;
+            ref.current.style.width = `${size.width}px`;
+            ref.current.style.left = offset.left === undefined ? '' : `${offset.left}px`;
+            ref.current.style.right = offset.right === undefined ? '' : `${offset.right}px`;
 
             setAttributes(ref.current, item.attributes);
         });

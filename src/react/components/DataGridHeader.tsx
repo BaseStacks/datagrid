@@ -18,9 +18,6 @@ function DataGridHeaderImpl<TElement extends HTMLElement = HTMLElement>({ as, he
         return {
             ...props.style,
             position: 'absolute',
-            top: '0',
-            left: '0',
-            width: '100%',
             height: '100%',
         };
     }, [props.style]);
@@ -31,10 +28,10 @@ function DataGridHeaderImpl<TElement extends HTMLElement = HTMLElement>({ as, he
                 return;
             };
 
-            const { rect, attributes } = item as DataGridHeaderNode;
+            const { size, offset, attributes } = item as DataGridHeaderNode;
 
-            let width = rect.width!;
-            let right = rect.right;
+            let width = size.width!;
+            let right = offset.right;
 
             const lastRight = attributes['data-last-right'];
             if (lastRight) {
@@ -43,9 +40,9 @@ function DataGridHeaderImpl<TElement extends HTMLElement = HTMLElement>({ as, he
             }
 
             ref.current.style.width = `${width}px`;
-            ref.current.style.left = rect.left === undefined ? '' : `${rect.left}px`;
+            ref.current.style.left = offset.left === undefined ? '' : `${offset.left}px`;
             ref.current.style.right = right === undefined ? '' : `${right}px`;
-            
+
             setAttributes(ref.current, attributes);
         });
 

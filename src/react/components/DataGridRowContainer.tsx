@@ -23,8 +23,8 @@ function DataGridRowContainerImpl({ as = 'div', ...props }: React.PropsWithChild
                 return;
             };
 
-            ref.current.style.height = item.rect.height + 'px';
-            ref.current.style.width = item.rect.width + 'px';
+            ref.current.style.height = item.size.height + 'px';
+            ref.current.style.width = item.size.width + 'px';
         });
 
         return () => {

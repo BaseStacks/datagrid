@@ -8,7 +8,16 @@ import type { DataGridPlugin } from './atomic/DataGridPlugin';
 
 export interface DataGridLayoutNodeBase {
     readonly element: HTMLElement;
-    readonly rect: Partial<RectType>;
+    readonly size: {
+        readonly height?: number;
+        readonly width?: number;
+    },
+    readonly offset: {
+        readonly top?: number;
+        readonly left?: number;
+        readonly right?: number;
+        readonly bottom?: number;
+    },
     readonly attributes: Record<string, any>;
 }
 
@@ -147,6 +156,14 @@ export class DataGridLayout<TRow extends RowData> {
             rect,
             attributes: {},
             element,
+            size: {
+                height: element.clientHeight,
+                width: element.clientWidth
+            },
+            offset: {
+                top: element.offsetTop,
+                left: element.offsetLeft,
+            }
         };
 
         if (type === 'cell') {
@@ -351,7 +368,8 @@ export class DataGridLayout<TRow extends RowData> {
         }
 
         const attributes = nodeData.attributes;
-        const rect = nodeData.rect;
+        const offset = nodeData.offset;
+        const size = nodeData.size;
 
         let updatedAttributes: Record<string, any> = node.attributes;
         if (attributes) {
@@ -367,14 +385,20 @@ export class DataGridLayout<TRow extends RowData> {
             }, {} as Record<string, any>);
         }
 
-        const updatedRect = {
-            ...node.rect,
-            ...rect
+        const updatedOffset = {
+            ...node.offset,
+            ...offset
+        };
+
+        const updatedSize = {
+            ...node.size,
+            ...size
         };
 
         this.layoutNodesState.replaceItem(id, {
             ...node,
-            rect: updatedRect,
+            offset: updatedOffset,
+            size: updatedSize,
             attributes: updatedAttributes
         });
     };

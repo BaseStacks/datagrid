@@ -26,8 +26,7 @@ export class LayoutPlugin extends DataGridPlugin<LayoutPluginOptions> {
             }
 
             updateNode(this, headerId, {
-                rect: {
-                    ...headerNode.rect,
+                size: {
                     width: columnWidth,
                 }
             });
@@ -43,11 +42,10 @@ export class LayoutPlugin extends DataGridPlugin<LayoutPluginOptions> {
         }
 
         const headerNodes = layoutNodesState.values().filter((node) => node.type === 'header').toArray();
-        const width = headerNodes.reduce((acc, node) => acc + node.rect.width!, 0);
+        const width = headerNodes.reduce((acc, node) => acc + node.size.width!, 0);
 
         updateNode(this, 'headerGroup:1', {
-            rect: {
-                ...headerGroupNode.rect,
+            size: {
                 width: width,
             }
         });
@@ -64,10 +62,10 @@ export class LayoutPlugin extends DataGridPlugin<LayoutPluginOptions> {
         let rowsHeight = 0;
         const rowNodes = layoutNodesState.values().filter((node) => node.type === 'row');
         rowNodes.forEach((node) => {
-            rowsHeight += node.rect.height!;
+            rowsHeight += node.size.height!;
             updateNode(this, node.id, {
-                rect: {
-                    width: headerGroupNode.rect.width,
+                size: {
+                    width: headerGroupNode.size.width,
                 }
             });
         });
@@ -75,8 +73,8 @@ export class LayoutPlugin extends DataGridPlugin<LayoutPluginOptions> {
         const rowContainerNode = layoutNodesState.get('rowContainer:1');
         if (rowContainerNode) {
             updateNode(this, rowContainerNode.id, {
-                rect: {
-                    width: headerGroupNode.rect.width,
+                size: {
+                    width: headerGroupNode.size.width,
                     height: rowsHeight
                 }
             });
@@ -95,8 +93,8 @@ export class LayoutPlugin extends DataGridPlugin<LayoutPluginOptions> {
             }
 
             updateNode(this, cellNode.id, {
-                rect: {
-                    width: headerNode.rect.width
+                size: {
+                    width: headerNode.size.width
                 }
             });
         });

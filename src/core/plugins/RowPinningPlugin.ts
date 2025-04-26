@@ -24,8 +24,10 @@ export class RowPinningPlugin extends DataGridPlugin<RowPinningPluginOptions> {
             }
 
             updateNode(this, node.id, {
-                rect: {
-                    height: this.dataGrid.options.rowHeight,
+                size: {
+                    height: this.dataGrid.options.rowHeight
+                },
+                offset: {
                     top: index * this.dataGrid.options.rowHeight,
                     bottom: undefined,
                 },
@@ -44,8 +46,10 @@ export class RowPinningPlugin extends DataGridPlugin<RowPinningPluginOptions> {
             }
 
             updateNode(this, node.id, {
-                rect: {
+                size: {
                     height: this.dataGrid.options.rowHeight,
+                },
+                offset: {
                     top: (index + this._topRows.length) * this.dataGrid.options.rowHeight,
                     bottom: undefined,
                 },
@@ -60,8 +64,10 @@ export class RowPinningPlugin extends DataGridPlugin<RowPinningPluginOptions> {
             }
 
             updateNode(this, node.id, {
-                rect: {
+                size: {
                     height: this.dataGrid.options.rowHeight,
+                },
+                offset: {
                     top: (index + this._topRows.length + this._bodyRows.length) * this.dataGrid.options.rowHeight,
                     bottom: undefined,
                 },
@@ -93,15 +99,15 @@ export class RowPinningPlugin extends DataGridPlugin<RowPinningPluginOptions> {
             }
 
             const top = calculatedTop;
-            calculatedTop += node.rect.height!;
+            calculatedTop += node.size.height!;
 
-            const needUpdate = node.rect.top !== top;
+            const needUpdate = node.offset.top !== top;
             if (!needUpdate) {
                 return;
             }
 
             updateNode(this, node.id, {
-                rect: {
+                offset: {
                     top
                 }
             });
@@ -119,15 +125,15 @@ export class RowPinningPlugin extends DataGridPlugin<RowPinningPluginOptions> {
             }
 
             const bottom = calculatedBottom;
-            calculatedBottom += node.rect.height!;
+            calculatedBottom += node.size.height!;
 
-            const needUpdate = node.rect.bottom !== bottom;
+            const needUpdate = node.offset.bottom !== bottom;
             if (!needUpdate) {
                 return;
             }
 
             updateNode(this, node.id, {
-                rect: {
+                offset: {
                     top: undefined,
                     bottom
                 }

@@ -41,7 +41,7 @@ export class ColumnPinningPlugin extends DataGridPlugin<ColumnPinningPluginOptio
             const headerNode = layoutNodesState.get(header.id) as DataGridHeaderNode;
 
             updateNode(this, headerNode.id, {
-                rect: {
+                offset: {
                     left: (index + this._leftHeaders.length) * columnWidth
                 }
             });
@@ -77,17 +77,16 @@ export class ColumnPinningPlugin extends DataGridPlugin<ColumnPinningPluginOptio
             }
 
             const left = calculatedLeft;
-            calculatedLeft += headerNode.rect.width!;
+            calculatedLeft += headerNode.size.width!;
 
-            const needUpdate = headerNode.rect.left !== left;
+            const needUpdate = headerNode.offset.left !== left;
             if (!needUpdate) {
                 return;
             }
 
             updateNode(this, header.id, {
                 ...headerNode,
-                rect: {
-                    ...headerNode.rect,
+                offset: {
                     left
                 }
             });
@@ -100,17 +99,17 @@ export class ColumnPinningPlugin extends DataGridPlugin<ColumnPinningPluginOptio
             }
 
             const right = calculatedRight;
-            calculatedRight += headerNode.rect.width!;
+            calculatedRight += headerNode.size.width!;
 
-            const needUpdate = headerNode.rect.right !== right;
+            const needUpdate = headerNode.offset.right !== right;
             if (!needUpdate) {
                 return;
             }
 
             updateNode(this, header.id, {
                 ...headerNode,
-                rect: {
-                    ...headerNode.rect,
+                offset: {
+                    left: undefined,
                     right
                 }
             });
@@ -129,9 +128,9 @@ export class ColumnPinningPlugin extends DataGridPlugin<ColumnPinningPluginOptio
             }
 
             updateNode(this, cellNode.id, {
-                rect: {
-                    left: headerNode.rect.left,
-                    right: headerNode.rect.right,
+                offset: {
+                    left: headerNode.offset.left,
+                    right: headerNode.offset.right,
                 },
                 attributes: headerNode.attributes
             });
