@@ -24,6 +24,7 @@ export class RowPinningPlugin extends DataGridPlugin<RowPinningPluginOptions> {
             }
 
             updateNode(this, node.id, {
+                pinned: 'top',
                 size: {
                     height: this.dataGrid.options.rowHeight
                 },
@@ -62,6 +63,7 @@ export class RowPinningPlugin extends DataGridPlugin<RowPinningPluginOptions> {
             }
 
             updateNode(this, node.id, {
+                pinned: 'bottom',
                 size: {
                     height: this.dataGrid.options.rowHeight,
                 },

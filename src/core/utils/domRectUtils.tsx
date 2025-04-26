@@ -24,9 +24,7 @@ export const getRect = (container: HTMLElement, start?: HTMLElement, end?: HTMLE
         const height = bottom - top;
         return {
             left,
-            right,
             top,
-            bottom,
             width,
             height
         };
@@ -37,8 +35,6 @@ export const getRect = (container: HTMLElement, start?: HTMLElement, end?: HTMLE
         return {
             left: startRect.left - containerRect.left,
             top: startRect.top - containerRect.top,
-            right: startRect.right - containerRect.left,
-            bottom: startRect.bottom - containerRect.top,
             width: startRect.width,
             height: startRect.height
         };
@@ -54,8 +50,6 @@ export const getRect = (container: HTMLElement, start?: HTMLElement, end?: HTMLE
     return {
         left,
         top,
-        right,
-        bottom,
         width,
         height
     };
@@ -82,8 +76,6 @@ export const mergeRects = (...rects: RectType[]): RectType => {
         return {
             left: 0,
             top: 0,
-            right: 0,
-            bottom: 0,
             width: 0,
             height: 0
         };
@@ -96,9 +88,7 @@ export const mergeRects = (...rects: RectType[]): RectType => {
 
     return {
         left,
-        right,
         top,
-        bottom,
         width: right - left,
         height: bottom - top
     };
@@ -136,4 +126,29 @@ export const findIdByRect = (cellRectMap: Map<Id, RectType | null>, rect: RectTy
     }
 
     return null;
+};
+
+export interface RectIntersection {
+    left: boolean;
+    top: boolean;
+    right: boolean;
+    bottom: boolean;
+}
+
+export function getIntersection(rect1: RectType, rect2: RectType): RectType | null {
+    const x1 = Math.max(rect1.left, rect2.left);
+    const y1 = Math.max(rect1.top, rect2.top);
+    const x2 = Math.min(rect1.left + rect1.width, rect2.left + rect2.width);
+    const y2 = Math.min(rect1.top + rect1.height, rect2.top + rect2.height);
+
+    if (x2 <= x1 || y2 <= y1) {
+        return null; // No intersection
+    }
+
+    return {
+        left: x1,
+        top: y1,
+        width: x2 - x1,
+        height: y2 - y1,
+    };
 };

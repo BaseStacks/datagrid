@@ -1,8 +1,13 @@
+export type DeepPartial<T> = T extends object ? {
+  [P in keyof T]?: DeepPartial<T[P]>;
+} : T;
+
 export type DataGridEventTypes = {
   readonly 'action-executed': {
     readonly action: DataGridAction;
   }
 };
+
 
 export type DataGridEventType = keyof DataGridEventTypes;
 
@@ -201,6 +206,4 @@ export interface RectType {
   readonly height: number;
   readonly left: number;
   readonly top: number;
-  readonly right: number;
-  readonly bottom: number;
 }

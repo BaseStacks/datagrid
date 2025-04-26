@@ -1,4 +1,4 @@
-import type { CellId, ColumnLayout, Id, RowData, RectType, RowLayout, RowId, HeaderId, HeaderGroupId, RowContainerId } from '../types';
+import type { CellId, Id, RowData, RowId, HeaderId, HeaderGroupId, RowContainerId, DeepPartial } from '../types';
 import { getRect } from '../utils/domRectUtils';
 import { getIdType } from '../utils/idUtils';
 import { DataGridMapState } from './atomic/DataGridMapState';
@@ -8,9 +8,10 @@ import type { DataGridPlugin } from './atomic/DataGridPlugin';
 
 export interface DataGridLayoutNodeBase {
     readonly element: HTMLElement;
+    readonly pinned?: 'left' | 'right' | 'top' | 'bottom';
     readonly size: {
-        readonly height?: number;
-        readonly width?: number;
+        readonly height: number;
+        readonly width: number;
     },
     readonly offset: {
         readonly top?: number;
@@ -53,6 +54,10 @@ export type DataGridLayoutNode = DataGridCellNode | DataGridHeaderGroupNode | Da
 export class DataGridLayout<TRow extends RowData> {
     constructor(private state: DataGridStates<TRow>) { }
 
+    private getNodesByType = <TType extends DataGridLayoutNode>(type: TType['type']) => {
+        return this.layoutNodesState.values().filter((node) => node.type === type).toArray() as TType[];
+    };
+
     public get scrollbarWidth() {
         if (!this.scrollAreaState.value) {
             return 0;
@@ -67,8 +72,6 @@ export class DataGridLayout<TRow extends RowData> {
     public layoutNodesState = new DataGridMapState<Id, DataGridLayoutNode>(new Map(), { useDeepEqual: false });
 
     public elementsState = new DataGridMapState<Id, HTMLElement>();
-    public columnLayoutsState = new DataGridMapState<Id, ColumnLayout>(new Map(), { useDeepEqual: false });
-    public rowLayoutsState = new DataGridMapState<RowId, RowLayout>(new Map(), { useDeepEqual: false });
 
     public pluginAttributesMap = new Map<DataGridPlugin, string[]>();
 
@@ -148,10 +151,7 @@ export class DataGridLayout<TRow extends RowData> {
 
         const type = getIdType(id);
 
-        const rect = {};
-
         const nodeBase = {
-            rect,
             attributes: {},
             element,
             size: {
@@ -244,20 +244,16 @@ export class DataGridLayout<TRow extends RowData> {
      */
     public getRect = (container: HTMLElement, id: Id) => {
         if (!this.containerState.value) {
-            return null;
+            throw new Error('Container not registered');
         }
 
         const element = this.elementsState.get(id);
         if (!element) {
-            return null;
+            throw new Error(`Element not found for id: ${id}`);
         }
 
         const rect = getRect(container, element);
-        if (rect) {
-            return rect;
-        }
-
-        return null;
+        return rect;
     };
 
     public getNodeByElement = (element: HTMLElement) => {
@@ -271,29 +267,31 @@ export class DataGridLayout<TRow extends RowData> {
             throw new Error('Scroll area not found');
         }
 
-        const topPinnedRows = this.rowLayoutsState.values().filter((layout) => layout.pinned === 'top');
-        const bottomPinnedRows = this.rowLayoutsState.values().filter((layout) => layout.pinned === 'bottom');
-        const leftPinnedColumns = this.columnLayoutsState.values().filter((layout) => layout.pinned === 'left');
-        const rightPinnedColumns = this.columnLayoutsState.values().filter((layout) => layout.pinned === 'right');
+        const rowNodes = this.getNodesByType<DataGridRowNode>('row') as DataGridRowNode[];
+        const topPinnedRows = rowNodes.filter((node) => node.type === 'row' && node.pinned === 'top');
+        const bottomPinnedRows = rowNodes.filter((node) => node.type === 'row' && node.pinned === 'bottom');
 
-        const topHeight = topPinnedRows.reduce((acc, layout) => acc + layout.height, 0);
-        const bottomWidth = bottomPinnedRows.reduce((acc, layout) => acc + layout.height, 0);
+        const headerNodes = this.getNodesByType<DataGridHeaderNode>('header');
+        const leftPinnedColumns = headerNodes.filter((node) => node.type === 'header' && node.pinned === 'left');
+        const rightPinnedColumns = headerNodes.filter((node) => node.type === 'header' && node.pinned === 'right');
 
-        const leftWidth = leftPinnedColumns.reduce((acc, layout) => acc + layout.width, 0);
-        const rightWidth = rightPinnedColumns.reduce((acc, layout) => acc + layout.width, 0);
+        const topHeight = topPinnedRows.reduce((acc, node) => acc + node.size.height!, 0);
+        const bottomHeight = bottomPinnedRows.reduce((acc, node) => acc + node.size.height!, 0);
+        const leftWidth = leftPinnedColumns.reduce((acc, node) => acc + node.size.width, 0);
+        const rightWidth = rightPinnedColumns.reduce((acc, node) => acc + node.size.width, 0);
 
         const centerWidth = scrollArea.clientWidth - leftWidth - rightWidth;
-        const centerRect: RectType = {
+        const centerRect = {
             left: leftWidth,
-            top: topHeight,
             right: leftWidth + centerWidth,
-            bottom: scrollArea.clientHeight - bottomWidth,
-            width: centerWidth,
-            height: scrollArea.clientHeight,
-        };
+            top: topHeight,
+            bottom: scrollArea.clientHeight - bottomHeight,
+        };        
 
         const activeRect = this.getRect(scrollArea, targetId);
-
+        const activeRectRight = activeRect.left + activeRect.width;
+        const activeRectBottom = activeRect.top + activeRect.height;
+        
         if (!activeRect) {
             throw new Error('Active cell rect not found');
         }
@@ -301,7 +299,8 @@ export class DataGridLayout<TRow extends RowData> {
         let nextScrollLeft: undefined | number;
         let nextScrollTop: undefined | number;
 
-        const needScrollVertical = activeRect.top < centerRect.top || activeRect.bottom > centerRect.bottom;
+        const needScrollVertical = activeRect.top < centerRect.top || activeRectBottom > centerRect.bottom;
+
         if (needScrollVertical) {
             const scrollTop = scrollArea.scrollTop;
             const scrollHeight = scrollArea.scrollHeight;
@@ -314,18 +313,20 @@ export class DataGridLayout<TRow extends RowData> {
             if (needScrollTop) {
                 const newScrollTop = scrollTop + scrollTopDelta;
                 nextScrollTop = Math.max(0, Math.min(newScrollTop, scrollableHeight));
+                console.log('needScrollTop', nextScrollTop);
             }
 
-            const scrollBottomDelta = activeRect.bottom - centerRect.bottom;
-            const isBottomIntersecting = activeRect.bottom > centerRect.bottom;
+            const scrollBottomDelta = activeRectBottom - centerRect.bottom;
+            const isBottomIntersecting = activeRectBottom > centerRect.bottom;
             const needScrollBottom = isBottomIntersecting && scrollBottomDelta > 0;
             if (needScrollBottom) {
                 const newScrollTop = scrollTop + scrollBottomDelta;
                 nextScrollTop = Math.max(0, Math.min(newScrollTop, scrollableHeight));
+                console.log('needScrollBottom', scrollBottomDelta);
             }
         }
 
-        const needScrollHorizontal = activeRect.left < centerRect.left || activeRect.right > centerRect.right;
+        const needScrollHorizontal = activeRect.left < centerRect.left || activeRectRight > centerRect.right;
         if (needScrollHorizontal) {
 
             const scrollLeft = scrollArea.scrollLeft;
@@ -341,8 +342,8 @@ export class DataGridLayout<TRow extends RowData> {
                 nextScrollLeft = Math.max(0, Math.min(newScrollLeft, scrollableWidth));
             }
 
-            const scrollRightDelta = activeRect.right - centerRect.right;
-            const isRightIntersecting = activeRect.right > centerRect.right;
+            const scrollRightDelta = activeRectRight - centerRect.right;
+            const isRightIntersecting = activeRectRight > centerRect.right;
             const needScrollRight = isRightIntersecting && scrollRightDelta > 0;
             if (needScrollRight) {
                 const newScrollLeft = scrollLeft + scrollRightDelta;
@@ -359,15 +360,15 @@ export class DataGridLayout<TRow extends RowData> {
         this.pluginAttributesMap.set(plugin, attributes);
     };
 
-    public updateNode = (plugin: DataGridPlugin, id: Id, nodeData: Partial<DataGridLayoutNode>) => {
+    public updateNode = (plugin: DataGridPlugin, id: Id, partialNode: DeepPartial<DataGridLayoutNode>) => {
         const node = this.layoutNodesState.get(id);
         if (!node) {
             return;
         }
 
-        const attributes = nodeData.attributes;
-        const offset = nodeData.offset;
-        const size = nodeData.size;
+        const attributes = partialNode.attributes;
+        const offset = partialNode.offset;
+        const size = partialNode.size;
 
         let updatedAttributes: Record<string, any> = node.attributes;
         if (attributes) {
@@ -395,6 +396,7 @@ export class DataGridLayout<TRow extends RowData> {
 
         this.layoutNodesState.replaceItem(id, {
             ...node,
+            pinned: partialNode.pinned ?? node.pinned,
             offset: updatedOffset,
             size: updatedSize,
             attributes: updatedAttributes

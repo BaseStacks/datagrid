@@ -91,7 +91,7 @@ export class LayoutPlugin extends DataGridPlugin<LayoutPluginOptions> {
             if (!headerNode) {
                 return;
             }
-
+            
             updateNode(this, cellNode.id, {
                 size: {
                     width: headerNode.size.width

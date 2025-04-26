@@ -29,6 +29,7 @@ export class ColumnPinningPlugin extends DataGridPlugin<ColumnPinningPluginOptio
             const headerNode = layoutNodesState.get(header.id) as DataGridHeaderNode;
 
             updateNode(this, headerNode.id, {
+                pinned: 'left',
                 attributes: {
                     'data-pinned': 'left',
                     'data-fist-left': (index === 0) || undefined,
@@ -51,6 +52,7 @@ export class ColumnPinningPlugin extends DataGridPlugin<ColumnPinningPluginOptio
             const headerNode = layoutNodesState.get(header.id) as DataGridHeaderNode;
 
             updateNode(this, headerNode.id, {
+                pinned: 'right',
                 attributes: {
                     'data-pinned': 'right',
                     'data-first-right': (index === 0) || undefined,
