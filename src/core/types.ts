@@ -15,16 +15,17 @@ export type RowDataKey = string | number;
 
 export type HeaderGroupId = `headerGroup:${string}`;
 export type HeaderId = `header:${ColumnKey}`;
+export type RowContainerId = `rowContainer:${string}`;
 export type RowId = `row:${RowDataKey}`;
 export type CellId = `cell:${RowDataKey}-${ColumnKey}`;
 
-export type Id = HeaderGroupId | HeaderId | RowId | CellId;
+export type Id = HeaderGroupId | HeaderId | RowContainerId | RowId | CellId;
 
 export type WithId<TId, TData> = TData & { readonly id: TId };
 
 export interface CellCoordinates {
-  readonly col: number
-  readonly row: number
+  readonly columnIndex: number;
+  readonly rowIndex: number;
 }
 
 export interface ScrollBehavior {
@@ -55,7 +56,7 @@ export interface SelectionBoundary {
 export interface CellProps<TValue = any> {
   readonly id: CellId;
   readonly rowId: RowId;
-  readonly colId: HeaderId;
+  readonly headerId: HeaderId;
   readonly value?: TValue;
   readonly active: boolean;
   readonly focused: boolean;
@@ -69,18 +70,19 @@ export interface CellProps<TValue = any> {
 export interface CellRender {
   readonly id: CellId;
   readonly rowId: RowId;
-  readonly colId: HeaderId;
+  readonly headerId: HeaderId;
   readonly render: () => any;
 }
 
 export interface ColumnHeader {
   readonly id: HeaderId;
+  readonly index: number;
   readonly column: Column;
   readonly render: () => any;
 }
 
 export interface Column<TValue = any> {
-  readonly dataKey: string;
+  readonly key: string;
   readonly header?: string | (() => any);
   readonly cell?: string | ((opts: CellProps<TValue>) => React.ReactNode)
   readonly footer?: string | (() => any);
@@ -157,7 +159,7 @@ export interface DataGridOptions<TRow extends RowData = RowData> {
 }
 
 export interface CellWithId {
-  readonly colId?: string
+  readonly headerId?: string
   readonly col: number
   readonly row: number
 }

@@ -17,7 +17,7 @@ export class ColumnPinningPlugin extends DataGridPlugin<ColumnPinningPluginOptio
 
     private setupHeaderNodes = () => {
         const { headers } = this.dataGrid.state;
-        const { layoutNodesState, updateNodeAttributes } = this.dataGrid.layout;
+        const { layoutNodesState, updateNode } = this.dataGrid.layout;
 
         // Set default column width based on scrollArea width
         const scrollAreaWidth = this.scrollArea.clientWidth;
@@ -28,18 +28,19 @@ export class ColumnPinningPlugin extends DataGridPlugin<ColumnPinningPluginOptio
         this._leftHeaders.forEach((header, index, leftHeaders) => {
             const headerNode = layoutNodesState.get(header.id) as DataGridHeaderNode;
 
-            updateNodeAttributes(this, headerNode.id, {
-                'data-pinned': 'left',
-                'data-fist-left': index === 0,
-                'data-last-left': index === leftHeaders.length - 1,
+            updateNode(this, headerNode.id, {
+                attributes: {
+                    'data-pinned': 'left',
+                    'data-fist-left': (index === 0) || undefined,
+                    'data-last-left': (index === leftHeaders.length - 1) || undefined,
+                }
             });
         });
 
         this._bodyHeaders.forEach((header, index) => {
             const headerNode = layoutNodesState.get(header.id) as DataGridHeaderNode;
 
-            layoutNodesState.replaceItem(headerNode.id, {
-                ...headerNode,
+            updateNode(this, headerNode.id, {
                 rect: {
                     left: (index + this._leftHeaders.length) * columnWidth
                 }
@@ -49,16 +50,18 @@ export class ColumnPinningPlugin extends DataGridPlugin<ColumnPinningPluginOptio
         this._rightHeaders.forEach((header, index, rightHeaders) => {
             const headerNode = layoutNodesState.get(header.id) as DataGridHeaderNode;
 
-            updateNodeAttributes(this, headerNode.id, {
-                'data-pinned': 'right',
-                'data-fist-right': index === 0,
-                'data-last-right': index === rightHeaders.length - 1,
+            updateNode(this, headerNode.id, {
+                attributes: {
+                    'data-pinned': 'right',
+                    'data-first-right': (index === 0) || undefined,
+                    'data-last-right': (index === rightHeaders.length - 1) || undefined,
+                }
             });
         });
     };
 
     private updateHeaderNodes = () => {
-        const { layoutNodesState } = this.dataGrid.layout;
+        const { layoutNodesState, updateNode } = this.dataGrid.layout;
 
         const viewportWidth = this.scrollArea.clientWidth;
         const baseLeft = this.scrollArea.scrollLeft;
@@ -81,7 +84,7 @@ export class ColumnPinningPlugin extends DataGridPlugin<ColumnPinningPluginOptio
                 return;
             }
 
-            layoutNodesState.replaceItem(header.id, {
+            updateNode(this, header.id, {
                 ...headerNode,
                 rect: {
                     ...headerNode.rect,
@@ -104,12 +107,33 @@ export class ColumnPinningPlugin extends DataGridPlugin<ColumnPinningPluginOptio
                 return;
             }
 
-            layoutNodesState.replaceItem(header.id, {
+            updateNode(this, header.id, {
                 ...headerNode,
                 rect: {
                     ...headerNode.rect,
                     right
                 }
+            });
+        });
+    };
+
+    private updateCellNodes = () => {
+        const { layoutNodesState, updateNode } = this.dataGrid.layout;
+
+        const cellNodes = layoutNodesState.values().filter((node) => node.type === 'cell');
+
+        cellNodes.forEach((cellNode) => {
+            const headerNode = layoutNodesState.get(cellNode.headerId);
+            if (!headerNode) {
+                return;
+            }
+
+            updateNode(this, cellNode.id, {
+                rect: {
+                    left: headerNode.rect.left,
+                    right: headerNode.rect.right,
+                },
+                attributes: headerNode.attributes
             });
         });
     };
@@ -122,6 +146,7 @@ export class ColumnPinningPlugin extends DataGridPlugin<ColumnPinningPluginOptio
 
         this._lastScrollLeft = this.scrollArea.scrollLeft;
         this.updateHeaderNodes();
+        this.updateCellNodes();
     };
 
     public handleActivate = () => {
@@ -135,18 +160,20 @@ export class ColumnPinningPlugin extends DataGridPlugin<ColumnPinningPluginOptio
         const watchHeaders = this.dataGrid.state.headers.watch((newHeaders) => {
             const { pinnedRightColumns, pinnedLeftColumns } = this.options;
 
-            this._leftHeaders = pinnedLeftColumns ? newHeaders.filter((header) => pinnedLeftColumns.includes(header.column.dataKey)) : [];
-            this._rightHeaders = pinnedRightColumns ? newHeaders.filter((header) => pinnedRightColumns.includes(header.column.dataKey)) : [];
+            this._leftHeaders = pinnedLeftColumns ? newHeaders.filter((header) => pinnedLeftColumns.includes(header.column.key)) : [];
+            this._rightHeaders = pinnedRightColumns ? newHeaders.filter((header) => pinnedRightColumns.includes(header.column.key)) : [];
             this._bodyHeaders = newHeaders.filter(header => !this._leftHeaders.includes(header) && !this._rightHeaders.includes(header));
             this._rightHeadersDesc = [...this._rightHeaders].reverse();
 
             this.setupHeaderNodes();
             this.updateHeaderNodes();
+            this.updateCellNodes();
         });
         this.unsubscribes.push(watchHeaders);
 
         const resizeObserver = new ResizeObserver(() => {
             this.updateHeaderNodes();
+            this.updateCellNodes();
         });
         resizeObserver.observe(this.scrollArea);
         this.unsubscribes.push(() => {

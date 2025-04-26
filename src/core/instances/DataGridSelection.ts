@@ -33,8 +33,8 @@ const findCellCoordinates = ({ maxRow, maxCol, from, offset }: GetCellCoordinate
 
     const cellCoordinates = getCoordinatesById(from);
     return {
-        col: Math.max(minCol, Math.min(maxCol, cellCoordinates.col + deltaX)),
-        row: Math.max(minRow, Math.min(maxRow, cellCoordinates.row + deltaY)),
+        columnIndex: Math.max(minCol, Math.min(maxCol, cellCoordinates.columnIndex + deltaX)),
+        rowIndex: Math.max(minRow, Math.min(maxRow, cellCoordinates.rowIndex + deltaY)),
     };
 };
 
@@ -60,15 +60,16 @@ export class DataGridSelection<TRow extends RowData> {
     public getCellsInRange(start: CellId, end: CellId): Map<CellId, SelectedCell> {
         const startCoord = getCoordinatesById(start);
         const endCoord = getCoordinatesById(end);
+        
         const cells = new Map<CellId, SelectedCell>();
-        const startRow = Math.min(startCoord.row, endCoord.row);
-        const endRow = Math.max(startCoord.row, endCoord.row);
-        const startCol = Math.min(startCoord.col, endCoord.col);
-        const endCol = Math.max(startCoord.col, endCoord.col);
+        const startRow = Math.min(startCoord.rowIndex, endCoord.rowIndex);
+        const endRow = Math.max(startCoord.rowIndex, endCoord.rowIndex);
+        const startCol = Math.min(startCoord.columnIndex, endCoord.columnIndex);
+        const endCol = Math.max(startCoord.columnIndex, endCoord.columnIndex);
 
         for (let row = startRow; row <= endRow; row++) {
             for (let col = startCol; col <= endCol; col++) {
-                const cellId = createCellId({ row, col });
+                const cellId = createCellId({ rowIndex: row, columnIndex: col });
                 const cell: SelectedCell = { edges: [] };
                 if (row === startRow) {
                     cell.edges.push('top');
@@ -208,6 +209,7 @@ export class DataGridSelection<TRow extends RowData> {
 
     public updateLastSelectedRange = (endCell: CellId) => {
         const { selectedRanges } = this.state;
+        
         selectedRanges.set((prevSelectedRanges) => {
             if (prevSelectedRanges.length === 0) {
                 return prevSelectedRanges;
@@ -316,8 +318,8 @@ export class DataGridSelection<TRow extends RowData> {
 
     public selectAll = () => {
         const { rows, headers } = this.state;
-        const from = createCellId({ col: 0, row: 0 });
-        const to = createCellId({ col: headers.value.length - 1, row: rows.value.length - 1 });
+        const from = createCellId({ columnIndex: 0, rowIndex: 0 });
+        const to = createCellId({ columnIndex: headers.value.length - 1, rowIndex: rows.value.length - 1 });
         this.selectRange(from, to);
     };
 };

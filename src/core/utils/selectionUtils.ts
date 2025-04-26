@@ -7,12 +7,12 @@ export const calculateRangeBoundary = ({ start, end }: CellSelectedRange): Selec
 
     return {
         min: {
-            col: Math.min(startCoordinates.col, endCoordinates.col),
-            row: Math.min(startCoordinates.row, endCoordinates.row),
+            columnIndex: Math.min(startCoordinates.columnIndex, endCoordinates.columnIndex),
+            rowIndex: Math.min(startCoordinates.rowIndex, endCoordinates.rowIndex),
         },
         max: {
-            col: Math.max(startCoordinates.col, endCoordinates.col),
-            row: Math.max(startCoordinates.row, endCoordinates.row),
+            columnIndex: Math.max(startCoordinates.columnIndex, endCoordinates.columnIndex),
+            rowIndex: Math.max(startCoordinates.rowIndex, endCoordinates.rowIndex),
         },
     };
 };
@@ -22,15 +22,15 @@ export const breakRangeToSmallerPart = (range: CellSelectedRange, extrude: CellS
     const { min: extrudeMin, max: extrudeMax } = calculateRangeBoundary(extrude);
 
     // Check if there's any overlap
-    if (extrudeMax.col < rangeMin.col || extrudeMin.col > rangeMax.col ||
-        extrudeMax.row < rangeMin.row || extrudeMin.row > rangeMax.row) {
+    if (extrudeMax.columnIndex < rangeMin.columnIndex || extrudeMin.columnIndex > rangeMax.columnIndex ||
+        extrudeMax.rowIndex < rangeMin.rowIndex || extrudeMin.rowIndex > rangeMax.rowIndex) {
         // No overlap, return the original range
-        return [{ start: createCellId({ col: rangeMin.col, row: rangeMin.row }), end: createCellId({ col: rangeMax.col, row: rangeMax.row }) }];
+        return [{ start: createCellId({ columnIndex: rangeMin.columnIndex, rowIndex: rangeMin.rowIndex }), end: createCellId({ columnIndex: rangeMax.columnIndex, rowIndex: rangeMax.rowIndex }) }];
     }
 
     // Check if extrude completely contains the range
-    if (extrudeMin.col <= rangeMin.col && extrudeMax.col >= rangeMax.col &&
-        extrudeMin.row <= rangeMin.row && extrudeMax.row >= rangeMax.row) {
+    if (extrudeMin.columnIndex <= rangeMin.columnIndex && extrudeMax.columnIndex >= rangeMax.columnIndex &&
+        extrudeMin.rowIndex <= rangeMin.rowIndex && extrudeMax.rowIndex >= rangeMax.rowIndex) {
         // Extrude completely covers the range, return empty array
         return [];
     }
@@ -38,38 +38,38 @@ export const breakRangeToSmallerPart = (range: CellSelectedRange, extrude: CellS
     const result: CellSelectedRange[] = [];
 
     // Range above the extrude
-    if (rangeMin.row < extrudeMin.row) {
+    if (rangeMin.rowIndex < extrudeMin.rowIndex) {
         result.push({
-            start: createCellId({ col: rangeMin.col, row: rangeMin.row }),
-            end: createCellId({ col: rangeMax.col, row: extrudeMin.row - 1 })
+            start: createCellId({ columnIndex: rangeMin.columnIndex, rowIndex: rangeMin.rowIndex }),
+            end: createCellId({ columnIndex: rangeMax.columnIndex, rowIndex: extrudeMin.rowIndex - 1 })
         });
     }
 
     // Range below the extrude
-    if (rangeMax.row > extrudeMax.row) {
+    if (rangeMax.rowIndex > extrudeMax.rowIndex) {
         result.push({
-            start: createCellId({ col: rangeMin.col, row: extrudeMax.row + 1 }),
-            end: createCellId({ col: rangeMax.col, row: rangeMax.row })
+            start: createCellId({ columnIndex: rangeMin.columnIndex, rowIndex: extrudeMax.rowIndex + 1 }),
+            end: createCellId({ columnIndex: rangeMax.columnIndex, rowIndex: rangeMax.rowIndex })
         });
     }
 
     // Range to the left of the extrude (middle section only)
-    const leftMinRow = Math.max(rangeMin.row, extrudeMin.row);
-    const leftMaxRow = Math.min(rangeMax.row, extrudeMax.row);
-    if (rangeMin.col < extrudeMin.col && leftMinRow <= leftMaxRow) {
+    const leftMinRow = Math.max(rangeMin.rowIndex, extrudeMin.rowIndex);
+    const leftMaxRow = Math.min(rangeMax.rowIndex, extrudeMax.rowIndex);
+    if (rangeMin.columnIndex < extrudeMin.columnIndex && leftMinRow <= leftMaxRow) {
         result.push({
-            start: createCellId({ col: rangeMin.col, row: leftMinRow }),
-            end: createCellId({ col: extrudeMin.col - 1, row: leftMaxRow })
+            start: createCellId({ columnIndex: rangeMin.columnIndex, rowIndex: leftMinRow }),
+            end: createCellId({ columnIndex: extrudeMin.columnIndex - 1, rowIndex: leftMaxRow })
         });
     }
 
     // Range to the right of the extrude (middle section only)
-    const rightMinRow = Math.max(rangeMin.row, extrudeMin.row);
-    const rightMaxRow = Math.min(rangeMax.row, extrudeMax.row);
-    if (rangeMax.col > extrudeMax.col && rightMinRow <= rightMaxRow) {
+    const rightMinRow = Math.max(rangeMin.rowIndex, extrudeMin.rowIndex);
+    const rightMaxRow = Math.min(rangeMax.rowIndex, extrudeMax.rowIndex);
+    if (rangeMax.columnIndex > extrudeMax.columnIndex && rightMinRow <= rightMaxRow) {
         result.push({
-            start: createCellId({ col: extrudeMax.col + 1, row: rightMinRow }),
-            end: createCellId({ col: rangeMax.col, row: rightMaxRow })
+            start: createCellId({ columnIndex: extrudeMax.columnIndex + 1, rowIndex: rightMinRow }),
+            end: createCellId({ columnIndex: rangeMax.columnIndex, rowIndex: rightMaxRow })
         });
     }
 
@@ -80,8 +80,8 @@ export const isRangeOverlapping = (rangeA: CellSelectedRange, rangeB: CellSelect
     const { min: rangeAMin, max: rangeAMax } = calculateRangeBoundary(rangeA);
     const { min: rangeBMin, max: rangeBMax } = calculateRangeBoundary(rangeB);
 
-    return !(rangeAMax.col < rangeBMin.col || rangeAMin.col > rangeBMax.col ||
-        rangeAMax.row < rangeBMin.row || rangeAMin.row > rangeBMax.row);
+    return !(rangeAMax.columnIndex < rangeBMin.columnIndex || rangeAMin.columnIndex > rangeBMax.columnIndex ||
+        rangeAMax.rowIndex < rangeBMin.rowIndex || rangeAMin.rowIndex > rangeBMax.rowIndex);
 };
 
 export const isRangeEqual = (rangeA: CellSelectedRange, rangeB: CellSelectedRange): boolean => {
@@ -89,10 +89,10 @@ export const isRangeEqual = (rangeA: CellSelectedRange, rangeB: CellSelectedRang
     const { min: rangeBMin, max: rangeBMax } = calculateRangeBoundary(rangeB);
 
     return (
-        rangeAMin.col === rangeBMin.col &&
-        rangeAMin.row === rangeBMin.row &&
-        rangeAMax.col === rangeBMax.col &&
-        rangeAMax.row === rangeBMax.row
+        rangeAMin.columnIndex === rangeBMin.columnIndex &&
+        rangeAMin.rowIndex === rangeBMin.rowIndex &&
+        rangeAMax.columnIndex === rangeBMax.columnIndex &&
+        rangeAMax.rowIndex === rangeBMax.rowIndex
     );
 };
 
@@ -101,10 +101,10 @@ export const isRangeInsideOthers = (range: CellSelectedRange, others: CellSelect
     return others.filter(other => {
         const { min: otherMin, max: otherMax } = calculateRangeBoundary(other);
         return (
-            rangeMin.col >= otherMin.col &&
-            rangeMin.row >= otherMin.row &&
-            rangeMax.col <= otherMax.col &&
-            rangeMax.row <= otherMax.row
+            rangeMin.columnIndex >= otherMin.columnIndex &&
+            rangeMin.rowIndex >= otherMin.rowIndex &&
+            rangeMax.columnIndex <= otherMax.columnIndex &&
+            rangeMax.rowIndex <= otherMax.rowIndex
         );
     });
 };
@@ -114,10 +114,10 @@ export const isRangeAdjacent = (rangeA: CellSelectedRange, rangeB: CellSelectedR
     const { min: rangeBMin, max: rangeBMax } = calculateRangeBoundary(rangeB);
 
     return (
-        (rangeAMax.col + 1 === rangeBMin.col && rangeAMin.row <= rangeBMax.row && rangeAMax.row >= rangeBMin.row) ||
-        (rangeAMin.col - 1 === rangeBMax.col && rangeAMin.row <= rangeBMax.row && rangeAMax.row >= rangeBMin.row) ||
-        (rangeAMax.row + 1 === rangeBMin.row && rangeAMin.col <= rangeBMax.col && rangeAMax.col >= rangeBMin.col) ||
-        (rangeAMin.row - 1 === rangeBMax.row && rangeAMin.col <= rangeBMax.col && rangeAMax.col >= rangeBMin.col)
+        (rangeAMax.columnIndex + 1 === rangeBMin.columnIndex && rangeAMin.rowIndex <= rangeBMax.rowIndex && rangeAMax.rowIndex >= rangeBMin.rowIndex) ||
+        (rangeAMin.columnIndex - 1 === rangeBMax.columnIndex && rangeAMin.rowIndex <= rangeBMax.rowIndex && rangeAMax.rowIndex >= rangeBMin.rowIndex) ||
+        (rangeAMax.rowIndex + 1 === rangeBMin.rowIndex && rangeAMin.columnIndex <= rangeBMax.columnIndex && rangeAMax.columnIndex >= rangeBMin.columnIndex) ||
+        (rangeAMin.rowIndex - 1 === rangeBMax.rowIndex && rangeAMin.columnIndex <= rangeBMax.columnIndex && rangeAMax.columnIndex >= rangeBMin.columnIndex)
     );
 };
 
@@ -151,27 +151,27 @@ export const tryMakeRectangle = <TRange extends CellSelectedRange>(ranges: TRang
 
     for (const range of ranges) {
         const { min, max } = calculateRangeBoundary(range);
-        minCol = Math.min(minCol, min.col);
-        minRow = Math.min(minRow, min.row);
-        maxCol = Math.max(maxCol, max.col);
-        maxRow = Math.max(maxRow, max.row);
+        minCol = Math.min(minCol, min.columnIndex);
+        minRow = Math.min(minRow, min.rowIndex);
+        maxCol = Math.max(maxCol, max.columnIndex);
+        maxRow = Math.max(maxRow, max.rowIndex);
     }
 
     // Create the potential rectangle range
     const potentialRectangle = {
-        start: createCellId({ col: minCol, row: minRow }),
-        end: createCellId({ col: maxCol, row: maxRow })
+        start: createCellId({ columnIndex: minCol, rowIndex: minRow }),
+        end: createCellId({ columnIndex: maxCol, rowIndex: maxRow })
     } as TRange;
 
     // Calculate the total cells in all input ranges
     const cells: CellCoordinates[] = [];
     for (const range of ranges) {
         const { min, max } = calculateRangeBoundary(range);
-        for (let row = min.row; row <= max.row; row++) {
-            for (let col = min.col; col <= max.col; col++) {
-                const isCellExisting = cells.some(cell => cell.col === col && cell.row === row);
+        for (let row = min.rowIndex; row <= max.rowIndex; row++) {
+            for (let col = min.columnIndex; col <= max.columnIndex; col++) {
+                const isCellExisting = cells.some(cell => cell.columnIndex === col && cell.rowIndex === row);
                 if (!isCellExisting) {
-                    cells.push({ col, row });
+                    cells.push({ columnIndex: col, rowIndex: row });
                 }
             }
         }

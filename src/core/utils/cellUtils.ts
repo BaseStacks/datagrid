@@ -1,24 +1,27 @@
 import type { CellCoordinates, CellId } from '../types';
 
-import { createId, extractId } from './idUtils';
+import { createId, extractCellId } from './idUtils';
 
-export const createCellId = ({ row, col}: CellCoordinates) => {
+export const createCellId = ({ rowIndex, columnIndex }: CellCoordinates) => {
     return createId({
         type: 'cell',
-        row,
-        col,
+        rowIndex,
+        columnIndex,
     }) as CellId;
 };
 
 export const getCoordinatesById = (id: CellId) => {
-    const idData = extractId(id);
+    const idData = extractCellId(id);
     if (idData.type !== 'cell') {
         throw new Error(`Invalid cell id: ${id}`);
     }
 
-    return { row: idData.row, col: idData.col } as CellCoordinates;
+    return {
+        rowIndex: idData.rowIndex,
+        columnIndex: idData.columnIndex
+    } as CellCoordinates;
 };
 
 export const compareCoordinates = (a?: CellCoordinates | null, b?: CellCoordinates | null): boolean => {
-    return a?.row === b?.row && a?.col === b?.col;
+    return a?.rowIndex === b?.rowIndex && a?.columnIndex === b?.columnIndex;
 };

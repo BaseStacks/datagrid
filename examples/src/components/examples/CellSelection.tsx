@@ -1,18 +1,18 @@
-import { Column, DataGridProvider, useDataGrid, useDataGridState, DataGridContainer, DataGridCell, CellSelectionPlugin, DataGridHeader, DataGridHeaderGroup, DataGridRow, DataGridScrollArea, StayInViewPlugin, RowPinningPlugin, RowKey, DataGridRows, ColumnPinningPlugin, usePlugin, LayoutPlugin } from '@basestacks/data-grid';
+import { Column, DataGridProvider, useDataGrid, useDataGridState, DataGridContainer, DataGridCell, CellSelectionPlugin, DataGridHeader, DataGridHeaderGroup, DataGridRow, DataGridScrollArea, StayInViewPlugin, RowPinningPlugin, RowKey, DataGridRowContainer, ColumnPinningPlugin, usePlugin, LayoutPlugin } from '@basestacks/data-grid';
 import { useMemo, useState } from 'react';
 import { generateData } from '@/helpers/dataHelpers';
 import { cn } from '@/utils/cn';
 
 export function CellSelection() {
     const columns = useMemo((): Column[] => [
-        { dataKey: 'id', header: 'ID'},
-        { dataKey: 'firstName', header: 'First Name' },
-        { dataKey: 'lastName', header: 'Last Name' },
-        { dataKey: 'age', header: 'Age' },
-        { dataKey: 'address', header: 'Address' },
-        { dataKey: 'email', header: 'Email' },
-        { dataKey: 'phone', header: 'Phone' },
-        { dataKey: 'actions', header: 'Actions' },
+        { key: 'id', header: 'ID'},
+        { key: 'firstName', header: 'First Name' },
+        { key: 'lastName', header: 'Last Name' },
+        { key: 'age', header: 'Age' },
+        { key: 'address', header: 'Address' },
+        { key: 'email', header: 'Email' },
+        { key: 'phone', header: 'Phone' },
+        { key: 'actions', header: 'Actions' },
     ], []);
 
     const [data, setData] = useState(() => {
@@ -30,8 +30,8 @@ export function CellSelection() {
         });
     });
 
-    const [pinnedLeftColumns] = useState<RowKey[]>(() => columns.slice(0, 2).map((col) => col.dataKey as RowKey));
-    const [pinnedRightColumns] = useState<RowKey[]>(() => columns.slice(-2).map((col) => col.dataKey as RowKey));
+    const [pinnedLeftColumns] = useState<RowKey[]>(() => columns.slice(0, 2).map((col) => col.key as RowKey));
+    const [pinnedRightColumns] = useState<RowKey[]>(() => columns.slice(-2).map((col) => col.key as RowKey));
 
     const [pinnedTopRows] = useState<RowKey[]>(() => data.slice(0, 2).map((row) => row.id as RowKey));
     const [pinnedBottomRows] = useState<RowKey[]>(() => data.slice(-2).map((row) => row.id as RowKey));
@@ -68,7 +68,7 @@ export function CellSelection() {
                     <span className="absolute right-0 w-[-15px] h-full bg-white dark:bg-gray-950" />
                 </DataGridHeaderGroup>
                 <DataGridScrollArea className="h-[300px] overflow-auto">
-                    <DataGridRows className="relative">
+                    <DataGridRowContainer className="relative">
                         {rows.map((row) => (
                             <DataGridRow key={row.id} row={row} className={cn(clxs.row, clxs.rowPinned)}>
                                 {row.cells.map((cell) => (
@@ -78,7 +78,7 @@ export function CellSelection() {
                                 ))}
                             </DataGridRow>
                         ))}
-                    </DataGridRows>
+                    </DataGridRowContainer>
                 </DataGridScrollArea>
             </DataGridContainer>
         </DataGridProvider>
@@ -89,7 +89,7 @@ const clxs = {
     table: 'text-sm max-h-[400px]',
     headerGroup: 'bg-white dark:bg-gray-950 ',
     header: 'bg-white dark:bg-gray-950 flex items-center border border-transparent p-2 text-left font-medium text-gray-400 dark:text-gray-200',
-    row: 'relative overflow-hidden border-gray-200 dark:border-gray-600',
+    row: 'overflow-hidden border-gray-200 dark:border-gray-600',
     rowPinned: `
         data-pinned:z-20
         data-last-top:border-b-2

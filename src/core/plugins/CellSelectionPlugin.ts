@@ -110,7 +110,7 @@ export class CellSelectionPlugin extends DataGridPlugin<CellSelectionPluginOptio
         const cellId = nodeInfo.id as CellId;
         const isFocusing = activeCell.value?.id === cellId && editing.value;
         const coordinates = getCoordinatesById(cellId);
-
+        
         const { cleanSelection, startSelection, updateLastSelectedRange } = this.dataGrid.selection;
 
         if (isFocusing) {

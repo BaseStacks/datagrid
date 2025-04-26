@@ -12,7 +12,7 @@ export const updateRowData = <TRow extends RowData>(options: {
 
     const rowData = data[rowIndex];
     const column = columns[columnIndex];
-    const dataKey = column.dataKey;
+    const dataKey = column.key;
     if (!dataKey) {
         throw new Error(`Column at index ${columnIndex} does not have a dataKey.`);
     }

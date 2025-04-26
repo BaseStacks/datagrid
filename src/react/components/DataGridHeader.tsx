@@ -31,24 +31,22 @@ function DataGridHeaderImpl<TElement extends HTMLElement = HTMLElement>({ as, he
                 return;
             };
 
-            const { rect, pinned } = item as DataGridHeaderNode;
+            const { rect, attributes } = item as DataGridHeaderNode;
 
             let width = rect.width!;
-
-            if (pinned?.lastRight) {
-                width += layout.scrollbarWidth;
-            }
-
             let right = rect.right;
-            if (pinned?.lastLeft) {
+
+            const lastRight = attributes['data-last-right'];
+            if (lastRight) {
+                width += layout.scrollbarWidth;
                 right! -= layout.scrollbarWidth;
             }
 
             ref.current.style.width = `${width}px`;
             ref.current.style.left = rect.left === undefined ? '' : `${rect.left}px`;
             ref.current.style.right = right === undefined ? '' : `${right}px`;
-
-            setAttributes(ref.current, item.attributes);
+            
+            setAttributes(ref.current, attributes);
         });
 
         return () => {

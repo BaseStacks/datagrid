@@ -17,7 +17,8 @@ export class DataGrid<TRow extends RowData = RowData> {
     private createHeaders = (): ColumnHeader[] => {
         const { columns } = this.state.options;
         return columns.map((column, index) => ({
-            id: createId({ type: 'header', col: index }) as HeaderId,
+            id: createId({ type: 'header', columnKey: column.key }) as HeaderId,
+            index,
             column,
             render: () => typeof column.header === 'function' ? column.header() : column.header,
         }));
@@ -39,18 +40,19 @@ export class DataGrid<TRow extends RowData = RowData> {
                 data: newRowData,
                 cells: columns.map((column, columnIndex) => {
                     const coordinates = {
-                        row: rowIndex,
-                        col: columnIndex,
+                        rowIndex,
+                        columnIndex,
                     };
+
                     const cellInfo = {
                         id: createCellId(coordinates),
                         rowId: createId({ type: 'row', row: rowIndex }) as RowId,
-                        colId: createId({ type: 'header', col: columnIndex }) as HeaderId,
+                        headerId: createId({ type: 'header', columnKey: column.key }) as HeaderId,
                         coordinates
                     };
 
-                    const cellValue = newRowData[column.dataKey as keyof TRow] ?? null;
-
+                    const cellValue = newRowData[column.key as keyof TRow];
+                    
                     const renderProps: CellProps = {
                         ...cellInfo,
                         value: cellValue,
@@ -76,7 +78,7 @@ export class DataGrid<TRow extends RowData = RowData> {
                         onFocus: (callback) => {
                             return this.state.editing.watch((editing) => {
                                 const activeCell = this.state.activeCell.value;
-                                const isEditing = editing && activeCell?.row === rowIndex && activeCell?.col === columnIndex;
+                                const isEditing = editing && activeCell?.rowIndex === rowIndex && activeCell?.columnIndex === columnIndex;
                                 if (isEditing) {
                                     callback();
                                 }
@@ -85,7 +87,7 @@ export class DataGrid<TRow extends RowData = RowData> {
                         onBlur: (callback) => {
                             return this.state.editing.watch((newEditing) => {
                                 const activeCell = this.state.activeCell.value;
-                                const isEditing = newEditing && activeCell?.row === rowIndex && activeCell?.col === columnIndex;
+                                const isEditing = newEditing && activeCell?.rowIndex === rowIndex && activeCell?.columnIndex === columnIndex;
                                 if (!isEditing) {
                                     callback();
                                 }

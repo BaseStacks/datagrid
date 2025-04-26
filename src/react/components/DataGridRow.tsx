@@ -1,6 +1,7 @@
 import { memo, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import { useDataGridContext } from '../hooks/useDataGridContext';
 import type { Row } from '../../core';
+import { setAttributes } from '../../dom';
 
 export interface DataGridRowProps extends React.HTMLAttributes<HTMLElement> {
     readonly as?: string;
@@ -12,7 +13,7 @@ function DataGridRowImpl({
     row,
     ...props
 }: React.PropsWithChildren<DataGridRowProps>) {
-    const { layout, options } = useDataGridContext();
+    const { layout } = useDataGridContext();
     const ref = useRef<HTMLElement>(null);
 
     const Component = (as || 'div') as React.ElementType;
@@ -20,59 +21,37 @@ function DataGridRowImpl({
     const style: React.CSSProperties = useMemo(() => {
         return {
             ...props.style,
-            position: 'absolute',
-            height: options.rowHeight
+            position: 'absolute'
         };
-    }, [options.rowHeight, props.style]);
+    }, [props.style]);
 
     useLayoutEffect(() => {
-        const unwatchColumnLayout = layout.columnLayoutsState.watch((columns) => {
-            if (!ref.current) return;
-
-            ref.current.style.width = columns.values().reduce((acc, column) => acc + column.width, 0) + 'px';
-        });
-
-        const unwatchRowLayouts = layout.rowLayoutsState.watchItem(row.id, ({ item: rowLayout }) => {
-            if (!ref.current || !rowLayout) {
+        const unwatchRowLayouts = layout.layoutNodesState.watchItem(row.id, ({ item }) => {
+            if (!ref.current || !item) {
                 return;
             }
 
-            if (!rowLayout.pinned) {
-                ref.current.style.top = rowLayout.top + 'px';
-                return;
-            }
+            const { top, bottom, width, height } = item.rect;
+            
+            ref.current.style.width = width + 'px';
+            ref.current.style.height = height + 'px';
 
-            const { top, bottom } = rowLayout;
             if (top !== undefined) {
                 ref.current.style.top = top + 'px';
                 ref.current.style.bottom = '';
             }
-            if (bottom !== undefined) {
+            else if (bottom !== undefined) {
                 ref.current.style.bottom = bottom + 'px';
                 ref.current.style.top = '';
             }
 
-            if (!rowLayout.pinned) {
-                ref.current.removeAttribute('data-pinned');
-                ref.current.removeAttribute('data-first-top');
-                ref.current.removeAttribute('data-last-top');
-                ref.current.removeAttribute('data-first-bottom');
-                ref.current.removeAttribute('data-last-bottom');
-                return;
-            }
-
-            rowLayout.pinned && ref.current.setAttribute('data-pinned', rowLayout.pinned);
-            rowLayout.firstPinnedTop && ref.current.setAttribute('data-first-top', 'true');
-            rowLayout.lastPinnedTop && ref.current.setAttribute('data-last-top', 'true');
-            rowLayout.firstPinnedBottom && ref.current.setAttribute('data-first-bottom', 'true');
-            rowLayout.lastPinnedBottom && ref.current.setAttribute('data-last-bottom', 'true');
+            setAttributes(ref.current, item.attributes);
         });
 
         return () => {
-            unwatchColumnLayout();
             unwatchRowLayouts();
         };
-    }, [layout.columnLayoutsState, layout.rowLayoutsState, row.id]);
+    }, [layout.columnLayoutsState, layout.layoutNodesState, row.id]);
 
     useEffect(() => {
         layout.registerNode(row.id, ref.current!);

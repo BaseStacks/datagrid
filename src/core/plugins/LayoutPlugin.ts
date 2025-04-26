@@ -8,7 +8,7 @@ export class LayoutPlugin extends DataGridPlugin<LayoutPluginOptions> {
     private updateHeaderNodes = () => {
         const { columnMinWidth, columnMaxWidth } = this.dataGrid.options;
         const { headers } = this.dataGrid.state;
-        const { layoutNodesState } = this.dataGrid.layout;
+        const { layoutNodesState, updateNode } = this.dataGrid.layout;
 
         const headerNodes = layoutNodesState.values().filter((node) => node.type === 'header').toArray();
 
@@ -25,8 +25,7 @@ export class LayoutPlugin extends DataGridPlugin<LayoutPluginOptions> {
                 return;
             }
 
-            layoutNodesState.replaceItem(headerId, {
-                ...headerNode,
+            updateNode(this, headerId, {
                 rect: {
                     ...headerNode.rect,
                     width: columnWidth,
@@ -36,8 +35,8 @@ export class LayoutPlugin extends DataGridPlugin<LayoutPluginOptions> {
     };
 
     private updateHeaderGroupNodes = () => {
-        const { layoutNodesState } = this.dataGrid.layout;
-        
+        const { layoutNodesState, updateNode } = this.dataGrid.layout;
+
         const headerGroupNode = layoutNodesState.get('headerGroup:1');
         if (!headerGroupNode) {
             return;
@@ -45,9 +44,8 @@ export class LayoutPlugin extends DataGridPlugin<LayoutPluginOptions> {
 
         const headerNodes = layoutNodesState.values().filter((node) => node.type === 'header').toArray();
         const width = headerNodes.reduce((acc, node) => acc + node.rect.width!, 0);
-        
-        layoutNodesState.replaceItem('headerGroup:1', {
-            ...headerGroupNode,
+
+        updateNode(this, 'headerGroup:1', {
             rect: {
                 ...headerGroupNode.rect,
                 width: width,
@@ -55,10 +53,61 @@ export class LayoutPlugin extends DataGridPlugin<LayoutPluginOptions> {
         });
     };
 
+    private updateRowNodes = () => {
+        const { layoutNodesState, updateNode } = this.dataGrid.layout;
+
+        const headerGroupNode = layoutNodesState.get('headerGroup:1');
+        if (!headerGroupNode) {
+            return;
+        }
+
+        let rowsHeight = 0;
+        const rowNodes = layoutNodesState.values().filter((node) => node.type === 'row');
+        rowNodes.forEach((node) => {
+            rowsHeight += node.rect.height!;
+            updateNode(this, node.id, {
+                rect: {
+                    width: headerGroupNode.rect.width,
+                }
+            });
+        });
+
+        const rowContainerNode = layoutNodesState.get('rowContainer:1');
+        if (rowContainerNode) {
+            updateNode(this, rowContainerNode.id, {
+                rect: {
+                    width: headerGroupNode.rect.width,
+                    height: rowsHeight
+                }
+            });
+        }
+    };
+
+    private updateCellNodes = () => {
+        const { layoutNodesState, updateNode } = this.dataGrid.layout;
+
+        const cellNodes = layoutNodesState.values().filter((node) => node.type === 'cell');
+        
+        cellNodes.forEach((cellNode) => {
+            const headerNode = layoutNodesState.get(cellNode.headerId);
+            if (!headerNode) {
+                return;
+            }
+
+            updateNode(this, cellNode.id, {
+                rect: {
+                    width: headerNode.rect.width
+                }
+            });
+        });
+    };
+
     public handleActivate = () => {
         const watchHeaders = this.dataGrid.state.headers.watch(() => {
             this.updateHeaderNodes();
             this.updateHeaderGroupNodes();
+            this.updateRowNodes();
+            this.updateCellNodes();
         });
 
         this.unsubscribes.push(watchHeaders);
@@ -66,6 +115,8 @@ export class LayoutPlugin extends DataGridPlugin<LayoutPluginOptions> {
         const resizeObserver = new ResizeObserver(() => {
             this.updateHeaderNodes();
             this.updateHeaderGroupNodes();
+            this.updateRowNodes();
+            this.updateCellNodes();
         });
         resizeObserver.observe(this.scrollArea);
         this.unsubscribes.push(() => {
