@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import type { DataGridState } from '../../../core';
+import type { DataGridState } from '../../../host';
 import { useStrictState } from './useStrictState';
 
 interface UseDataGridStateOptions<TValue, TCollect = TValue> {

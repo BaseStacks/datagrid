@@ -1,6 +1,6 @@
 import React from 'react';
 import { DataGridContext } from '../contexts';
-import { type RowData } from '../../core';
+import { type RowData } from '../../host';
 import { type UseDataGridReturn } from './useDataGrid';
 
 export function useDataGridContext<TRow extends RowData = RowData>() {

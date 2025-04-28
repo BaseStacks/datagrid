@@ -1,5 +1,5 @@
 import { memo, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
-import { type CellRender } from '../../core';
+import { type CellRender } from '../../host';
 import { useDataGridContext } from '../hooks/useDataGridContext';
 import React from 'react';
 import { setAttributes } from '../../dom';
@@ -32,7 +32,6 @@ function DataGridCellImpl<TElement extends HTMLElement = HTMLElement>({ as, cell
 
             ref.current.style.width = `${size.width}px`;
             ref.current.style.left = offset.left === undefined ? '' : `${offset.left}px`;
-            ref.current.style.right = offset.right === undefined ? '' : `${offset.right}px`;
 
             setAttributes(ref.current, item.attributes);
         });

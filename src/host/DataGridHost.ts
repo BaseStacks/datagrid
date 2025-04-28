@@ -1,18 +1,16 @@
-import { defaultOptions } from '../configs';
-import type { CellProps, Column, ColumnHeader, DataGridOptions, HeaderId, Row, RowData, RowId } from '../types';
-import { createCellId } from '../utils/cellUtils';
-import { createId } from '../utils/idUtils';
-import { updateRowData } from '../utils/rowUtils';
-import type { DataGridPlugin, DataGridPluginConstructor, DataGridPluginOptions } from './atomic/DataGridPlugin';
-import { DataGridEvents } from './DataGridEvents';
-import { DataGridKeyBindings } from './DataGridKeyBindings';
-import { DataGridLayout } from './DataGridLayout';
-import { DataGridModifier } from './DataGridModifier';
-import { DataGridSelection } from './DataGridSelection';
-import { DataGridStates } from './DataGridStates';
+import { defaultOptions } from './configs';
+import type { CellProps, Column, ColumnHeader, DataGridOptions, HeaderId, Row, RowData, RowId } from './types';
+import { createCellId } from './utils/cellUtils';
+import { createId } from './utils/idUtils';
+import { updateRowData } from './utils/rowUtils';
+import type { DataGridPlugin } from './atomic/DataGridPlugin';
+import { DataGridEvents } from './cores/DataGridEvents';
+import { DataGridModifier } from './cores/DataGridModifier';
+import { DataGridSelection } from './cores/DataGridSelection';
+import { DataGridStates } from './cores/DataGridStates';
 
-export class DataGrid<TRow extends RowData = RowData> {
-    private _plugins: Map<string, DataGridPlugin<any, TRow>> = new Map();
+export abstract class DataGridHost<TRow extends RowData = RowData> {
+    public plugins: Map<string, DataGridPlugin<TRow, DataGridHost<TRow>>> = new Map();
 
     private createHeaders = (): ColumnHeader[] => {
         const { columns } = this.state.options;
@@ -52,7 +50,7 @@ export class DataGrid<TRow extends RowData = RowData> {
                     };
 
                     const cellValue = newRowData[column.key as keyof TRow];
-                    
+
                     const renderProps: CellProps = {
                         ...cellInfo,
                         value: cellValue,
@@ -124,8 +122,6 @@ export class DataGrid<TRow extends RowData = RowData> {
         this.modifier = new DataGridModifier(this.state);
         this.events = new DataGridEvents<TRow>(this.state);
         this.selection = new DataGridSelection(this.state);
-        this.layout = new DataGridLayout(this.state);
-        this.keyBindings = new DataGridKeyBindings(this.state, this.events);
 
         this.initialize();
     }
@@ -134,8 +130,6 @@ export class DataGrid<TRow extends RowData = RowData> {
     public modifier: DataGridModifier<TRow>;
     public state: DataGridStates<TRow>;
     public selection: DataGridSelection<TRow>;
-    public layout: DataGridLayout<TRow>;
-    public keyBindings: DataGridKeyBindings<TRow>;
     public events: DataGridEvents<TRow>;
 
     public updateOptions = (newOptions: DataGridOptions<TRow>) => {
@@ -152,32 +146,5 @@ export class DataGrid<TRow extends RowData = RowData> {
             ...this.options,
             ...newOptions,
         };
-    };
-
-    public addPlugin = <TOptions extends DataGridPluginOptions, TPlugin extends DataGridPlugin<Partial<TOptions>, TRow>>(
-        PluginClass: DataGridPluginConstructor<TRow, TOptions, TPlugin>,
-        options?: Partial<TOptions>
-    ) => {
-        const existingPlugin = this._plugins.get(PluginClass.name);
-
-        if (existingPlugin) {
-            return existingPlugin as TPlugin;
-        }
-
-        const newPlugin = new PluginClass(this, options ?? {});
-        this._plugins.set(PluginClass.name, newPlugin);
-        newPlugin.activate();
-        return newPlugin;
-    };
-
-    public removePlugin = (PluginClass: new (dataGrid: DataGrid<TRow>, options: Partial<DataGridPluginOptions>) => DataGridPlugin<any, TRow>) => {
-        const existingPlugin = this._plugins.get(PluginClass.name);
-
-        if (!existingPlugin) {
-            throw new Error(`Plugin ${PluginClass.name} does not exist.`);
-        }
-
-        existingPlugin.deactivate();
-        this._plugins.delete(PluginClass.name);
     };
 };

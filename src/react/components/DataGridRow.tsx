@@ -1,6 +1,6 @@
 import { memo, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import { useDataGridContext } from '../hooks/useDataGridContext';
-import type { Row } from '../../core';
+import type { Row } from '../../host';
 import { setAttributes } from '../../dom';
 
 export interface DataGridRowProps extends React.HTMLAttributes<HTMLElement> {
@@ -40,10 +40,6 @@ function DataGridRowImpl({
                 ref.current.style.top = offset.top + 'px';
                 ref.current.style.bottom = '';
             }
-            else if (offset.bottom !== undefined) {
-                ref.current.style.bottom = offset.bottom + 'px';
-                ref.current.style.top = '';
-            }
 
             setAttributes(ref.current, item.attributes);
         });
@@ -51,7 +47,7 @@ function DataGridRowImpl({
         return () => {
             unwatchRowLayouts();
         };
-    }, [layout.columnLayoutsState, layout.layoutNodesState, row.id]);
+    }, [layout.layoutNodesState, row.id]);
 
     useEffect(() => {
         layout.registerNode(row.id, ref.current!);

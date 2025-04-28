@@ -1,9 +1,7 @@
-import { DataGridPlugin, type DataGridPluginOptions } from '../instances/atomic/DataGridPlugin';
-import type { CellId, DataGridKeyMap } from '../types';
-import { getCoordinatesById } from '../utils/cellUtils';
+import type { CellId, DataGridKeyMap, RowData } from '../../host';
+import { getCoordinatesById, idTypeEquals, breakRangeToSmallerPart, isRangeInsideOthers, tryCombineRanges, tryRemoveDuplicates } from '../../host';
+import { DataGridDomPlugin, type DataGridDomPluginOptions } from '../atomic/DataGridDomPlugin';
 import { clearAllTextSelection } from '../utils/domUtils';
-import { idTypeEquals } from '../utils/idUtils';
-import { breakRangeToSmallerPart, isRangeInsideOthers, tryCombineRanges, tryRemoveDuplicates } from '../utils/selectionUtils';
 
 type CellSelectionPluginShortcut =
     | 'activeLower'
@@ -21,12 +19,9 @@ type CellSelectionPluginShortcut =
     | 'selectAll'
     | 'exit';
 
-export interface CellSelectionPluginOptions extends DataGridPluginOptions {
+export interface CellSelectionPluginOptions extends DataGridDomPluginOptions {
     readonly keyMap?: DataGridKeyMap<CellSelectionPluginShortcut>;
 }
-
-export type CellSelectionDraggingStatus = 'start' | 'dragging' | false;
-
 
 export const defaultKeyMap: DataGridKeyMap<CellSelectionPluginShortcut> = {
     activeLower: 'ArrowDown',
@@ -48,7 +43,7 @@ export const defaultKeyMap: DataGridKeyMap<CellSelectionPluginShortcut> = {
     exit: 'Escape'
 };
 
-export class CellSelectionPlugin extends DataGridPlugin<CellSelectionPluginOptions> {
+export class CellSelectionPlugin<TRow extends RowData> extends DataGridDomPlugin<TRow, CellSelectionPluginOptions> {
     private handleContainerMouseDown = (event: MouseEvent) => {
         const isClickOutside = !this.container?.contains(event.target as Node);
         if (isClickOutside) {
@@ -103,14 +98,14 @@ export class CellSelectionPlugin extends DataGridPlugin<CellSelectionPluginOptio
         if (!nodeInfo) {
             throw new Error('Node not found');
         }
-        
+
         const { dragging } = this.dataGrid.selection;
         const { activeCell, editing } = this.dataGrid.state;
 
         const cellId = nodeInfo.id as CellId;
         const isFocusing = activeCell.value?.id === cellId && editing.value;
         const coordinates = getCoordinatesById(cellId);
-        
+
         const { cleanSelection, startSelection, updateLastSelectedRange } = this.dataGrid.selection;
 
         if (isFocusing) {
@@ -177,22 +172,24 @@ export class CellSelectionPlugin extends DataGridPlugin<CellSelectionPluginOptio
         window.addEventListener('mousedown', this.handleContainerMouseDown);
         window.addEventListener('mouseup', this.handleContainerMouseUp);
 
-        const watchElements = this.dataGrid.layout.elementsState.watchItems(({ id, item, operation }) => {
+        const watchElements = this.dataGrid.layout.layoutNodesState.watchItems(({ id, item, operation }) => {
             const isCell = idTypeEquals(id, 'cell');
             if (!isCell) {
                 return;
             }
 
+            const { element } = item;
+
             if (operation === 'remove') {
-                item.removeEventListener('mousedown', this.handleCellMouseDown);
-                item.removeEventListener('mouseenter', this.handleCellMouseEnter);
+                element.removeEventListener('mousedown', this.handleCellMouseDown);
+                element.removeEventListener('mouseenter', this.handleCellMouseEnter);
                 return;
             }
 
-            item.addEventListener('mousedown', this.handleCellMouseDown);
-            item.addEventListener('mouseenter', this.handleCellMouseEnter);
+            element.addEventListener('mousedown', this.handleCellMouseDown);
+            element.addEventListener('mouseenter', this.handleCellMouseEnter);
         });
-        
+
         const handlers: Record<CellSelectionPluginShortcut, () => void> = {
             activeLeft: this.dataGrid.selection.moveLeft,
             activeRight: this.dataGrid.selection.moveRight,

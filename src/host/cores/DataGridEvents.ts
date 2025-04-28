@@ -1,6 +1,7 @@
 import type { DataGridEventType, DataGridEventTypes, RowData } from '../types';
-import { EventEmitter } from './atomic/EventEmitter';
 import type { DataGridStates } from './DataGridStates';
+
+import { EventEmitter } from '../atomic/EventEmitter';
 
 export class DataGridEvents<TRow extends RowData> {
     private _eventEmitter = new EventEmitter();

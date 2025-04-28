@@ -1,7 +1,7 @@
 import React, { memo, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import { useDataGridContext } from '../hooks/useDataGridContext';
-import type { ColumnHeader, DataGridHeaderNode } from '../../core';
-import { setAttributes } from '../../dom';
+import type { ColumnHeader } from '../../host';
+import { setAttributes, type DataGridHeaderNode } from '../../dom';
 
 interface DataGridHeaderProps<TElement extends HTMLElement> extends React.HTMLAttributes<TElement> {
     readonly as?: string
@@ -31,17 +31,14 @@ function DataGridHeaderImpl<TElement extends HTMLElement = HTMLElement>({ as, he
             const { size, offset, attributes } = item as DataGridHeaderNode;
 
             let width = size.width!;
-            let right = offset.right;
 
             const lastRight = attributes['data-last-right'];
             if (lastRight) {
                 width += layout.scrollbarWidth;
-                right! -= layout.scrollbarWidth;
             }
 
             ref.current.style.width = `${width}px`;
             ref.current.style.left = offset.left === undefined ? '' : `${offset.left}px`;
-            ref.current.style.right = right === undefined ? '' : `${right}px`;
 
             setAttributes(ref.current, attributes);
         });

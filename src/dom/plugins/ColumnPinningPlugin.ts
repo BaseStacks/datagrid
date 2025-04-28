@@ -1,13 +1,13 @@
-import { DataGridPlugin } from '../instances/atomic/DataGridPlugin';
-import type { DataGridHeaderNode } from '../instances/DataGridLayout';
-import type { ColumnKey, ColumnHeader } from '../types';
+import type { ColumnKey, ColumnHeader, RowData } from '../../host';
+import { DataGridDomPlugin } from '../atomic/DataGridDomPlugin';
+import type { DataGridHeaderNode } from '../cores/DataGridLayout';
 
 export interface ColumnPinningPluginOptions {
     readonly pinnedLeftColumns?: ColumnKey[];
     readonly pinnedRightColumns?: ColumnKey[];
 }
 
-export class ColumnPinningPlugin extends DataGridPlugin<ColumnPinningPluginOptions> {
+export class ColumnPinningPlugin<TRow extends RowData> extends DataGridDomPlugin<TRow, ColumnPinningPluginOptions> {
     private _lastScrollLeft: number = 0;
 
     private _leftHeaders: ColumnHeader[] = [];
@@ -20,7 +20,7 @@ export class ColumnPinningPlugin extends DataGridPlugin<ColumnPinningPluginOptio
         const { layoutNodesState, updateNode } = this.dataGrid.layout;
 
         // Set default column width based on scrollArea width
-        const scrollAreaWidth = this.scrollArea.clientWidth;
+        const scrollAreaWidth = this.scrollArea!.clientWidth;
         const columnCount = headers.value.length;
         const defaultColumnWidth = Math.floor(scrollAreaWidth / columnCount);
         const columnWidth = Math.max(this.dataGrid.options.columnMinWidth, Math.min(defaultColumnWidth, this.dataGrid.options.columnMaxWidth));
@@ -65,7 +65,7 @@ export class ColumnPinningPlugin extends DataGridPlugin<ColumnPinningPluginOptio
     private updateHeaderNodes = () => {
         const { layoutNodesState, updateNode } = this.dataGrid.layout;
 
-        const baseLeft = this.scrollArea.scrollLeft;
+        const baseLeft = this.scrollArea!.scrollLeft;
 
         let pinnedLeftOffset = baseLeft;
 
@@ -90,7 +90,7 @@ export class ColumnPinningPlugin extends DataGridPlugin<ColumnPinningPluginOptio
             });
         });
 
-        const viewportWidth = this.scrollArea.clientWidth;
+        const viewportWidth = this.scrollArea!.clientWidth;
         let pinnedRightOffset = baseLeft + viewportWidth;
         this._rightHeadersDesc.forEach((header) => {
             const headerNode = layoutNodesState.get(header.id);
@@ -135,12 +135,12 @@ export class ColumnPinningPlugin extends DataGridPlugin<ColumnPinningPluginOptio
     };
 
     private handleContainerScroll = () => {
-        const isScrollingLeft = this.scrollArea.scrollLeft != this._lastScrollLeft;
+        const isScrollingLeft = this.scrollArea!.scrollLeft != this._lastScrollLeft;
         if (!isScrollingLeft) {
             return;
         }
 
-        this._lastScrollLeft = this.scrollArea.scrollLeft;
+        this._lastScrollLeft = this.scrollArea!.scrollLeft;
         this.updateHeaderNodes();
         this.updateCellNodes();
     };
@@ -148,9 +148,9 @@ export class ColumnPinningPlugin extends DataGridPlugin<ColumnPinningPluginOptio
     public handleActivate = () => {
         this.dataGrid.layout.registerAttributes(this, ['data-pinned', 'data-fist-left', 'data-last-left', 'data-first-right', 'data-last-right']);
 
-        this.scrollArea.addEventListener('scroll', this.handleContainerScroll);
+        this.scrollArea!.addEventListener('scroll', this.handleContainerScroll);
         this.unsubscribes.push(() => {
-            this.scrollArea.removeEventListener('scroll', this.handleContainerScroll);
+            this.scrollArea!.removeEventListener('scroll', this.handleContainerScroll);
         });
 
         const watchHeaders = this.dataGrid.state.headers.watch((newHeaders) => {
@@ -171,7 +171,7 @@ export class ColumnPinningPlugin extends DataGridPlugin<ColumnPinningPluginOptio
             this.updateHeaderNodes();
             this.updateCellNodes();
         });
-        resizeObserver.observe(this.scrollArea);
+        resizeObserver.observe(this.scrollArea!);
         this.unsubscribes.push(() => {
             resizeObserver.disconnect();
         });

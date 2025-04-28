@@ -1,8 +1,6 @@
 import { tinykeys } from 'tinykeys';
-import type { DataGridAction, DataGridKeyMap, RowData } from '../types';
-import type { DataGridStates } from './DataGridStates';
-import type { DataGridEvents } from './DataGridEvents';
-import type { DataGridPlugin } from './atomic/DataGridPlugin';
+import type { DataGridAction, DataGridKeyMap, RowData, DataGridStates, DataGridEvents } from '../../host';
+import type { DataGridDomPlugin } from '../atomic/DataGridDomPlugin';
 
 export type KeyBindingHandler = (event: KeyboardEvent) => void | boolean;
 
@@ -18,7 +16,7 @@ export class DataGridKeyBindings<TRow extends RowData> {
         this.events = events;
     }
 
-    public add = <TKeyMap extends DataGridAction>(source: DataGridPlugin, keyMap: DataGridKeyMap<TKeyMap>, handlers: Record<TKeyMap, KeyBindingHandler>) => {
+    public add = <TKeyMap extends DataGridAction>(source: DataGridDomPlugin<TRow>, keyMap: DataGridKeyMap<TKeyMap>, handlers: Record<TKeyMap, KeyBindingHandler>) => {
         const keyBindingMap: Record<string, KeyBindingHandler> = {};
 
         const addKeybinding = (action: TKeyMap, handler: (event: KeyboardEvent) => void | boolean) => {
@@ -49,7 +47,7 @@ export class DataGridKeyBindings<TRow extends RowData> {
         this.deregisterMap.set(source.toString(), cleanKeyBindings);
     };
 
-    public remove = (source: DataGridPlugin) => {
+    public remove = (source: DataGridDomPlugin<TRow>) => {
         const cleanKeyBindings = this.deregisterMap.get(source.toString());
         if (cleanKeyBindings) {
             cleanKeyBindings();

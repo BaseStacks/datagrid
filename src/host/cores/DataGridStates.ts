@@ -1,5 +1,5 @@
 import type { CellCoordinates, ColumnHeader, CellSelectedRangeWithCells, Row, RowData, WithId, CellId, DataGridOptions } from '../types';
-import { DataGridState } from './atomic/DataGridState';
+import { DataGridState } from '../atomic/DataGridState';
 
 export class DataGridStates<TRow extends RowData> {
     constructor(public options: DataGridOptions<TRow>) {

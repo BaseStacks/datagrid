@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { deepEqual } from '../../../core';
+import { deepEqual } from '../../../host';
 
 export const useStrictState = <TValue>(
     initValue: TValue | (() => TValue),

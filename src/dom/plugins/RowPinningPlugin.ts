@@ -1,12 +1,12 @@
-import { DataGridPlugin } from '../instances/atomic/DataGridPlugin';
-import type { Row, RowId, RowKey } from '../types';
+import type { Row, RowData, RowId, RowKey } from '../../host';
+import { DataGridDomPlugin } from '../atomic/DataGridDomPlugin';
 
 export interface RowPinningPluginOptions {
     readonly pinnedTopRows?: RowKey[];
     readonly pinnedBottomRows?: RowKey[];
 }
 
-export class RowPinningPlugin extends DataGridPlugin<RowPinningPluginOptions> {
+export class RowPinningPlugin<TRow extends RowData> extends DataGridDomPlugin<TRow, RowPinningPluginOptions> {
     private lastScrollTop = 0;
 
     private _topRows: Row[] = [];
@@ -86,7 +86,7 @@ export class RowPinningPlugin extends DataGridPlugin<RowPinningPluginOptions> {
             return;
         }
 
-        const baseTop = this.scrollArea.scrollTop || 0;
+        const baseTop = this.scrollArea!.scrollTop || 0;
         let calculatedTopOffset = baseTop;
         this._topRows.forEach((row) => {
             const node = layoutNodesState.get(row.id);
@@ -109,7 +109,7 @@ export class RowPinningPlugin extends DataGridPlugin<RowPinningPluginOptions> {
             });
         });
 
-        const viewportHeight = this.scrollArea.clientHeight;
+        const viewportHeight = this.scrollArea!.clientHeight;
         let calculatedBottomOffset = baseTop + viewportHeight;
         this._bottomRowsDescending.forEach((row) => {
             const node = layoutNodesState.get(row.id);
@@ -134,21 +134,21 @@ export class RowPinningPlugin extends DataGridPlugin<RowPinningPluginOptions> {
     };
 
     private handleScroll = () => {
-        const isVerticalScroll = this.scrollArea.scrollTop !== this.lastScrollTop;
+        const isVerticalScroll = this.scrollArea!.scrollTop !== this.lastScrollTop;
         if (!isVerticalScroll) {
             return;
         }
 
-        this.lastScrollTop = this.scrollArea.scrollTop || 0;
+        this.lastScrollTop = this.scrollArea!.scrollTop || 0;
         this.updateRows();
     };
 
     public handleActivate = () => {
         this.dataGrid.layout.registerAttributes(this, ['data-pinned', 'data-first-top', 'data-last-top', 'data-first-bottom', 'data-last-bottom']);
 
-        this.scrollArea.addEventListener('scroll', this.handleScroll);
+        this.scrollArea!.addEventListener('scroll', this.handleScroll);
         this.unsubscribes.push(() => {
-            this.scrollArea.removeEventListener('scroll', this.handleScroll);
+            this.scrollArea!.removeEventListener('scroll', this.handleScroll);
         });
 
         const unwatchRowLayouts = this.dataGrid.state.rows.watch((newRows) => {

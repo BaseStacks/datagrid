@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
-import type { DataGridOptions, RowData } from '../../core';
-import { DataGrid } from '../../core';
+import type { DataGridOptions, RowData } from '../../host';
+import { DataGrid } from '../../dom/DataGrid';
 
 export type UseDataGridReturn<TRow extends RowData = RowData> = ReturnType<typeof useDataGrid<TRow>>;
 

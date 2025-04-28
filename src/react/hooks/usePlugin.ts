@@ -1,13 +1,14 @@
 import { useEffect, useRef } from 'react';
-import { DataGrid, type DataGridPlugin, type DataGridPluginConstructor, type DataGridPluginOptions, type RowData } from '../../core';
+import { type DataGridPlugin, type DataGridPluginConstructor, type DataGridPluginOptions, type RowData } from '../../host';
+import type { DataGrid } from '../../dom/DataGrid';
 
 export const usePlugin = <
     TRow extends RowData,
     TOptions extends DataGridPluginOptions,
-    TPlugin extends DataGridPlugin<Partial<TOptions>, TRow> = DataGridPlugin<Partial<TOptions>, TRow>,
+    TPlugin extends DataGridPlugin<TRow, DataGrid<TRow>, Partial<TOptions>> = DataGridPlugin<TRow, DataGrid<TRow>, Partial<TOptions>>,
 >(
         dataGrid: DataGrid<TRow>,
-        Plugin: DataGridPluginConstructor<TRow, TOptions, TPlugin>,
+        Plugin: DataGridPluginConstructor<TRow, DataGrid<TRow>, TOptions, TPlugin>,
         options?: TOptions,
     ) => {
 

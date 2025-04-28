@@ -1,13 +1,13 @@
 import type { RowData, RowOperation } from '../types';
+import type { DataGridPlugin } from '../atomic/DataGridPlugin';
 import { calculateRangeBoundary } from '../utils/selectionUtils';
-import type { DataGridPlugin } from './atomic/DataGridPlugin';
 import { DataGridStates } from './DataGridStates';
 
 export class DataGridModifier<TRow extends RowData = RowData> {
     constructor(private state: DataGridStates<TRow>) {
     }
 
-    public plugins: Map<string, DataGridPlugin<any, TRow>> = new Map();
+    public plugins: Map<string, DataGridPlugin<TRow>> = new Map();
 
 
     public isCellDisabled = (rowIndex: number, columnIndex: number) => {

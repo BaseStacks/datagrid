@@ -1,10 +1,10 @@
-import { DataGridPlugin } from '../instances/atomic/DataGridPlugin';
-import type { Id } from '../types';
+import type { Id, RowData } from '../../host';
+import { DataGridDomPlugin } from '../atomic/DataGridDomPlugin';
 
 export interface LayoutPluginOptions {
 }
 
-export class LayoutPlugin extends DataGridPlugin<LayoutPluginOptions> {
+export class LayoutPlugin<TRow extends RowData> extends DataGridDomPlugin<TRow, LayoutPluginOptions> {
     private updateHeaderNodes = () => {
         const { columnMinWidth, columnMaxWidth } = this.dataGrid.options;
         const { headers } = this.dataGrid.state;
@@ -12,7 +12,7 @@ export class LayoutPlugin extends DataGridPlugin<LayoutPluginOptions> {
 
         const headerNodes = layoutNodesState.values().filter((node) => node.type === 'header').toArray();
 
-        const scrollAreaWidth = this.scrollArea.clientWidth;
+        const scrollAreaWidth = this.scrollArea!.clientWidth;
         const columnCount = headers.value.length;
         const defaultColumnWidth = Math.floor(scrollAreaWidth / columnCount);
         const columnWidth = Math.max(columnMinWidth, Math.min(defaultColumnWidth, columnMaxWidth));
@@ -116,7 +116,7 @@ export class LayoutPlugin extends DataGridPlugin<LayoutPluginOptions> {
             this.updateRowNodes();
             this.updateCellNodes();
         });
-        resizeObserver.observe(this.scrollArea);
+        resizeObserver.observe(this.scrollArea!);
         this.unsubscribes.push(() => {
             resizeObserver.disconnect();
         });

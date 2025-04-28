@@ -1,10 +1,11 @@
-import { DataGridPlugin, type DataGridPluginOptions } from '../instances/atomic/DataGridPlugin';
-import type { DataGridEventTypes } from '../types';
+import { type DataGridPluginOptions } from '../../host';
+import type { DataGridEventTypes, RowData } from '../../host';
+import { DataGridDomPlugin } from '../atomic/DataGridDomPlugin';
 export interface StayInViewPluginOptions extends DataGridPluginOptions {
     readonly scrollBehavior?: ScrollBehavior;
 }
 
-export class StayInViewPlugin extends DataGridPlugin<StayInViewPluginOptions> {
+export class StayInViewPlugin<TRow extends RowData> extends DataGridDomPlugin<TRow, StayInViewPluginOptions> {
     private handleActionExecuted = ({ action }: DataGridEventTypes['action-executed']) => {
         let cellId = this.dataGrid.state.activeCell.value?.id;
 
@@ -17,13 +18,13 @@ export class StayInViewPlugin extends DataGridPlugin<StayInViewPluginOptions> {
             return;
         }
 
-        const scrollDelta = this.dataGrid.layout.calculateScrollToCell(cellId);
+        const scrollDelta = this.dataGrid.layout.calculateCellScrollOffsets(cellId);
 
         if (!scrollDelta) {
             return;
         }
 
-        this.scrollArea.scrollTo({
+        this.scrollArea!.scrollTo({
             left: scrollDelta.left,
             top: scrollDelta.top,
             behavior: 'smooth',

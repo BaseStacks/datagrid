@@ -1,7 +1,6 @@
-import type { CellSelectionDraggingStatus } from '../plugins/CellSelectionPlugin';
-import type { CellCoordinates, CellId, RowData, RectType, SelectedCell } from '../types';
+import type { CellCoordinates, CellId, RowData, RectType, SelectedCell, CellSelectionDraggingStatus } from '../types';
 import { getCoordinatesById, createCellId } from '../utils/cellUtils';
-import { DataGridState } from './atomic/DataGridState';
+import { DataGridState } from '../atomic/DataGridState';
 import { DataGridStates } from './DataGridStates';
 
 type Offset = [number, number];

@@ -1,4 +1,4 @@
-import { deepEqual } from '../../utils/objectUtils';
+import { deepEqual } from '../utils/objectUtils';
 import type { DataGridStateOptions, DataGridStateSetOptions } from './DataGridState';
 import { EventEmitter } from './EventEmitter';
 

@@ -1,4 +1,4 @@
-import type { CellCoordinates, Id, RectType } from '../types';
+import type { CellCoordinates, Id, RectType } from '../../host';
 
 export interface CursorOffset {
     x: number;

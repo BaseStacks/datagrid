@@ -8,6 +8,7 @@ export type DataGridEventTypes = {
   }
 };
 
+export type CellSelectionDraggingStatus = 'start' | 'dragging' | false;
 
 export type DataGridEventType = keyof DataGridEventTypes;
 
