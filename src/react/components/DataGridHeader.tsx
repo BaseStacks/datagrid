@@ -28,11 +28,11 @@ function DataGridHeaderImpl<TElement extends HTMLElement = HTMLElement>({ as, he
                 return;
             };
 
-            const { size, offset, attributes } = item as DataGridHeaderNode;
+            const { size, offset, pinned } = item as DataGridHeaderNode;
 
             let width = size.width!;
 
-            const lastRight = attributes['data-last-right'];
+            const lastRight = pinned?.side === 'right' && pinned?.last;
             if (lastRight) {
                 width += layout.scrollbarWidth;
             }
@@ -40,7 +40,11 @@ function DataGridHeaderImpl<TElement extends HTMLElement = HTMLElement>({ as, he
             ref.current.style.width = `${width}px`;
             ref.current.style.left = offset.left === undefined ? '' : `${offset.left}px`;
 
-            setAttributes(ref.current, attributes);
+            setAttributes(ref.current, {
+                'data-pinned': item.pinned?.side,
+                'data-pinned-left-last': item.pinned?.side === 'left' && item.pinned?.last,
+                'data-pinned-right-first': item.pinned?.side === 'right' && item.pinned?.first,
+            });
         });
 
         return () => {

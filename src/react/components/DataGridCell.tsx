@@ -33,7 +33,11 @@ function DataGridCellImpl<TElement extends HTMLElement = HTMLElement>({ as, cell
             ref.current.style.width = `${size.width}px`;
             ref.current.style.left = offset.left === undefined ? '' : `${offset.left}px`;
 
-            setAttributes(ref.current, item.attributes);
+            setAttributes(ref.current, {
+                'data-pinned': item.pinned?.side,
+                'data-pinned-left-last': item.pinned?.side === 'left' && item.pinned?.last,
+                'data-pinned-right-first': item.pinned?.side === 'right' && item.pinned?.first,
+            });
         });
 
         const unwatchActiveCell = state.activeCell.watch((activeCell) => {
@@ -41,12 +45,9 @@ function DataGridCellImpl<TElement extends HTMLElement = HTMLElement>({ as, cell
                 return;
             }
 
-            if (activeCell?.id === cell.id) {
-                ref.current.setAttribute('data-active', 'true');
-            }
-            else {
-                ref.current.removeAttribute('data-active');
-            }
+            setAttributes(ref.current, {
+                'data-active': activeCell?.id === cell.id,
+            });
         });
 
         const unwatchSelectedRanges = state.selectedRanges.watch((selectedRanges) => {
@@ -70,19 +71,12 @@ function DataGridCellImpl<TElement extends HTMLElement = HTMLElement>({ as, cell
                 }
             });
 
-            ref.current.removeAttribute('data-edge-top');
-            ref.current.removeAttribute('data-edge-bottom');
-            ref.current.removeAttribute('data-edge-left');
-            ref.current.removeAttribute('data-edge-right');
-
-            if (!hasSelectedRange) {
-                ref.current.removeAttribute('data-selected');
-                return;
-            }
-
-            ref.current.setAttribute('data-selected', 'true');
-            edges.forEach(edge => {
-                ref.current!.setAttribute(`data-edge-${edge}`, 'true');
+            setAttributes(ref.current, {
+                'data-edge-top': edges.has('top'),
+                'data-edge-bottom': edges.has('bottom'),
+                'data-edge-left': edges.has('left'),
+                'data-edge-right': edges.has('right'),
+                'data-selected': hasSelectedRange,
             });
         });
 

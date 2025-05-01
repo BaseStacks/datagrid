@@ -5,7 +5,11 @@ import type { DataGridDomPlugin } from '../atomic/DataGridDomPlugin';
 
 export interface DataGridLayoutNodeBase {
     readonly element: HTMLElement;
-    readonly pinned?: 'left' | 'right' | 'top' | 'bottom';
+    readonly pinned?: {
+        readonly side?: 'top' | 'bottom' | 'left' | 'right';
+        readonly first?: boolean;
+        readonly last?: boolean;
+    }
     readonly size: {
         readonly height: number;
         readonly width: number;
@@ -14,7 +18,6 @@ export interface DataGridLayoutNodeBase {
         readonly top?: number;
         readonly left?: number;
     },
-    readonly attributes: Record<string, any>;
 }
 
 export interface DataGridCellNode extends DataGridLayoutNodeBase {
@@ -244,12 +247,12 @@ export class DataGridLayout<TRow extends RowData> {
         }
 
         const rowNodes = this.getNodesByType<DataGridRowNode>('row') as DataGridRowNode[];
-        const topPinnedRows = rowNodes.filter((node) => node.type === 'row' && node.pinned === 'top');
-        const bottomPinnedRows = rowNodes.filter((node) => node.type === 'row' && node.pinned === 'bottom');
+        const topPinnedRows = rowNodes.filter((node) => node.type === 'row' && node.pinned?.side === 'top');
+        const bottomPinnedRows = rowNodes.filter((node) => node.type === 'row' && node.pinned?.side === 'bottom');
 
         const headerNodes = this.getNodesByType<DataGridHeaderNode>('header');
-        const leftPinnedColumns = headerNodes.filter((node) => node.type === 'header' && node.pinned === 'left');
-        const rightPinnedColumns = headerNodes.filter((node) => node.type === 'header' && node.pinned === 'right');
+        const leftPinnedColumns = headerNodes.filter((node) => node.type === 'header' && node.pinned?.side === 'left');
+        const rightPinnedColumns = headerNodes.filter((node) => node.type === 'header' && node.pinned?.side === 'right');
 
         const topHeight = topPinnedRows.reduce((acc, node) => acc + node.size.height!, 0);
         const bottomHeight = bottomPinnedRows.reduce((acc, node) => acc + node.size.height!, 0);
@@ -276,46 +279,26 @@ export class DataGridLayout<TRow extends RowData> {
         this.pluginAttributesMap.set(plugin, attributes);
     };
 
-    public updateNode = (plugin: DataGridDomPlugin<TRow>, id: Id, partialNode: DeepPartial<DataGridLayoutNode>) => {
+    public updateNode = (id: Id, partialNode: DeepPartial<DataGridLayoutNode>) => {
         const node = this.layoutNodesState.get(id);
         if (!node) {
             return;
         }
 
-        const attributes = partialNode.attributes;
-        const offset = partialNode.offset;
-        const size = partialNode.size;
-
-        let updatedAttributes: Record<string, any> = node.attributes;
-        if (attributes) {
-            const registerAttributes = this.pluginAttributesMap.get(plugin);
-
-            if (!registerAttributes) {
-                throw new Error('Attributes not registered');
-            }
-
-            updatedAttributes = registerAttributes.reduce((acc, key) => {
-                acc[key] = attributes[key] ?? node.attributes[key] ?? undefined;
-                return acc;
-            }, {} as Record<string, any>);
-        }
-
-        const updatedOffset = {
-            ...node.offset,
-            ...offset
-        };
-
-        const updatedSize = {
-            ...node.size,
-            ...size
-        };
-
         this.layoutNodesState.replaceItem(id, {
             ...node,
-            pinned: partialNode.pinned ?? node.pinned,
-            offset: updatedOffset,
-            size: updatedSize,
-            attributes: updatedAttributes
+            pinned: {
+                ...node.pinned,
+                ...partialNode.pinned
+            },
+            offset: {
+                ...node.offset,
+                ...partialNode.offset
+            },
+            size: {
+                ...node.size,
+                ...partialNode.size
+            }
         });
     };
 }

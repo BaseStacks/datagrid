@@ -25,7 +25,7 @@ export class LayoutPlugin<TRow extends RowData> extends DataGridDomPlugin<TRow, 
                 return;
             }
 
-            updateNode(this, headerId, {
+            updateNode(headerId, {
                 size: {
                     width: columnWidth,
                 }
@@ -44,7 +44,7 @@ export class LayoutPlugin<TRow extends RowData> extends DataGridDomPlugin<TRow, 
         const headerNodes = layoutNodesState.values().filter((node) => node.type === 'header').toArray();
         const width = headerNodes.reduce((acc, node) => acc + node.size.width!, 0);
 
-        updateNode(this, 'headerGroup:1', {
+        updateNode('headerGroup:1', {
             size: {
                 width: width,
             }
@@ -63,7 +63,7 @@ export class LayoutPlugin<TRow extends RowData> extends DataGridDomPlugin<TRow, 
         const rowNodes = layoutNodesState.values().filter((node) => node.type === 'row');
         rowNodes.forEach((node) => {
             rowsHeight += node.size.height!;
-            updateNode(this, node.id, {
+            updateNode(node.id, {
                 size: {
                     width: headerGroupNode.size.width,
                 }
@@ -72,7 +72,7 @@ export class LayoutPlugin<TRow extends RowData> extends DataGridDomPlugin<TRow, 
 
         const rowContainerNode = layoutNodesState.get('rowContainer:1');
         if (rowContainerNode) {
-            updateNode(this, rowContainerNode.id, {
+            updateNode(rowContainerNode.id, {
                 size: {
                     width: headerGroupNode.size.width,
                     height: rowsHeight
@@ -92,7 +92,7 @@ export class LayoutPlugin<TRow extends RowData> extends DataGridDomPlugin<TRow, 
                 return;
             }
             
-            updateNode(this, cellNode.id, {
+            updateNode(cellNode.id, {
                 size: {
                     width: headerNode.size.width
                 }

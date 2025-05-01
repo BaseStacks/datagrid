@@ -23,18 +23,17 @@ export class RowPinningPlugin<TRow extends RowData> extends DataGridDomPlugin<TR
                 return;
             }
 
-            updateNode(this, node.id, {
-                pinned: 'top',
+            updateNode(node.id, {
+                pinned: {
+                    side: 'top',
+                    first: (index === 0),
+                    last: (index === topRows.length - 1)
+                },
                 size: {
                     height: this.dataGrid.options.rowHeight
                 },
                 offset: {
                     top: index * this.dataGrid.options.rowHeight
-                },
-                attributes: {
-                    'data-pinned': 'top',
-                    'data-first-top': (index === 0) || undefined,
-                    'data-last-top': (index === topRows.length - 1) || undefined,
                 }
             });
         });
@@ -45,14 +44,13 @@ export class RowPinningPlugin<TRow extends RowData> extends DataGridDomPlugin<TR
                 return;
             }
 
-            updateNode(this, node.id, {
+            updateNode(node.id, {
                 size: {
                     height: this.dataGrid.options.rowHeight,
                 },
                 offset: {
                     top: (index + this._topRows.length) * this.dataGrid.options.rowHeight
-                },
-                attributes: {}
+                }
             });
         });
 
@@ -62,18 +60,17 @@ export class RowPinningPlugin<TRow extends RowData> extends DataGridDomPlugin<TR
                 return;
             }
 
-            updateNode(this, node.id, {
-                pinned: 'bottom',
+            updateNode(node.id, {
+                pinned: {
+                    side: 'bottom',
+                    first: (index === 0),
+                    last: (index === bottomRows.length - 1)
+                },
                 size: {
                     height: this.dataGrid.options.rowHeight,
                 },
                 offset: {
                     top: (index + this._topRows.length + this._bodyRows.length) * this.dataGrid.options.rowHeight
-                },
-                attributes: {
-                    'data-pinned': 'bottom',
-                    'data-first-bottom': (index === 0) || undefined,
-                    'data-last-bottom': (index === bottomRows.length - 1) || undefined,
                 }
             });
         });
@@ -102,7 +99,7 @@ export class RowPinningPlugin<TRow extends RowData> extends DataGridDomPlugin<TR
                 return;
             }
 
-            updateNode(this, node.id, {
+            updateNode(node.id, {
                 offset: {
                     top: pinnedOffset
                 }
@@ -125,7 +122,7 @@ export class RowPinningPlugin<TRow extends RowData> extends DataGridDomPlugin<TR
                 return;
             }
 
-            updateNode(this, node.id, {
+            updateNode(node.id, {
                 offset: {
                     top: bottomOffset
                 }
@@ -144,8 +141,6 @@ export class RowPinningPlugin<TRow extends RowData> extends DataGridDomPlugin<TR
     };
 
     public handleActivate = () => {
-        this.dataGrid.layout.registerAttributes(this, ['data-pinned', 'data-first-top', 'data-last-top', 'data-first-bottom', 'data-last-bottom']);
-
         this.scrollArea!.addEventListener('scroll', this.handleScroll);
         this.unsubscribes.push(() => {
             this.scrollArea!.removeEventListener('scroll', this.handleScroll);

@@ -41,7 +41,11 @@ function DataGridRowImpl({
                 ref.current.style.bottom = '';
             }
 
-            setAttributes(ref.current, item.attributes);
+            setAttributes(ref.current, {
+                'data-pinned': item.pinned?.side,
+                'data-pinned-top-last': item.pinned?.side === 'top' && item.pinned?.last,
+                'data-pinned-bottom-first': item.pinned?.side === 'bottom' && item.pinned?.first,
+            });
         });
 
         return () => {

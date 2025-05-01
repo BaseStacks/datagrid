@@ -92,8 +92,8 @@ const clxs = {
     row: 'overflow-hidden border-gray-200 dark:border-gray-600',
     rowPinned: `
         data-pinned:z-20
-        data-last-top:border-b-2
-        data-first-bottom:border-t-2
+        data-pinned-top-last:border-b-2
+        data-pinned-bottom-first:border-t-2
     `,
     cell: 'user-select-none bg-white flex items-center border border-transparent p-2 text-gray-500 outline-blue-600 dark:text-gray-400 dark:bg-gray-800',
     cellActive: `
@@ -111,12 +111,11 @@ const clxs = {
         data-[edge-bottom=true]:border-b-blue-600
     `,
     cellPinned: `
-        data-[pinned=left]:z-10
-        data-[pinned=right]:z-9
-        data-[last-left=true]:border-r-gray-600 
-        data-[first-right=true]:border-l-gray-600
-        dark:data-[last-left=true]:border-r-gray-600
-        dark:data-[first-right=true]:border-l-gray-600
+        data-pinned:z-10
+        data-pinned-left-last:border-r-gray-600 
+        data-pinned-right-first:border-l-gray-600
+        dark:data-pinned-left-last:border-r-gray-600
+        dark:data-pinned-right-first:border-l-gray-600
     `,
     selectedRangeRect: 'absolute pointer-events-none outline-2 outline-offset-[-2px] outline-blue-600 bg-blue-600/5',
 };

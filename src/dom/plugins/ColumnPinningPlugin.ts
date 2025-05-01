@@ -28,12 +28,11 @@ export class ColumnPinningPlugin<TRow extends RowData> extends DataGridDomPlugin
         this._leftHeaders.forEach((header, index, leftHeaders) => {
             const headerNode = layoutNodesState.get(header.id) as DataGridHeaderNode;
 
-            updateNode(this, headerNode.id, {
-                pinned: 'left',
-                attributes: {
-                    'data-pinned': 'left',
-                    'data-fist-left': (index === 0) || undefined,
-                    'data-last-left': (index === leftHeaders.length - 1) || undefined,
+            updateNode(headerNode.id, {
+                pinned: {
+                    side: 'left',
+                    first: (index === 0),
+                    last: (index === leftHeaders.length - 1)
                 }
             });
         });
@@ -41,7 +40,7 @@ export class ColumnPinningPlugin<TRow extends RowData> extends DataGridDomPlugin
         this._bodyHeaders.forEach((header, index) => {
             const headerNode = layoutNodesState.get(header.id) as DataGridHeaderNode;
 
-            updateNode(this, headerNode.id, {
+            updateNode(headerNode.id, {
                 offset: {
                     left: (index + this._leftHeaders.length) * columnWidth
                 }
@@ -51,12 +50,11 @@ export class ColumnPinningPlugin<TRow extends RowData> extends DataGridDomPlugin
         this._rightHeaders.forEach((header, index, rightHeaders) => {
             const headerNode = layoutNodesState.get(header.id) as DataGridHeaderNode;
 
-            updateNode(this, headerNode.id, {
-                pinned: 'right',
-                attributes: {
-                    'data-pinned': 'right',
-                    'data-first-right': (index === 0) || undefined,
-                    'data-last-right': (index === rightHeaders.length - 1) || undefined,
+            updateNode(headerNode.id, {
+                pinned: {
+                    side: 'right',
+                    first: (index === 0),
+                    last: (index === rightHeaders.length - 1)
                 }
             });
         });
@@ -83,7 +81,7 @@ export class ColumnPinningPlugin<TRow extends RowData> extends DataGridDomPlugin
                 return;
             }
 
-            updateNode(this, header.id, {
+            updateNode(header.id, {
                 offset: {
                     left: nodeOffset
                 }
@@ -106,7 +104,7 @@ export class ColumnPinningPlugin<TRow extends RowData> extends DataGridDomPlugin
                 return;
             }
 
-            updateNode(this, header.id, {
+            updateNode(header.id, {
                 offset: {
                     left: nodeOffset
                 }
@@ -125,11 +123,11 @@ export class ColumnPinningPlugin<TRow extends RowData> extends DataGridDomPlugin
                 return;
             }
 
-            updateNode(this, cellNode.id, {
+            updateNode(cellNode.id, {
+                pinned: headerNode.pinned,
                 offset: {
                     left: headerNode.offset.left
-                },
-                attributes: headerNode.attributes
+                }
             });
         });
     };
@@ -146,8 +144,6 @@ export class ColumnPinningPlugin<TRow extends RowData> extends DataGridDomPlugin
     };
 
     public handleActivate = () => {
-        this.dataGrid.layout.registerAttributes(this, ['data-pinned', 'data-fist-left', 'data-last-left', 'data-first-right', 'data-last-right']);
-
         this.scrollArea!.addEventListener('scroll', this.handleContainerScroll);
         this.unsubscribes.push(() => {
             this.scrollArea!.removeEventListener('scroll', this.handleContainerScroll);
