@@ -269,7 +269,7 @@ export class DataGridLayout<TRow extends RowData> {
             throw new Error('Node not found');
         }
 
-        return calculateScrollOffsets(scrollArea, targetNode.element, viewport);
+        return calculateScrollOffsets(targetNode.element, scrollArea, viewport);
     };
 
     public registerAttributes = (plugin: DataGridDomPlugin<TRow>, attributes: string[]) => {
