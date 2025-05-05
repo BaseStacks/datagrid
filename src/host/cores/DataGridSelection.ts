@@ -197,7 +197,7 @@ export class DataGridSelection<TRow extends RowData> {
             const newSelectedRange = {
                 start,
                 end,
-                cells: new Map(),
+                cells: this.getCellsInRange(start, end),
             };
 
             const selectedRanges = [...prevSelectedRanges];
@@ -319,6 +319,8 @@ export class DataGridSelection<TRow extends RowData> {
         const { rows, headers } = this.state;
         const from = createCellId({ columnIndex: 0, rowIndex: 0 });
         const to = createCellId({ columnIndex: headers.value.length - 1, rowIndex: rows.value.length - 1 });
+
+        this.cleanSelection();
         this.selectRange(from, to);
     };
 };

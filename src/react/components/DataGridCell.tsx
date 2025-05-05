@@ -54,7 +54,8 @@ function DataGridCellImpl<TElement extends HTMLElement = HTMLElement>({ as, cell
             if (!ref.current) {
                 return;
             }
-
+            console.log('selectedRanges', selectedRanges);
+            
             const edges: Set<string> = new Set();
             let hasSelectedRange = false;
 
