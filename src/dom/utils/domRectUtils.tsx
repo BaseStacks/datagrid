@@ -33,8 +33,8 @@ export const getRect = (container: HTMLElement, start?: HTMLElement, end?: HTMLE
     if (start) {
         const startRect = start.getBoundingClientRect();
         return {
-            left: startRect.left - containerRect.left,
-            top: startRect.top - containerRect.top,
+            left: startRect.left - containerRect.left + scrollLeft,
+            top: startRect.top - containerRect.top + scrollTop,
             width: startRect.width,
             height: startRect.height
         };

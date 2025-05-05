@@ -24,8 +24,9 @@ export type HeaderId = `header:${ColumnKey}`;
 export type RowContainerId = `rowContainer:${string}`;
 export type RowId = `row:${RowDataKey}`;
 export type CellId = `cell:${RowDataKey}-${ColumnKey}`;
+export type EditorContainerId = 'editorContainer';
 
-export type Id = HeaderGroupId | HeaderId | RowContainerId | RowId | CellId;
+export type Id = HeaderGroupId | HeaderId | RowContainerId | RowId | CellId | EditorContainerId;
 
 export type WithId<TId, TData> = TData & { readonly id: TId };
 
@@ -73,6 +74,12 @@ export interface CellProps<TValue = any> {
   readonly onBlur: (callback: () => void) => Unsubscribe;
 }
 
+export interface CellEditorProps<TValue = any> {
+  readonly id: CellId;
+  readonly defaultValue: TValue;
+  readonly setValue: (value: TValue) => void;
+}
+
 export interface CellRender {
   readonly id: CellId;
   readonly rowId: RowId;
@@ -90,8 +97,9 @@ export interface ColumnHeader {
 export interface Column<TValue = any> {
   readonly key: string;
   readonly header?: string | (() => any);
-  readonly cell?: string | ((opts: CellProps<TValue>) => React.ReactNode)
+  readonly cell?: string | ((opts: CellProps<TValue>) => any)
   readonly footer?: string | (() => any);
+  readonly editor?: ((opts: CellEditorProps<TValue>) => any);
   readonly disabled?: boolean | ((opts: { value: RowData; rowIndex: number }) => boolean);
   readonly prePasteValues?: (values: string[]) => TValue[];
   readonly pasteValue?: (opts: { value: TValue; rowData: RowData; rowIndex: number }) => TValue | Promise<TValue>;

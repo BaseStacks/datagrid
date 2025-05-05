@@ -1,4 +1,4 @@
-import type { CellId, Id, RowData, RowId, HeaderId, HeaderGroupId, RowContainerId, DeepPartial } from '../../host';
+import type { CellId, Id, RowData, RowId, HeaderId, HeaderGroupId, RowContainerId, DeepPartial, EditorContainerId } from '../../host';
 import { getIdType, DataGridMapState, DataGridState, DataGridStates } from '../../host';
 import { calculateScrollOffsets } from '..';
 import type { DataGridDomPlugin } from '../atomic/DataGridDomPlugin';
@@ -49,7 +49,12 @@ export interface DataGridRowContainerNode extends DataGridLayoutNodeBase {
     readonly type: 'rowContainer';
 }
 
-export type DataGridLayoutNode = DataGridCellNode | DataGridHeaderGroupNode | DataGridHeaderNode | DataGridRowNode | DataGridRowContainerNode;
+export interface DataGridEditorContainerNode extends DataGridLayoutNodeBase {
+    readonly id: EditorContainerId;
+    readonly type: 'editorContainer';
+}
+
+export type DataGridLayoutNode = DataGridCellNode | DataGridHeaderGroupNode | DataGridHeaderNode | DataGridRowNode | DataGridRowContainerNode | DataGridEditorContainerNode;
 
 export class DataGridLayout<TRow extends RowData> {
     constructor(private state: DataGridStates<TRow>) { }
@@ -211,6 +216,16 @@ export class DataGridLayout<TRow extends RowData> {
             this.layoutNodesState.addItem(rowContainerId, {
                 ...nodeBase,
                 id: rowContainerId,
+                type,
+            });
+            return;
+        }
+
+        if(type === 'editorContainer') {
+            const editorContainerId = id as EditorContainerId;
+            this.layoutNodesState.addItem(editorContainerId, {
+                ...nodeBase,
+                id: editorContainerId,
                 type,
             });
             return;

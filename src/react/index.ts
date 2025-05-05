@@ -15,5 +15,4 @@ export * from './components/DataGridRow';
 export * from './components/DataGridHeader';
 export * from './components/DataGridHeaderGroup';
 export * from './components/DataGridRowContainer';
-
-export * from './components/cell-selection/SelectionBackdrop';
+export * from './components/DataGridEditor';

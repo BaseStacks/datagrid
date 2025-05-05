@@ -1,17 +1,18 @@
-import { Column, DataGridProvider, useDataGrid, useDataGridState, DataGridContainer, DataGridCell, CellSelectionPlugin, DataGridHeader, DataGridHeaderGroup, DataGridRow, DataGridScrollArea, StayInViewPlugin, RowPinningPlugin, RowKey, DataGridRowContainer, ColumnPinningPlugin, usePlugin, LayoutPlugin } from '@basestacks/data-grid';
+import { Column, DataGridProvider, useDataGrid, useDataGridState, DataGridContainer, DataGridCell, CellSelectionPlugin, DataGridHeader, DataGridHeaderGroup, DataGridRow, DataGridScrollArea, StayInViewPlugin, RowPinningPlugin, RowKey, DataGridRowContainer, ColumnPinningPlugin, usePlugin, LayoutPlugin, CellEditablePlugin, DataGridEditor } from '@basestacks/data-grid';
 import { useMemo, useState } from 'react';
 import { generateData } from '@/helpers/dataHelpers';
 import { cn } from '@/utils/cn';
+import { TextEditor } from './editors/TextEditor';
 
 export function CellSelection() {
     const columns = useMemo((): Column[] => [
-        { key: 'id', header: 'ID'},
-        { key: 'firstName', header: 'First Name' },
-        { key: 'lastName', header: 'Last Name' },
-        { key: 'age', header: 'Age' },
-        { key: 'address', header: 'Address' },
-        { key: 'email', header: 'Email' },
-        { key: 'phone', header: 'Phone' },
+        { key: 'id', header: 'ID' },
+        { key: 'firstName', header: 'First Name', editor: (props) => <TextEditor {...props} /> },
+        { key: 'lastName', header: 'Last Name', editor: (props) => <input {...props} /> },
+        { key: 'age', header: 'Age', editor: (props) => <input {...props} type="number" min={1} /> },
+        { key: 'address', header: 'Address', editor: (props) => <input {...props} /> },
+        { key: 'email', header: 'Email', editor: (props) => <input {...props} type="email" /> },
+        { key: 'phone', header: 'Phone', editor: (props) => <input {...props} /> },
         { key: 'actions', header: 'Actions' },
     ], []);
 
@@ -46,6 +47,7 @@ export function CellSelection() {
     usePlugin(dataGrid, LayoutPlugin);
     usePlugin(dataGrid, CellSelectionPlugin);
     usePlugin(dataGrid, StayInViewPlugin);
+    usePlugin(dataGrid, CellEditablePlugin);
     usePlugin(dataGrid, ColumnPinningPlugin, {
         pinnedLeftColumns,
         pinnedRightColumns
@@ -54,6 +56,7 @@ export function CellSelection() {
         pinnedTopRows,
         pinnedBottomRows
     });
+
 
     const headers = useDataGridState(dataGrid.state.headers);
     const rows = useDataGridState(dataGrid.state.rows);
@@ -79,6 +82,7 @@ export function CellSelection() {
                             </DataGridRow>
                         ))}
                     </DataGridRowContainer>
+                    <DataGridEditor className="bg-black p-2 flex items-center overflow-hidden z-50" />
                 </DataGridScrollArea>
             </DataGridContainer>
         </DataGridProvider>
