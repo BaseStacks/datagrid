@@ -23,11 +23,11 @@ export class StayInViewPlugin<TRow extends RowData> extends DataGridDomPlugin<TR
         if (!scrollDelta) {
             return;
         }
-
+        
         this.scrollArea!.scrollTo({
             left: scrollDelta.left,
             top: scrollDelta.top,
-            behavior: 'smooth',
+            behavior: this.options.scrollBehavior || 'smooth',
         });
     };
 

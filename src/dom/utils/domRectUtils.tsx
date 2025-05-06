@@ -1,4 +1,4 @@
-import type { CellCoordinates, Id, RectType } from '../../host';
+import type { Id, RectType } from '../../host';
 
 export interface CursorOffset {
     x: number;
@@ -7,8 +7,6 @@ export interface CursorOffset {
 
 export const getRect = (container: HTMLElement, start?: HTMLElement, end?: HTMLElement): RectType => {
     const containerRect = container.getBoundingClientRect();
-    const scrollLeft = container.scrollLeft;
-    const scrollTop = container.scrollTop;
 
     // Get bounding rectangles
     if (start && end) {
@@ -16,10 +14,10 @@ export const getRect = (container: HTMLElement, start?: HTMLElement, end?: HTMLE
         const endRect = end.getBoundingClientRect();
 
 
-        const left = Math.min(startRect.left, endRect.left) - containerRect.left + scrollLeft;
-        const top = Math.min(startRect.top, endRect.top) - containerRect.top + scrollTop;
-        const right = Math.max(startRect.right, endRect.right) - containerRect.left + scrollLeft;
-        const bottom = Math.max(startRect.bottom, endRect.bottom) - containerRect.top + scrollTop;
+        const left = Math.min(startRect.left, endRect.left) - containerRect.left;
+        const top = Math.min(startRect.top, endRect.top) - containerRect.top;
+        const right = Math.max(startRect.right, endRect.right) - containerRect.left;
+        const bottom = Math.max(startRect.bottom, endRect.bottom) - containerRect.top;
         const width = right - left;
         const height = bottom - top;
         return {
@@ -33,17 +31,17 @@ export const getRect = (container: HTMLElement, start?: HTMLElement, end?: HTMLE
     if (start) {
         const startRect = start.getBoundingClientRect();
         return {
-            left: startRect.left - containerRect.left + scrollLeft,
-            top: startRect.top - containerRect.top + scrollTop,
+            left: startRect.left - containerRect.left,
+            top: startRect.top - containerRect.top,
             width: startRect.width,
             height: startRect.height
         };
     }
 
-    const left = containerRect.left - containerRect.left + scrollLeft;
-    const top = containerRect.top - containerRect.top + scrollTop;
-    const right = containerRect.right - containerRect.left + scrollLeft;
-    const bottom = containerRect.bottom - containerRect.top + scrollTop;
+    const left = containerRect.left - containerRect.left;
+    const top = containerRect.top - containerRect.top;
+    const right = containerRect.right - containerRect.left;
+    const bottom = containerRect.bottom - containerRect.top;
     const width = right - left;
     const height = bottom - top;
 
@@ -105,18 +103,6 @@ export const getCursorOffset = (event: MouseEvent, container: HTMLElement): Curs
     };
 };
 
-
-export const buildRectMap = (container: HTMLElement, coordElementMap: Map<CellCoordinates, HTMLElement | null>) => {
-    const map = new Map<CellCoordinates, RectType | null>();
-    coordElementMap.forEach((element, coord) => {
-        if (element) {
-            map.set(coord, getRect(container, element));
-        } else {
-            map.set(coord, null);
-        }
-    });
-    return map;
-};
 
 export const findIdByRect = (cellRectMap: Map<Id, RectType | null>, rect: RectType): Id | null => {
     for (const [cellId, cellRect] of cellRectMap.entries()) {
