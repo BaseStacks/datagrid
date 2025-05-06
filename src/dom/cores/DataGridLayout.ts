@@ -250,8 +250,9 @@ export class DataGridLayout<TRow extends RowData> {
     public getNode = (id: Id) => {
         const node = this.layoutNodesState.get(id);
         if (!node) {
-            return;
+            return null;
         }
+        
         return node;
     };
 

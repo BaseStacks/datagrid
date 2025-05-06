@@ -30,6 +30,7 @@ export abstract class DataGridHost<TRow extends RowData = RowData> {
             }
 
             const rowKey = newRowData[this.state.options.rowKey];
+            
             const rowId = createId({ type: 'row', row: rowKey }) as RowId;
             return {
                 id: rowId,
@@ -44,7 +45,7 @@ export abstract class DataGridHost<TRow extends RowData = RowData> {
 
                     const cellInfo = {
                         id: createCellId(coordinates),
-                        rowId: createId({ type: 'row', row: rowIndex }) as RowId,
+                        rowId,
                         headerId: createId({ type: 'header', columnKey: column.key }) as HeaderId,
                         coordinates
                     };
