@@ -147,5 +147,7 @@ export abstract class DataGridHost<TRow extends RowData = RowData> {
             ...this.options,
             ...newOptions,
         };
+
+        this.state.options = this.options;
     };
 };

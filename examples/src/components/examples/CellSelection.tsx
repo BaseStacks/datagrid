@@ -8,11 +8,11 @@ export function CellSelection() {
     const columns = useMemo((): Column[] => [
         { key: 'id', header: 'ID' },
         { key: 'firstName', header: 'First Name', editor: (props) => <TextEditor {...props} /> },
-        { key: 'lastName', header: 'Last Name', editor: (props) => <input {...props} /> },
-        { key: 'age', header: 'Age', editor: (props) => <input {...props} type="number" min={1} /> },
-        { key: 'address', header: 'Address', editor: (props) => <input {...props} /> },
-        { key: 'email', header: 'Email', editor: (props) => <input {...props} type="email" /> },
-        { key: 'phone', header: 'Phone', editor: (props) => <input {...props} /> },
+        { key: 'lastName', header: 'Last Name', editor: (props) => <TextEditor {...props} /> },
+        { key: 'age', header: 'Age', editor: (props) => <TextEditor {...props} type="number" min={1} /> },
+        { key: 'address', header: 'Address', editor: (props) => <TextEditor {...props} /> },
+        { key: 'email', header: 'Email', editor: (props) => <TextEditor {...props} type="email" /> },
+        { key: 'phone', header: 'Phone', editor: (props) => <TextEditor {...props} /> },
         { key: 'actions', header: 'Actions' },
     ], []);
 
@@ -82,7 +82,7 @@ export function CellSelection() {
                             </DataGridRow>
                         ))}
                     </DataGridRowContainer>
-                    <DataGridEditor className="bg-black p-2 flex items-center overflow-hidden z-50" />
+                    <DataGridEditor className={cn(clxs.editor)} />
                 </DataGridScrollArea>
             </DataGridContainer>
         </DataGridProvider>
@@ -122,4 +122,5 @@ const clxs = {
         dark:data-pinned-right-first:border-l-gray-600
     `,
     selectedRangeRect: 'absolute pointer-events-none outline-2 outline-offset-[-2px] outline-blue-600 bg-blue-600/5',
+    editor: 'bg-black p-2 flex items-center overflow-hidden'
 };

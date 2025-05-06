@@ -1,7 +1,7 @@
 import { memo, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
-import type { CellId } from '../../host';
 import { useDataGridContext } from '../hooks/useDataGridContext';
 import React from 'react';
+import type { DataGridCellNode } from '../../dom';
 
 interface DataGridEditorProps<TElement extends HTMLElement> extends React.HTMLAttributes<TElement> {
     readonly as?: string
@@ -10,7 +10,7 @@ interface DataGridEditorProps<TElement extends HTMLElement> extends React.HTMLAt
 function DataGridEditorImpl<TElement extends HTMLElement = HTMLElement>({ as, style, ...props }: DataGridEditorProps<TElement>) {
     const { layout, state, modifier } = useDataGridContext();
     const ref = useRef<TElement>(null);
-    const activeCellRef = useRef<CellId>(null);
+    const activeCellRef = useRef<DataGridCellNode>(null);
 
     const [editor, setEditor] = React.useState(null);
 
@@ -18,8 +18,8 @@ function DataGridEditorImpl<TElement extends HTMLElement = HTMLElement>({ as, st
 
     const composedStyle = useMemo(() => ({
         ...style,
-        display: editor ? 'block' : 'none',
-        position: 'absolute',
+        display: !editor && 'none',
+        position: 'absolute'
     }), [editor, style]);
 
     useLayoutEffect(() => {
@@ -31,7 +31,13 @@ function DataGridEditorImpl<TElement extends HTMLElement = HTMLElement>({ as, st
         });
 
         const unwatchActiveCell = state.activeCell.watch((activeCell) => {
-            activeCellRef.current = activeCell?.id || null;
+            if (!activeCell) {
+                activeCellRef.current = null;
+                return;
+            }
+
+            const activeCellNode = layout.getNode(activeCell!.id) as DataGridCellNode;
+            activeCellRef.current = activeCellNode;
         });
 
         const unwatchEditing = state.editing.watch((editing) => {
@@ -48,7 +54,21 @@ function DataGridEditorImpl<TElement extends HTMLElement = HTMLElement>({ as, st
             unwatchActiveCell();
             unwatchEditing();
         };
-    }, [layout.layoutNodesState, modifier, state.activeCell, state.editing]);
+    }, [layout, modifier, state.activeCell, state.editing]);
+
+    useEffect(() => {
+        if (editor) {
+            const activeRow = layout.getNode(activeCellRef.current!.rowId);
+            const rowZIndex = getComputedStyle(activeRow!.element).zIndex;
+            const cellZIndex = getComputedStyle(activeCellRef.current!.element).zIndex;
+
+            const zIndex = Math.max(Number(rowZIndex) || 0, Number(cellZIndex) || 0) + 1;
+            ref.current!.style.zIndex = `${zIndex}`;
+        }
+        else {
+            ref.current!.style.zIndex = '0';
+        }
+    }, [editor, layout]);
 
     useEffect(() => {
         layout.registerNode('editorContainer', ref.current!);

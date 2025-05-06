@@ -31,7 +31,8 @@ export class CellEditablePlugin<TRow extends RowData> extends DataGridDomPlugin<
             offset: {
                 left: pinnedHorizontally ? this.baseLeft + this.scrollArea!.scrollLeft : this.baseLeft + this.baseScrollLeft,
                 top: pinnedVertically ? this.baseTop + this.scrollArea!.scrollTop : this.baseTop + this.baseScrollTop,
-            }
+            },
+            pinned: this.activeCellNode?.pinned ?? this.activeRowNode?.pinned,
         });
     };
 

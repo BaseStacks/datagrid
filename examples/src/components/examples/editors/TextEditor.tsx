@@ -27,6 +27,7 @@ function TextEditorImpl({ setValue, defaultValue, ...props }: TextEditorProps) {
     return (
         <input
             {...props}
+            key={props.id}
             ref={ref}
             defaultValue={defaultValue}
             autoFocus={true}

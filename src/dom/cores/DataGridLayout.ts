@@ -6,7 +6,7 @@ import type { DataGridDomPlugin } from '../atomic/DataGridDomPlugin';
 export interface DataGridLayoutNodeBase {
     readonly element: HTMLElement;
     readonly pinned?: {
-        readonly side?: 'top' | 'bottom' | 'left' | 'right';
+        readonly side?: 'top' | 'bottom' | 'left' | 'right' | 'all';
         readonly first?: boolean;
         readonly last?: boolean;
     }
