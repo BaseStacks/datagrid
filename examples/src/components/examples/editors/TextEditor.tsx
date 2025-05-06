@@ -1,5 +1,5 @@
 import { CellEditorProps, useDataGridContext } from '@basestacks/data-grid';
-import React, { useEffect } from 'react';
+import React, { } from 'react';
 import { useRef } from 'react';
 
 type TextEditorProps = React.HTMLProps<HTMLInputElement> & CellEditorProps;
@@ -38,7 +38,7 @@ function TextEditorImpl({ setValue, defaultValue, ...props }: TextEditorProps) {
 }
 
 const clxs = {
-    input: 'w-full border-none bg-transparent p-0 text-gray-500 focus:outline-none focus:ring-0 dark:text-gray-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none',
+    input: 'border-none bg-transparent p-0 text-gray-500 focus:outline-none focus:ring-0 dark:text-gray-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none',
 };
 
 export const TextEditor = React.memo(TextEditorImpl);

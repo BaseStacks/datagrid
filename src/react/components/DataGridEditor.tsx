@@ -1,7 +1,7 @@
 import { memo, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import { useDataGridContext } from '../hooks/useDataGridContext';
 import React from 'react';
-import type { DataGridCellNode } from '../../dom';
+import { setAttributes, type DataGridCellNode } from '../../dom';
 
 interface DataGridEditorProps<TElement extends HTMLElement> extends React.HTMLAttributes<TElement> {
     readonly as?: string
@@ -24,8 +24,8 @@ function DataGridEditorImpl<TElement extends HTMLElement = HTMLElement>({ as, st
 
     useLayoutEffect(() => {
         const unwatchContainerEditor = layout.layoutNodesState.watchItem('editorContainer', ({ item }) => {
-            ref.current!.style.width = `${item.size.width}px`;
-            ref.current!.style.height = `${item.size.height}px`;
+            ref.current!.style.minWidth = `${item.size.width}px`;
+            ref.current!.style.minHeight = `${item.size.height}px`;
             ref.current!.style.left = item.offset.left === undefined ? '' : `${item.offset.left}px`;
             ref.current!.style.top = item.offset.top === undefined ? '' : `${item.offset.top}px`;
         });
@@ -45,8 +45,10 @@ function DataGridEditorImpl<TElement extends HTMLElement = HTMLElement>({ as, st
                 setEditor(null);
                 return;
             }
+
             const editor = modifier.renderEditor();
             setEditor(editor);
+
         });
 
         return () => {
@@ -64,9 +66,17 @@ function DataGridEditorImpl<TElement extends HTMLElement = HTMLElement>({ as, st
 
             const zIndex = Math.max(Number(rowZIndex) || 0, Number(cellZIndex) || 0) + 1;
             ref.current!.style.zIndex = `${zIndex}`;
+
+            setAttributes(ref.current!, {
+                'data-editing': true,
+            });
         }
         else {
             ref.current!.style.zIndex = '0';
+
+            setAttributes(ref.current!, {
+                'data-editing': false,
+            });
         }
     }, [editor, layout]);
 

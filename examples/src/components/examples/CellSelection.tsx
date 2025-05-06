@@ -122,5 +122,5 @@ const clxs = {
         dark:data-pinned-right-first:border-l-gray-600
     `,
     selectedRangeRect: 'absolute pointer-events-none outline-2 outline-offset-[-2px] outline-blue-600 bg-blue-600/5',
-    editor: 'bg-black p-2 flex items-center overflow-hidden'
+    editor: 'bg-black p-2 flex items-center overflow-hidden data-editing:outline-2 data-editing:outline-offset-[-1px] data-editing:outline-blue-600 data-editing:bg-gray-800 dark:data-editing:bg-gray-800 dark:data-editing:outline-blue-600 dark:data-editing:outline-offset-[-1px]',
 };
