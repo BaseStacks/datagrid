@@ -1,8 +1,9 @@
-import { Column, DataGridProvider, useDataGrid, useDataGridState, DataGridContainer, DataGridCell, CellSelectionPlugin, DataGridHeader, DataGridHeaderGroup, DataGridRow, DataGridScrollArea, StayInViewPlugin, RowPinningPlugin, RowKey, DataGridRowContainer, ColumnPinningPlugin, usePlugin, LayoutPlugin, CellEditablePlugin, DataGridEditor } from '@basestacks/data-grid';
+import { Column, DataGridProvider, useDataGrid, useDataGridState, DataGridContainer, DataGridCell, CellSelectionPlugin, DataGridHeader, DataGridHeaderGroup, DataGridRow, DataGridScrollArea, StayInViewPlugin, RowPinningPlugin, RowKey, DataGridRowContainer, ColumnPinningPlugin, usePlugin, LayoutPlugin, CellEditablePlugin, DataGridEditor, DataGridEditorContainer } from '@basestacks/data-grid';
 import { useMemo, useState } from 'react';
 import { generateData } from '@/helpers/dataHelpers';
 import { cn } from '@/utils/cn';
 import { TextEditor } from './editors/TextEditor';
+import { TextAreaEditor } from './editors/TextareaEditor';
 
 export function CellSelection() {
     const columns = useMemo((): Column[] => [
@@ -10,7 +11,7 @@ export function CellSelection() {
         { key: 'firstName', header: 'First Name', editor: (props) => <TextEditor {...props} /> },
         { key: 'lastName', header: 'Last Name', editor: (props) => <TextEditor {...props} /> },
         { key: 'age', header: 'Age', editor: (props) => <TextEditor {...props} type="number" min={1} /> },
-        { key: 'address', header: 'Address', editor: (props) => <TextEditor {...props} /> },
+        { key: 'address', header: 'Address', editor: (props) => <TextAreaEditor {...props} /> },
         { key: 'email', header: 'Email', editor: (props) => <TextEditor {...props} type="email" /> },
         { key: 'phone', header: 'Phone', editor: (props) => <TextEditor {...props} /> },
         { key: 'actions', header: 'Actions' },
@@ -82,7 +83,7 @@ export function CellSelection() {
                             </DataGridRow>
                         ))}
                     </DataGridRowContainer>
-                    <DataGridEditor className={cn(clxs.editor)} />
+                    <DataGridEditorContainer />
                 </DataGridScrollArea>
             </DataGridContainer>
         </DataGridProvider>
@@ -122,5 +123,5 @@ const clxs = {
         dark:data-pinned-right-first:border-l-gray-600
     `,
     selectedRangeRect: 'absolute pointer-events-none outline-2 outline-offset-[-2px] outline-blue-600 bg-blue-600/5',
-    editor: 'bg-black p-2 flex items-center overflow-hidden data-editing:outline-2 data-editing:outline-offset-[-1px] data-editing:outline-blue-600 data-editing:bg-gray-800 dark:data-editing:bg-gray-800 dark:data-editing:outline-blue-600 dark:data-editing:outline-offset-[-1px]',
+    editor: '',
 };
