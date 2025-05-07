@@ -65,13 +65,6 @@ export interface CellProps<TValue = any> {
   readonly rowId: RowId;
   readonly headerId: HeaderId;
   readonly value?: TValue;
-  readonly active: boolean;
-  readonly focused: boolean;
-  readonly disabled: boolean;
-  readonly blur: () => void;
-  readonly setValue: (value: TValue) => void;
-  readonly onFocus: (callback: () => void) => Unsubscribe;
-  readonly onBlur: (callback: () => void) => Unsubscribe;
 }
 
 export interface CellEditorProps<TValue = any> {
@@ -84,7 +77,7 @@ export interface CellRender {
   readonly id: CellId;
   readonly rowId: RowId;
   readonly headerId: HeaderId;
-  readonly render: () => any;
+  readonly coordinates: CellCoordinates;
 }
 
 export interface ColumnHeader {
@@ -94,12 +87,17 @@ export interface ColumnHeader {
   readonly render: () => any;
 }
 
+export type CustomEditor<TValue> = {
+  readonly float: true;
+  readonly render: ((opts: CellEditorProps<TValue>) => any);
+}
+
 export interface Column<TValue = any> {
   readonly key: string;
   readonly header?: string | (() => any);
-  readonly cell?: string | ((opts: CellProps<TValue>) => any)
+  readonly cell?: ((opts: CellProps<TValue>) => any)
   readonly footer?: string | (() => any);
-  readonly editor?: ((opts: CellEditorProps<TValue>) => any);
+  readonly editor?: ((opts: CellEditorProps<TValue>) => any) | CustomEditor<TValue>;
   readonly disabled?: boolean | ((opts: { value: RowData; rowIndex: number }) => boolean);
   readonly prePasteValues?: (values: string[]) => TValue[];
   readonly pasteValue?: (opts: { value: TValue; rowData: RowData; rowIndex: number }) => TValue | Promise<TValue>;

@@ -17,3 +17,4 @@ export * from './components/DataGridHeaderGroup';
 export * from './components/DataGridRowContainer';
 export * from './components/DataGridEditor';
 export * from './components/DataGridEditorContainer';
+export * from './components/DataGridCellContent';

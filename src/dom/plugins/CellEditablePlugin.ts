@@ -26,7 +26,7 @@ export class CellEditablePlugin<TRow extends RowData> extends DataGridDomPlugin<
 
         const pinnedHorizontally = this.activeCellNode?.pinned?.side === 'left' || this.activeCellNode?.pinned?.side === 'right';
         const pinnedVertically = this.activeRowNode?.pinned?.side === 'top' || this.activeRowNode?.pinned?.side === 'bottom';
-        
+
         this.dataGrid.layout.updateNode('editorContainer', {
             offset: {
                 left: pinnedHorizontally ? this.baseLeft + this.scrollArea!.scrollLeft : this.baseLeft + this.baseScrollLeft,
@@ -43,7 +43,20 @@ export class CellEditablePlugin<TRow extends RowData> extends DataGridDomPlugin<
             return;
         }
 
+        editing.set(true);
+
         const cellNode = this.dataGrid.layout.getNode(activeCell.value.id) as DataGridCellNode;
+        const column = this.dataGrid.state.headers.value.find((header) => header.id === cellNode.headerId)?.column;
+        if (!column) {
+            return;
+        }
+
+        const editor = column.editor;
+        const isInlineEditor = typeof editor === 'function';
+        if (!isInlineEditor) {
+            return;
+        } 
+
         const editorContainerNode = this.dataGrid.layout.getNode('editorContainer');
         if (!cellNode || !editorContainerNode) {
             return;
@@ -69,7 +82,6 @@ export class CellEditablePlugin<TRow extends RowData> extends DataGridDomPlugin<
             },
         });
 
-        editing.set(true);
 
         const rowNode = this.dataGrid.layout.getNode(cellNode.rowId);
 

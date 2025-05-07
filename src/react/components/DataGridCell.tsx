@@ -1,4 +1,4 @@
-import { memo, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
+import { memo, useEffect, useLayoutEffect, useRef } from 'react';
 import { type CellRender } from '../../host';
 import { useDataGridContext } from '../hooks/useDataGridContext';
 import React from 'react';
@@ -9,18 +9,15 @@ interface DataGridCellProps<TElement extends HTMLElement> extends React.HTMLAttr
     readonly cell: CellRender;
 }
 
-function DataGridCellImpl<TElement extends HTMLElement = HTMLElement>({ as, cell, children, ...props }: DataGridCellProps<TElement>) {
+function DataGridCellImpl<TElement extends HTMLElement = HTMLElement>({ as, cell, ...props }: DataGridCellProps<TElement>) {
     const { layout, state } = useDataGridContext();
+    const [cellEditing, setCellEditing] = React.useState(false);
+    const cellEditingRef = useRef(cellEditing);
+    cellEditingRef.current = cellEditing;
+
     const ref = useRef<TElement>(null);
 
     const Component = as || 'div' as React.ElementType;
-
-    const style: React.CSSProperties = useMemo(() => ({
-        ...props.style,
-        position: 'absolute',
-        top: '0',
-        height: '100%',
-    }), [props.style]);
 
     useLayoutEffect(() => {
         const unwatchCell = layout.layoutNodesState.watchItem(cell.id, ({ operation, item }) => {
@@ -85,19 +82,44 @@ function DataGridCellImpl<TElement extends HTMLElement = HTMLElement>({ as, cell
             unwatchActiveCell();
             unwatchSelectedRanges();
         };
-    }, [cell.id, layout.layoutNodesState, state.activeCell, state.selectedRanges]);
+    }, [cell.id, cellEditing, layout.layoutNodesState, state.activeCell, state.editing, state.selectedRanges]);
+
+    useEffect(() => {
+        const unwatchEditing = state.editing.watch((editing) => {
+            if (!editing && !cellEditingRef.current) {
+                return;
+            }
+
+            if (!editing && cellEditingRef.current) {
+                setCellEditing(false);
+                return;
+            }
+
+            if (state.activeCell.value?.id !== cell.id) {
+                return;
+            }
+
+            setCellEditing(editing);
+        });
+
+        return () => {
+            unwatchEditing();
+        };
+    }, [cell.id, state.activeCell, state.editing]);
 
     useEffect(() => {
         layout.registerNode(cell.id, ref.current!);
+        ref.current!.style.position = 'absolute';
+        ref.current!.style.top = '0';
+        ref.current!.style.height = '100%';
+
         return () => {
             layout.removeNode(cell.id);
         };
     }, [layout, cell.id]);
 
     return (
-        <Component {...props} ref={ref} style={style}>
-            {children ?? cell.render()}
-        </Component>
+        <Component {...props} ref={ref} />
     );
 };
 

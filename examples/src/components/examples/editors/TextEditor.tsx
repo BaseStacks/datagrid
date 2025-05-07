@@ -1,4 +1,4 @@
-import { CellEditorProps, DataGridEditor, useDataGridContext } from '@basestacks/data-grid';
+import { CellEditorProps, useDataGridContext } from '@basestacks/data-grid';
 import React, { } from 'react';
 import { useRef } from 'react';
 
@@ -25,22 +25,19 @@ function TextEditorImpl({ setValue, defaultValue, ...props }: TextEditorProps) {
     };
 
     return (
-        <DataGridEditor className={clxs.container}>
-            <input
-                {...props}
-                key={props.id}
-                ref={inputRef}
-                defaultValue={defaultValue}
-                autoFocus={true}
-                className={clxs.input}
-                onKeyDown={handleKeyDown}
-            />
-        </DataGridEditor>
+        <input
+            {...props}
+            key={props.id}
+            ref={inputRef}
+            defaultValue={defaultValue}
+            autoFocus={true}
+            className={clxs.input}
+            onKeyDown={handleKeyDown}
+        />
     );
 }
 
 const clxs = {
-    container: 'bg-black p-2 flex items-center overflow-hidden outline-2 outline-offset-[-1px] outline-blue-600 bg-gray-800 dark:bg-gray-800 dark:outline-blue-600 dark:outline-offset-[-1px]',
     input: 'w-full h-full border-none bg-transparent p-0 text-gray-500 focus:outline-none focus:ring-0 dark:text-gray-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none',
 };
 
