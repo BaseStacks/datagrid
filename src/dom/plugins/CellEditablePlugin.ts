@@ -1,4 +1,4 @@
-import { type DataGridPluginOptions } from '../../host';
+import { DataGridState, type DataGridPluginOptions } from '../../host';
 import type { RowData } from '../../host';
 import { DataGridDomPlugin } from '../atomic/DataGridDomPlugin';
 import type { DataGridCellNode, DataGridLayoutNode } from '../cores/DataGridLayout';
@@ -7,16 +7,16 @@ export interface CellEditablePluginOptions extends DataGridPluginOptions {
     readonly scrollBehavior?: ScrollBehavior;
 }
 
+export interface FloatingEditor {
+    readonly activeCellNode: DataGridLayoutNode | null;
+    readonly activeRowNode: DataGridLayoutNode | null;
+    readonly baseScrollLeft: number;
+    readonly baseScrollTop: number;
+    readonly baseLeft: number;
+    readonly baseTop: number;
+}
+
 export class CellEditablePlugin<TRow extends RowData> extends DataGridDomPlugin<TRow, CellEditablePluginOptions> {
-
-    private activeCellNode: DataGridLayoutNode | null = null;
-    private activeRowNode: DataGridLayoutNode | null = null;
-
-    private baseScrollLeft: number = 0;
-    private baseScrollTop: number = 0;
-    private baseLeft: number = 0;
-    private baseTop: number = 0;
-
     private updateEditorPosition = () => {
         const { activeCell, editing } = this.dataGrid.state;
 
@@ -24,44 +24,28 @@ export class CellEditablePlugin<TRow extends RowData> extends DataGridDomPlugin<
             return;
         }
 
-        const pinnedHorizontally = this.activeCellNode?.pinned?.side === 'left' || this.activeCellNode?.pinned?.side === 'right';
-        const pinnedVertically = this.activeRowNode?.pinned?.side === 'top' || this.activeRowNode?.pinned?.side === 'bottom';
+        const {
+            activeCellNode,
+            activeRowNode,
+            baseLeft,
+            baseTop,
+            baseScrollLeft,
+            baseScrollTop
+        } = this.state.floatingEditor.value!;
+
+        const pinnedHorizontally = activeCellNode?.pinned?.side === 'left' || activeCellNode?.pinned?.side === 'right';
+        const pinnedVertically = activeRowNode?.pinned?.side === 'top' || activeRowNode?.pinned?.side === 'bottom';
 
         this.dataGrid.layout.updateNode('editorContainer', {
             offset: {
-                left: pinnedHorizontally ? this.baseLeft + this.scrollArea!.scrollLeft : this.baseLeft + this.baseScrollLeft,
-                top: pinnedVertically ? this.baseTop + this.scrollArea!.scrollTop : this.baseTop + this.baseScrollTop,
+                left: pinnedHorizontally ? baseLeft + this.scrollArea!.scrollLeft : baseLeft + baseScrollLeft,
+                top: pinnedVertically ? baseTop + this.scrollArea!.scrollTop : baseTop + baseScrollTop,
             },
-            pinned: this.activeCellNode?.pinned ?? this.activeRowNode?.pinned,
+            pinned: activeCellNode?.pinned ?? activeRowNode?.pinned,
         });
     };
 
-    private startEditing = () => {
-        const { activeCell, editing } = this.dataGrid.state;
-
-        if (!activeCell.value) {
-            return;
-        }
-
-        editing.set(true);
-
-        const cellNode = this.dataGrid.layout.getNode(activeCell.value.id) as DataGridCellNode;
-        const column = this.dataGrid.state.headers.value.find((header) => header.id === cellNode.headerId)?.column;
-        if (!column) {
-            return;
-        }
-
-        const editor = column.editor;
-        const isInlineEditor = typeof editor === 'function';
-        if (!isInlineEditor) {
-            return;
-        } 
-
-        const editorContainerNode = this.dataGrid.layout.getNode('editorContainer');
-        if (!cellNode || !editorContainerNode) {
-            return;
-        }
-
+    private setupFloatingEditor = (cellNode: DataGridCellNode) => {
         const nodeRect = cellNode.element.getBoundingClientRect();
         const containerRect = this.scrollArea!.getBoundingClientRect();
         const cellRect = {
@@ -82,21 +66,54 @@ export class CellEditablePlugin<TRow extends RowData> extends DataGridDomPlugin<
             },
         });
 
-
         const rowNode = this.dataGrid.layout.getNode(cellNode.rowId);
 
-        this.activeCellNode = cellNode;
-        this.activeRowNode = rowNode;
+        this.state.floatingEditor.set({
+            activeCellNode: cellNode,
+            activeRowNode: rowNode,
+            baseScrollLeft: this.scrollArea!.scrollLeft,
+            baseScrollTop: this.scrollArea!.scrollTop,
+            baseLeft: cellRect.left,
+            baseTop: cellRect.top,
+        });
+    };
 
-        this.baseLeft = cellRect.left;
-        this.baseTop = cellRect.top;
-        this.baseScrollLeft = this.scrollArea!.scrollLeft;
-        this.baseScrollTop = this.scrollArea!.scrollTop;
+    private startEditing = () => {
+        const { activeCell, editing } = this.dataGrid.state;
+
+        if (!activeCell.value) {
+            return;
+        }
+
+        const cellNode = this.dataGrid.layout.getNode(activeCell.value.id) as DataGridCellNode;
+        const column = this.dataGrid.state.headers.value.find((header) => header.id === cellNode.headerId)?.column;
+        if (!cellNode || !column) {
+            return;
+        }
+
+        const isInlineEditor = typeof column.editor === 'function';
+
+        editing.set(isInlineEditor ? 'inline' : 'floating');
+
+        if (editing.value === 'inline') {
+            return;
+        }
+
+        const editorContainerNode = this.dataGrid.layout.getNode('editorContainer');
+        if (!editorContainerNode) {
+            return;
+        }
+
+        this.setupFloatingEditor(cellNode);
     };
 
     private handleDblClick = (event: MouseEvent) => {
         this.startEditing();
         event.stopPropagation();
+    };
+
+    public state = {
+        floatingEditor: new DataGridState<FloatingEditor | null>(null),
     };
 
     private handleScroll = () => {
@@ -106,9 +123,7 @@ export class CellEditablePlugin<TRow extends RowData> extends DataGridDomPlugin<
     public handleActivate = () => {
         const unwatchEditing = this.dataGrid.state.editing.watch((editing) => {
             if (!editing) {
-                this.activeCellNode = null;
-                this.baseLeft = 0;
-                this.baseTop = 0;
+                this.state.floatingEditor.set(null);
             }
         });
 

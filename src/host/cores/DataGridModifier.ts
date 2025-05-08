@@ -1,4 +1,4 @@
-import type { CellId, RowData, RowOperation } from '../types';
+import type { RowData, RowOperation } from '../types';
 import type { DataGridPlugin } from '../atomic/DataGridPlugin';
 import { calculateRangeBoundary } from '../utils/selectionUtils';
 import { DataGridStates } from './DataGridStates';
@@ -269,34 +269,5 @@ export class DataGridModifier<TRow extends RowData = RowData> {
                 },
             ]
         );
-    };
-
-    public renderEditor = () => {
-        const { activeCell } = this.state;
-        const { columns } = this.state.options;
-
-        if (!activeCell.value) {
-            return;
-        }
-
-        const { rowIndex, columnIndex } = activeCell.value;
-        const column = columns[columnIndex];
-
-        if (!column || !column.editor) {
-            return;
-        }
-
-        const cellValue = this.state.options.data[rowIndex][column.key as keyof TRow];
-
-        return column.editor({
-            id: activeCell.value.id as CellId,
-            defaultValue: cellValue,
-            setValue: (newValue) => {
-                this.updateData(rowIndex, {
-                    ...this.state.options.data[rowIndex],
-                    [column.key]: newValue,
-                });
-            },
-        });
     };
 };

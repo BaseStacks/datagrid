@@ -15,6 +15,8 @@ export const usePlugin = <
     const plugin = useRef<TPlugin>(null);
 
     useEffect(() => {
+        console.log('Adding plugin', Plugin.name);
+        
         plugin.current = dataGrid.addPlugin(Plugin, options);
 
         return () => {

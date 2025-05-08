@@ -1,10 +1,12 @@
 import type { CellCoordinates, ColumnHeader, CellSelectedRangeWithCells, Row, RowData, WithId, CellId, DataGridOptions } from '../types';
 import { DataGridState } from '../atomic/DataGridState';
 
+export type DataGridEditingValue = false | 'inline' | 'floating';
+
 export class DataGridStates<TRow extends RowData> {
     constructor(public options: DataGridOptions<TRow>) {
     }
-    public editing = new DataGridState(false);
+    public editing = new DataGridState<DataGridEditingValue>(false);
     public activeCell = new DataGridState<WithId<CellId, CellCoordinates> | null>(null);
     public lastEditingCell = new DataGridState<WithId<CellId, CellCoordinates> | null>(null);
     public selectedRanges = new DataGridState<CellSelectedRangeWithCells[]>([]);

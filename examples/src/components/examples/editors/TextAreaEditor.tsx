@@ -1,6 +1,7 @@
-import { CellEditorProps, DataGridEditor, useDataGridContext } from '@basestacks/data-grid';
+import { CellEditorProps, useDataGridContext } from '@basestacks/data-grid';
 import React, { } from 'react';
 import { useRef } from 'react';
+import { FloatingEditorContainer } from './FloatingEditorContainer';
 
 type TextAreaEditorProps = React.HTMLProps<HTMLTextAreaElement> & CellEditorProps;
 
@@ -25,12 +26,7 @@ function TextAreaEditorImpl({ setValue, defaultValue, ...props }: TextAreaEditor
     };
 
     return (
-        <DataGridEditor
-            className={clxs.container}
-            overlay={true}
-            minWidth={100}
-            maxWidth={200}
-        >
+        <FloatingEditorContainer className={clxs.container} minWidth={100} maxWidth={200}>
             <textarea
                 {...props}
                 key={props.id}
@@ -40,7 +36,7 @@ function TextAreaEditorImpl({ setValue, defaultValue, ...props }: TextAreaEditor
                 className={clxs.input}
                 onKeyDown={handleKeyDown}
             />
-        </DataGridEditor>
+        </FloatingEditorContainer>
     );
 }
 

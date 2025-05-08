@@ -3,7 +3,6 @@ export * from './hooks/useDataGridContext';
 export * from './hooks/usePlugin';
 
 export * from './hooks/atomic/useDataGridState';
-export * from './hooks/editors/useInlineEditor';
 export * from './hooks/debug/useWhatChanged';
 
 // Components
@@ -15,6 +14,5 @@ export * from './components/DataGridRow';
 export * from './components/DataGridHeader';
 export * from './components/DataGridHeaderGroup';
 export * from './components/DataGridRowContainer';
-export * from './components/DataGridEditor';
-export * from './components/DataGridEditorContainer';
+export * from './components/DataGridFloatingEditor';
 export * from './components/DataGridCellContent';

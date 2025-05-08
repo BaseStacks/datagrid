@@ -141,14 +141,6 @@ export class DataGridSelection<TRow extends RowData> {
         selectedRanges.set([]);
     };
 
-    public focus = () => {
-        const { activeCell, editing } = this.state;
-        if (!activeCell.value) {
-            return;
-        }
-        editing.set(true);
-    };
-
     public blur = () => {
         const { editing } = this.state;
         editing.set(false);
