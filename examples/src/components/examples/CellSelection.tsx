@@ -1,10 +1,10 @@
-import { Column, DataGridProvider, useDataGrid, useDataGridState, DataGridContainer, DataGridCell, CellSelectionPlugin, DataGridHeader, DataGridHeaderGroup, DataGridRow, DataGridScrollArea, StayInViewPlugin, RowPinningPlugin, RowKey, DataGridRowContainer, ColumnPinningPlugin, usePlugin, LayoutPlugin, CellEditablePlugin, DataGridCellContent, DataGridEditorContainer } from '@basestacks/data-grid';
+import { Column, DataGridProvider, useDataGrid, useDataGridState, DataGridContainer, DataGridCell, CellSelectionPlugin, DataGridHeader, DataGridHeaderGroup, DataGridRow, DataGridScrollArea, StayInViewPlugin, RowPinningPlugin, RowKey, DataGridRowContainer, ColumnPinningPlugin, usePlugin, LayoutPlugin, CellEditablePlugin, DataGridCellContent, DataGridFloatingEditor } from '@basestacks/data-grid';
 import { useMemo, useState } from 'react';
 import { generateData } from '@/helpers/dataHelpers';
 import { cn } from '@/utils/cn';
 import { TextEditor } from './editors/TextEditor';
-import { TextAreaEditor } from './editors/TextareaEditor';
 import { CheckboxEditor } from './editors/CheckboxEditor';
+import { TextAreaEditor } from './editors/TextAreaEditor';
 
 export function CellSelection() {
     const columns = useMemo((): Column[] => [
@@ -86,7 +86,7 @@ export function CellSelection() {
                             </DataGridRow>
                         ))}
                     </DataGridRowContainer>
-                    <DataGridEditorContainer />
+                    <DataGridFloatingEditor className="!z-99"/>
                 </DataGridScrollArea>
             </DataGridContainer>
         </DataGridProvider>

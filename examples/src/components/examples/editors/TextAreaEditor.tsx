@@ -1,7 +1,7 @@
 import { CellEditorProps, useDataGridContext } from '@basestacks/data-grid';
 import React, { } from 'react';
 import { useRef } from 'react';
-import { FloatingEditorContainer } from './FloatingEditorContainer';
+import { ResizableEditorContainer } from './ResizableEditorContainer';
 
 type TextAreaEditorProps = React.HTMLProps<HTMLTextAreaElement> & CellEditorProps;
 
@@ -26,7 +26,13 @@ function TextAreaEditorImpl({ setValue, defaultValue, ...props }: TextAreaEditor
     };
 
     return (
-        <FloatingEditorContainer className={clxs.container} minWidth={100} maxWidth={200}>
+        <ResizableEditorContainer
+            className={clxs.container}
+            minWidth={200}
+            maxWidth={500}
+            minHeight={42}
+            maxHeight={200}
+        >
             <textarea
                 {...props}
                 key={props.id}
@@ -36,7 +42,7 @@ function TextAreaEditorImpl({ setValue, defaultValue, ...props }: TextAreaEditor
                 className={clxs.input}
                 onKeyDown={handleKeyDown}
             />
-        </FloatingEditorContainer>
+        </ResizableEditorContainer>
     );
 }
 

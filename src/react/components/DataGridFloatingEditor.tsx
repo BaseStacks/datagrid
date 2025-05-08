@@ -52,12 +52,18 @@ function DataGridFloatingEditorImpl<TElement extends HTMLElement = HTMLElement>(
             return;
         }
 
-        const activeRow = layout.getNode(activeCellRef.current!.rowId);
-        const rowZIndex = getComputedStyle(activeRow!.element).zIndex;
-        const cellZIndex = getComputedStyle(activeCellRef.current!.element).zIndex;
+        const containerZIndex = getComputedStyle(ref.current!).zIndex;
+        const hasZIndex = Number.isNaN(+containerZIndex) === false && containerZIndex !== 'auto';
 
-        const zIndex = Math.max(Number(rowZIndex) || 0, Number(cellZIndex) || 0) + 1;
-        ref.current!.style.zIndex = `${zIndex}`;
+        if (!hasZIndex) {
+            const activeRow = layout.getNode(activeCellRef.current!.rowId);
+            const rowZIndex = getComputedStyle(activeRow!.element).zIndex;
+            const cellZIndex = getComputedStyle(activeCellRef.current!.element).zIndex;
+
+            const zIndex = Math.max(Number(rowZIndex) || 0, Number(cellZIndex) || 0) + 1;
+            ref.current!.style.zIndex = `${zIndex}`;
+
+        }
 
         setAttributes(ref.current!, {
             'data-editing': true,
