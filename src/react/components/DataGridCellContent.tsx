@@ -20,6 +20,10 @@ function DataGridCellContentImpl<TElement extends HTMLElement = HTMLElement>({ a
 
     useEffect(() => {
         const unwatchEditing = state.editing.watch((editing) => {
+            if (editing === 'floating') {
+                return;
+            }
+
             if (!editing && !cellEditingRef.current) {
                 return;
             }
@@ -28,7 +32,6 @@ function DataGridCellContentImpl<TElement extends HTMLElement = HTMLElement>({ a
                 setCellEditing(false);
                 return;
             }
-
             if (state.activeCell.value?.id !== cell.id) {
                 return;
             }

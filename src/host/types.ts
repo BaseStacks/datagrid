@@ -65,11 +65,12 @@ export interface CellProps<TValue = any> {
   readonly rowId: RowId;
   readonly headerId: HeaderId;
   readonly value?: TValue;
+  readonly setValue: (value: TValue) => void;
 }
 
 export interface CellEditorProps<TValue = any> {
   readonly id: CellId;
-  readonly defaultValue: TValue;
+  readonly defaultValue?: TValue;
   readonly setValue: (value: TValue) => void;
 }
 

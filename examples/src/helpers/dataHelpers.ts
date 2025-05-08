@@ -15,16 +15,16 @@ interface GenerateDataOptions {
 
 export const generateData = (options: GenerateDataOptions) => {
     const { fields, count } = options;
-    
+
     return Array.from({ length: count }, () => {
         const item: Record<string, any> = {};
-        
+
         fields.forEach((field) => {
             // Skip non-required fields sometimes
             if (!field.required && Math.random() > 0.8) {
                 return;
             }
-            
+
             // Generate value based on field type
             switch (field.type.toLowerCase()) {
                 case 'string':
@@ -78,12 +78,15 @@ export const generateData = (options: GenerateDataOptions) => {
                 case 'avatar':
                     item[field.name] = faker.image.avatar();
                     break;
-                    
+                case 'gender': 
+                    item[field.name] = faker.helpers.arrayElement(['male', 'female', 'other']);
+                    break;
                 default:
-                    item[field.name] = faker.lorem.word();
+                    break;
+
             }
         });
-        
+
         return item;
     });
 };

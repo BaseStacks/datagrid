@@ -5,17 +5,30 @@ import { cn } from '@/utils/cn';
 import { TextEditor } from './editors/TextEditor';
 import { CheckboxEditor } from './editors/CheckboxEditor';
 import { TextAreaEditor } from './editors/TextAreaEditor';
+import { SelectEditor } from './editors/SelectEditor';
+
+const genderOptions = [{
+    value: 'male',
+    label: 'Male',
+}, {
+    value: 'female',
+    label: 'Female',
+}, {
+    value: 'other',
+    label: 'Other',
+}];
 
 export function CellSelection() {
     const columns = useMemo((): Column[] => [
         { key: 'id', header: 'ID' },
         { key: 'firstName', header: 'First Name', editor: (props) => <TextEditor {...props} /> },
         { key: 'lastName', header: 'Last Name', editor: (props) => <TextEditor {...props} /> },
+        { key: 'gender', header: 'Gender', editor: (props) => <SelectEditor {...props} options={genderOptions} /> },
         { key: 'age', header: 'Age', editor: (props) => <TextEditor {...props} type="number" min={1} /> },
         { key: 'address', header: 'Address', editor: { float: true, render: (props) => <TextAreaEditor {...props} /> } },
         { key: 'email', header: 'Email', editor: (props) => <TextEditor {...props} type="email" /> },
         { key: 'phone', header: 'Phone', editor: (props) => <TextEditor {...props} /> },
-        { key: 'verified', header: 'Verified', cell: null, editor: (props) => <CheckboxEditor {...props} /> },
+        { key: 'verified', header: 'Verified', cell: (props) => <CheckboxEditor {...props} /> },
         { key: 'actions', header: 'Actions' },
     ], []);
 
@@ -25,6 +38,7 @@ export function CellSelection() {
                 { name: 'id', type: 'uuid', required: true },
                 { name: 'firstName', type: 'firstName', required: true },
                 { name: 'lastName', type: 'lastName', required: true },
+                { name: 'gender', type: 'gender', required: false },
                 { name: 'age', type: 'number', min: 18, max: 99, required: false },
                 { name: 'address', type: 'address', required: false },
                 { name: 'email', type: 'email', required: false },
@@ -80,7 +94,7 @@ export function CellSelection() {
                             <DataGridRow key={row.id} row={row} className={cn(clxs.row, clxs.rowPinned)}>
                                 {row.cells.map((cell) => (
                                     <DataGridCell key={cell.id} cell={cell} className={cn(clxs.cell, clxs.cellActive, clxs.cellSelected, clxs.cellPinned, clxs.cellEditing)}>
-                                        <DataGridCellContent cell={cell} className="overflow-hidden line-clamp-1 break-words" />
+                                        <DataGridCellContent cell={cell} className="overflow-hidden line-clamp-1 break-words w-full first-letter:uppercase" />
                                     </DataGridCell>
                                 ))}
                             </DataGridRow>
@@ -129,6 +143,7 @@ const clxs = {
         data-[editing="inline"]:outline-2
         data-[editing="inline"]:outline-offset-[-2px]
         data-[editing="floating"]:outline-none
+        data-[editing="floating"]:border-transparent
     `,
     selectedRangeRect: 'absolute pointer-events-none outline-2 outline-offset-[-2px] outline-blue-600 bg-blue-600/5',
     editor: '',

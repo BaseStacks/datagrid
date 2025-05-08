@@ -87,7 +87,7 @@ export class CellEditablePlugin<TRow extends RowData> extends DataGridDomPlugin<
 
         const cellNode = this.dataGrid.layout.getNode(activeCell.value.id) as DataGridCellNode;
         const column = this.dataGrid.state.headers.value.find((header) => header.id === cellNode.headerId)?.column;
-        if (!cellNode || !column) {
+        if (!cellNode || !column || !column.editor) {
             return;
         }
 

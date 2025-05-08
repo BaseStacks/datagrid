@@ -6,37 +6,6 @@ export class DataGridRenderer<TRow extends RowData> {
     constructor(private state: DataGridStates<TRow>, private modifier: DataGridModifier<TRow>) {
     }
 
-    public renderCell = ({ rowId, id, headerId }: CellRender) => {
-        const row = this.state.rows.value.find((row) => row.id === rowId);
-        const cell = row!.cells.find((cell) => cell.id === id);
-        const header = this.state.headers.value.find((header) => header.id === headerId);
-
-        if (!cell || !header) {
-            return null;
-        }
-
-        const renderValue = header.column.cell;
-        const renderEditor = header.column.editor;
-
-        const cellValue = row?.data[header.column.key as keyof TRow];
-
-        const isFocused = this.state.editing.value && this.state.activeCell.value?.id === id;
-        if (isFocused && typeof renderEditor === 'function') {
-            return this.renderEditor();
-        }
-
-        if (!renderValue) {
-            return cellValue;
-        }
-
-        return renderValue({
-            id: cell.id,
-            rowId: cell.rowId,
-            headerId: cell.headerId,
-            value: cellValue
-        });
-    };
-
     public renderCellValue = ({ rowId, id }: CellRender) => {
         const row = this.state.rows.value.find((row) => row.id === rowId);
         const cell = row!.cells.find((cell) => cell.id === id);
@@ -47,6 +16,22 @@ export class DataGridRenderer<TRow extends RowData> {
 
         const header = this.state.headers.value.find((header) => header.id === cell.headerId);
         const cellValue = row?.data[header!.column.key as keyof TRow];
+
+        const column = header!.column;
+        if (typeof column.cell === 'function') {
+            return column.cell({
+                id: cell.id,
+                rowId: cell.rowId,
+                headerId: cell.headerId,
+                value: cellValue,
+                setValue: (newValue) => {
+                    this.modifier.updateData(cell.coordinates.rowIndex, {
+                        ...this.state.options.data[cell.coordinates.rowIndex],
+                        [header!.column.key]: newValue,
+                    });
+                },
+            });
+        }
 
         return cellValue;
     };
