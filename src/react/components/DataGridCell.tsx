@@ -11,9 +11,6 @@ interface DataGridCellProps<TElement extends HTMLElement> extends React.HTMLAttr
 
 function DataGridCellImpl<TElement extends HTMLElement = HTMLElement>({ as, cell, ...props }: DataGridCellProps<TElement>) {
     const { layout, state } = useDataGridContext();
-    const [cellEditing, setCellEditing] = React.useState(false);
-    const cellEditingRef = useRef(cellEditing);
-    cellEditingRef.current = cellEditing;
 
     const ref = useRef<TElement>(null);
 
@@ -77,35 +74,30 @@ function DataGridCellImpl<TElement extends HTMLElement = HTMLElement>({ as, cell
             });
         });
 
+        const unwatchEditing = state.editing.watch((editing) => {
+            if (!ref.current) {
+                return;
+            }
+
+            if (editing && state.activeCell.value?.id === cell.id) {
+                setAttributes(ref.current, {
+                    'data-editing': editing,
+                });
+            }
+            else {
+                setAttributes(ref.current, {
+                    'data-editing': null,
+                });
+            }
+        });
+
         return () => {
             unwatchCell();
             unwatchActiveCell();
             unwatchSelectedRanges();
-        };
-    }, [cell.id, cellEditing, layout.layoutNodesState, state.activeCell, state.editing, state.selectedRanges]);
-
-    useEffect(() => {
-        const unwatchEditing = state.editing.watch((editing) => {
-            if (!editing && !cellEditingRef.current) {
-                return;
-            }
-
-            if (!editing && cellEditingRef.current) {
-                setCellEditing(false);
-                return;
-            }
-
-            if (state.activeCell.value?.id !== cell.id) {
-                return;
-            }
-
-            setCellEditing(editing);
-        });
-
-        return () => {
             unwatchEditing();
         };
-    }, [cell.id, state.activeCell, state.editing]);
+    }, [cell.id, layout.layoutNodesState, state.activeCell, state.editing, state.selectedRanges]);
 
     useEffect(() => {
         layout.registerNode(cell.id, ref.current!);

@@ -37,6 +37,20 @@ export class DataGridRenderer<TRow extends RowData> {
         });
     };
 
+    public renderCellValue = ({ rowId, id }: CellRender) => {
+        const row = this.state.rows.value.find((row) => row.id === rowId);
+        const cell = row!.cells.find((cell) => cell.id === id);
+
+        if (!cell) {
+            return null;
+        }
+
+        const header = this.state.headers.value.find((header) => header.id === cell.headerId);
+        const cellValue = row?.data[header!.column.key as keyof TRow];
+
+        return cellValue;
+    };
+
     public renderEditor = () => {
         const { activeCell } = this.state;
         const { columns } = this.state.options;

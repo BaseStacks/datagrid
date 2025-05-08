@@ -79,14 +79,14 @@ export function CellSelection() {
                         {rows.map((row) => (
                             <DataGridRow key={row.id} row={row} className={cn(clxs.row, clxs.rowPinned)}>
                                 {row.cells.map((cell) => (
-                                    <DataGridCell key={cell.id} cell={cell} className={cn(clxs.cell, clxs.cellActive, clxs.cellSelected, clxs.cellPinned)}>
+                                    <DataGridCell key={cell.id} cell={cell} className={cn(clxs.cell, clxs.cellActive, clxs.cellSelected, clxs.cellPinned, clxs.cellEditing)}>
                                         <DataGridCellContent cell={cell} className="overflow-hidden line-clamp-1 break-words" />
                                     </DataGridCell>
                                 ))}
                             </DataGridRow>
                         ))}
                     </DataGridRowContainer>
-                    <DataGridFloatingEditor className="!z-99"/>
+                    <DataGridFloatingEditor className="!z-99" />
                 </DataGridScrollArea>
             </DataGridContainer>
         </DataGridProvider>
@@ -124,6 +124,11 @@ const clxs = {
         data-pinned-right-first:border-l-gray-600
         dark:data-pinned-left-last:border-r-gray-600
         dark:data-pinned-right-first:border-l-gray-600
+    `,
+    cellEditing: `
+        data-[editing="inline"]:outline-2
+        data-[editing="inline"]:outline-offset-[-2px]
+        data-[editing="floating"]:outline-none
     `,
     selectedRangeRect: 'absolute pointer-events-none outline-2 outline-offset-[-2px] outline-blue-600 bg-blue-600/5',
     editor: '',

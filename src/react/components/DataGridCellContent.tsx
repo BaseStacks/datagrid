@@ -8,7 +8,7 @@ interface DataGridCellContentProps<TElement extends HTMLElement> extends React.H
     readonly cell: CellRender;
 }
 
-function DataGridCellContentImpl<TElement extends HTMLElement = HTMLElement>({ as, cell, children, ...props }: DataGridCellContentProps<TElement>) {
+function DataGridCellContentImpl<TElement extends HTMLElement = HTMLElement>({ as, cell, ...props }: DataGridCellContentProps<TElement>) {
     const { state, renderer } = useDataGridContext();
     const [cellEditing, setCellEditing] = React.useState(false);
     const cellEditingRef = useRef(cellEditing);
@@ -33,7 +33,7 @@ function DataGridCellContentImpl<TElement extends HTMLElement = HTMLElement>({ a
                 return;
             }
 
-            setCellEditing(editing);
+            setCellEditing(true);
         });
 
         return () => {
@@ -43,7 +43,11 @@ function DataGridCellContentImpl<TElement extends HTMLElement = HTMLElement>({ a
 
     return (
         <Component {...props} ref={ref}>
-            {children ?? renderer.renderCell(cell)}
+            {
+                cellEditing
+                    ? renderer.renderEditor()
+                    : renderer.renderCellValue(cell)
+            }
         </Component>
     );
 };
