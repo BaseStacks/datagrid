@@ -8,6 +8,8 @@ export type DataGridEventTypes = {
   }
 };
 
+export type MaybePromise<T> = T | Promise<T>;
+
 export type CellSelectionDraggingStatus = 'start' | 'dragging' | false;
 
 export type DataGridEventType = keyof DataGridEventTypes;
@@ -205,6 +207,10 @@ export type DataGridAction =
   | 'selectAll'
   | 'exit'
   | 'focus'
+
+  | 'copy'
+  | 'cut'
+  | 'paste'
   ;
 
 export type DataGridKeyMap<TAction extends DataGridAction> = Partial<Record<TAction, string | string[]>>;

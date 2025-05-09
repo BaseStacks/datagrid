@@ -9,6 +9,7 @@ export * from './plugins/RowPinningPlugin';
 export * from './plugins/ColumnPinningPlugin';
 export * from './plugins/LayoutPlugin';
 export * from './plugins/CellEditablePlugin';
+export * from './plugins/CopyPastePlugin';
 
 export * from './utils/elementUtils';
 export * from './utils/scrollUtils';

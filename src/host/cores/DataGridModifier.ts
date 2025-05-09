@@ -134,6 +134,28 @@ export class DataGridModifier<TRow extends RowData = RowData> {
         );
     };
 
+    public deleteRows = (fromRow: number, toRow: number = fromRow) => {
+        const { onChange, data, lockRows } = this.state.options;
+
+        if (lockRows) {
+            return;
+        }
+
+        onChange?.(
+            [
+                ...data.slice(0, fromRow),
+                ...data.slice(toRow + 1),
+            ],
+            [
+                {
+                    type: 'DELETE',
+                    fromRowIndex: fromRow,
+                    toRowIndex: toRow + 1,
+                },
+            ]
+        );
+    };
+
     public applyPasteData = async (pasteData: string[][]) => {
         const { selectedRanges, editing } = this.state;
         const { createRow, onChange, columns, data, lockRows } = this.state.options;
@@ -171,11 +193,14 @@ export class DataGridModifier<TRow extends RowData = RowData> {
 
                 for (let rowIndex = min.rowIndex; rowIndex <= max.rowIndex; rowIndex++) {
                     if (!this.isCellDisabled(rowIndex, columnIndex + min.columnIndex)) {
-                        newData[rowIndex] = await pasteValue({
-                            rowData: newData[rowIndex],
-                            value: pasteData[0][columnIndex],
-                            rowIndex,
-                        });
+                        newData[rowIndex] =
+                            pasteValue
+                                ? await pasteValue({
+                                    rowData: newData[rowIndex],
+                                    value: pasteData[0][columnIndex],
+                                    rowIndex,
+                                })
+                                : pasteData[0][columnIndex];
                     }
                 }
             }
@@ -247,27 +272,5 @@ export class DataGridModifier<TRow extends RowData = RowData> {
         }
 
         onChange?.(newData, operations);
-    };
-
-    public deleteRows = (fromRow: number, toRow: number = fromRow) => {
-        const { onChange, data, lockRows } = this.state.options;
-
-        if (lockRows) {
-            return;
-        }
-
-        onChange?.(
-            [
-                ...data.slice(0, fromRow),
-                ...data.slice(toRow + 1),
-            ],
-            [
-                {
-                    type: 'DELETE',
-                    fromRowIndex: fromRow,
-                    toRowIndex: toRow + 1,
-                },
-            ]
-        );
     };
 };

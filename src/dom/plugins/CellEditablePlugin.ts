@@ -107,6 +107,11 @@ export class CellEditablePlugin<TRow extends RowData> extends DataGridDomPlugin<
         this.setupFloatingEditor(cellNode);
     };
 
+    private stopEditing = () => {
+        const {  editing } = this.dataGrid.state;
+        editing.set(false);
+    };
+
     private handleDblClick = (event: MouseEvent) => {
         this.startEditing();
         event.stopPropagation();
@@ -133,10 +138,25 @@ export class CellEditablePlugin<TRow extends RowData> extends DataGridDomPlugin<
 
         this.scrollArea?.addEventListener('scroll', this.handleScroll);
 
+        this.dataGrid.keyBindings.add(this,
+            {
+                focus: ['Enter', 'F2'],
+                exit: 'Escape',
+            },
+            {
+                focus: this.startEditing,
+                exit: this.stopEditing
+            }
+        );
+
         this.unsubscribes.push(unwatchEditing);
         this.unsubscribes.push(unwatchNodes);
         this.unsubscribes.push(() => {
             this.scrollArea?.removeEventListener('scroll', this.handleScroll);
+        });
+
+        this.unsubscribes.push(() => {
+            this.dataGrid.keyBindings.remove(this);
         });
     };
 }

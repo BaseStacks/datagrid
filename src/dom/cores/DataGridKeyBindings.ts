@@ -1,8 +1,8 @@
 import { tinykeys } from 'tinykeys';
-import type { DataGridAction, DataGridKeyMap, RowData, DataGridStates, DataGridEvents } from '../../host';
+import type { DataGridAction, DataGridKeyMap, RowData, DataGridStates, DataGridEvents, MaybePromise } from '../../host';
 import type { DataGridDomPlugin } from '../atomic/DataGridDomPlugin';
 
-export type KeyBindingHandler = (event: KeyboardEvent) => void | boolean;
+export type KeyBindingHandler = (event: KeyboardEvent) => MaybePromise<void | boolean>;
 
 export class DataGridKeyBindings<TRow extends RowData> {
     // @ts-expect-error - Unused state
@@ -19,7 +19,7 @@ export class DataGridKeyBindings<TRow extends RowData> {
     public add = <TKeyMap extends DataGridAction>(source: DataGridDomPlugin<TRow>, keyMap: DataGridKeyMap<TKeyMap>, handlers: Record<TKeyMap, KeyBindingHandler>) => {
         const keyBindingMap: Record<string, KeyBindingHandler> = {};
 
-        const addKeybinding = (action: TKeyMap, handler: (event: KeyboardEvent) => void | boolean) => {
+        const addKeybinding = (action: TKeyMap, handler: (event: KeyboardEvent) => MaybePromise<void | boolean>) => {
             const shortcutKeys = keyMap[action];
             if (!shortcutKeys) return;
 
@@ -36,7 +36,6 @@ export class DataGridKeyBindings<TRow extends RowData> {
                 });
             });
         };
-
 
         Object.entries(handlers).forEach(([action, handler]) => {
             addKeybinding(action as TKeyMap, handler as KeyBindingHandler);
