@@ -1,27 +1,17 @@
-import type { RowData, RowOperation } from '../types';
+import type { CellSelectedRangeWithCells, RowData, RowOperation } from '../types';
 import type { DataGridPlugin } from '../atomic/DataGridPlugin';
 import { calculateRangeBoundary } from '../utils/selectionUtils';
 import { DataGridStates } from './DataGridStates';
+import type { DataGridHelper } from './DataGridHelper';
+import { extractCellId } from '../utils/idUtils';
 
 export class DataGridModifier<TRow extends RowData = RowData> {
-    constructor(private state: DataGridStates<TRow>) {
+    constructor(private state: DataGridStates<TRow>, private helper: DataGridHelper<TRow>) {
     }
 
     public plugins: Map<string, DataGridPlugin<TRow>> = new Map();
 
-
-    public isCellDisabled = (rowIndex: number, columnIndex: number) => {
-        const { columns } = this.state.options;
-
-        const column = columns[columnIndex];
-        if (column) {
-            const disabled = column.disabled;
-            return typeof disabled === 'function' ? disabled({ value: {}, rowIndex }) : disabled;
-        }
-        return false;
-    };
-
-    public updateData = (rowIndex: number, item: TRow) => {
+    private updateData = (rowIndex: number, item: TRow) => {
         const { onChange, data } = this.state.options;
         onChange?.(
             [
@@ -65,7 +55,7 @@ export class DataGridModifier<TRow extends RowData = RowData> {
                         continue;
                     }
 
-                    const cellDisabled = this.isCellDisabled(row, col);
+                    const cellDisabled = this.helper.isCellDisabled(row, col);
                     if (cellDisabled) {
                         continue;
                     }
@@ -192,7 +182,7 @@ export class DataGridModifier<TRow extends RowData = RowData> {
                 }
 
                 for (let rowIndex = min.rowIndex; rowIndex <= max.rowIndex; rowIndex++) {
-                    if (!this.isCellDisabled(rowIndex, columnIndex + min.columnIndex)) {
+                    if (!this.helper.isCellDisabled(rowIndex, columnIndex + min.columnIndex)) {
                         newData[rowIndex] =
                             pasteValue
                                 ? await pasteValue({
@@ -238,7 +228,7 @@ export class DataGridModifier<TRow extends RowData = RowData> {
 
             if (pasteValue) {
                 for (let rowIndex = 0; rowIndex < pasteData.length; rowIndex++) {
-                    const isCellDisabled = this.isCellDisabled(min.rowIndex + rowIndex, columnIndex);
+                    const isCellDisabled = this.helper.isCellDisabled(min.rowIndex + rowIndex, columnIndex);
                     if (isCellDisabled) {
                         continue;
                     }
@@ -272,5 +262,25 @@ export class DataGridModifier<TRow extends RowData = RowData> {
         }
 
         onChange?.(newData, operations);
+    };
+
+    public emptyRange = (range: CellSelectedRangeWithCells) => {
+        const { onChange, data } = this.state.options;
+        const newData = [];
+
+        for (const [cellId] of range.cells) {
+            const { rowIndex, columnIndex } = extractCellId(cellId);
+            const column = this.state.options.columns[columnIndex];
+            if (!column.key) {
+                continue;
+            }
+
+            const cellDisabled = this.helper.isCellDisabled(rowIndex, columnIndex);
+            if (cellDisabled) {
+                continue;
+            }
+            const modifiedRowData = { ...data[rowIndex] };
+        }
+
     };
 };

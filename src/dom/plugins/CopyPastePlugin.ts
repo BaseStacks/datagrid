@@ -8,38 +8,28 @@ export interface CopyPastePluginOptions extends DataGridPluginOptions {
 }
 
 export class CopyPastePlugin<TRow extends RowData> extends DataGridDomPlugin<TRow, CopyPastePluginOptions> {
-    private handleCopy = async () => {
+    private getRange = () => {
         const { selectedRanges } = this.dataGrid.state;
         if (!selectedRanges.value.length) {
-            return;
+            return null;
         }
 
         if (selectedRanges.value.length !== 1) {
-            console.warn('Only one range is supported for copy operation.');
-            return;
+            throw new Error('Only one range is supported for copy operation.');
         }
 
         const range = selectedRanges.value[0];
-        const rowDataMap = new Map<number, string[]>();
 
-        for (const [cellId] of range.cells) {
-            const { rowIndex, columnIndex } = extractCellId(cellId);
+        return range;
+    };
 
-            const rowData = rowDataMap.get(rowIndex) ?? [];
-            const column = this.dataGrid.state.headers.value[columnIndex]?.column;
-            const cellData = this.dataGrid.options.data[rowIndex][column.key];
-            rowData[columnIndex] = cellData ?? null;
-
-            rowDataMap.set(rowIndex, rowData);
+    private handleCopy = async () => {
+        const range = this.getRange();
+        if (!range) {
+            return;
         }
-
-        const clipboardData: string[][] = [];
-        for (const rowData of rowDataMap.values()) {
-            clipboardData.push(rowData.filter((cellData) => cellData !== undefined));
-        }
-
+        const clipboardData = this.dataGrid.helper.getRangeData(range);
         const { textHtml, textPlain } = formatCopyData(clipboardData);
-
         await writeToClipboard(textPlain, textHtml);
     };
 
@@ -48,8 +38,15 @@ export class CopyPastePlugin<TRow extends RowData> extends DataGridDomPlugin<TRo
         this.dataGrid.modifier.applyPasteData(clipboardData);
     };
 
-    private handleCut = () => {
-        const { activeCell } = this.dataGrid.state;
+    private handleCut = async () => {
+        const range = this.getRange();
+        if (!range) {
+            return;
+        }
+        const clipboardData = this.dataGrid.helper.getRangeData(range);
+        const { textHtml, textPlain } = formatCopyData(clipboardData);
+        await writeToClipboard(textPlain, textHtml);
+        this.dataGrid.modifier.emptyRange(range);
     };
 
     public handleActivate = () => {

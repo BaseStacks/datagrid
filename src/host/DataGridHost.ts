@@ -8,6 +8,7 @@ import { DataGridModifier } from './cores/DataGridModifier';
 import { DataGridSelection } from './cores/DataGridSelection';
 import { DataGridStates } from './cores/DataGridStates';
 import { DataGridRenderer } from './cores/DataGridRenderer';
+import { DataGridHelper } from './cores/DataGridHelper';
 
 export abstract class DataGridHost<TRow extends RowData = RowData> {
     public plugins: Map<string, DataGridPlugin<TRow, DataGridHost<TRow>>> = new Map();
@@ -69,6 +70,7 @@ export abstract class DataGridHost<TRow extends RowData = RowData> {
         this.events = new DataGridEvents<TRow>(this.state);
         this.selection = new DataGridSelection(this.state);
         this.renderer = new DataGridRenderer<TRow>(this.state, this.modifier);
+        this.helper = new DataGridHelper<TRow>(this.state);
 
         this.initialize();
     }
@@ -79,6 +81,7 @@ export abstract class DataGridHost<TRow extends RowData = RowData> {
     public selection: DataGridSelection<TRow>;
     public events: DataGridEvents<TRow>;
     public renderer: DataGridRenderer<TRow>;
+    public helper: DataGridHelper<TRow>;
 
     public updateOptions = (newOptions: DataGridOptions<TRow>) => {
         const { columns, data } = newOptions;
