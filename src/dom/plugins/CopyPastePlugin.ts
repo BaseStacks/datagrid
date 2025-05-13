@@ -51,8 +51,7 @@ export class CopyPastePlugin<TRow extends RowData> extends DataGridDomPlugin<TRo
         const clipboardData = this.dataGrid.helper.getRangeData(range);
         const { textHtml, textPlain } = formatCopyData(clipboardData);
         await writeToClipboard(textPlain, textHtml);
-        this.dataGrid.modifier.emptyRange(range);
-        debugger;
+        await this.dataGrid.modifier.emptyRange(range);
     };
 
     public handleActivate = () => {

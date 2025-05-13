@@ -103,7 +103,7 @@ export interface Column<TValue = any> {
   readonly editor?: ((opts: CellEditorProps<TValue>) => any) | CustomEditor<TValue>;
   readonly disabled?: boolean | ((opts: { value: RowData; rowIndex: number }) => boolean);
   readonly prePasteValues?: (values: string[]) => TValue[];
-  readonly pasteValue?: (opts: { value: TValue; rowData: RowData; rowIndex: number }) => TValue | Promise<TValue>;
+  readonly pasteValue?: (value: TValue) => TValue | Promise<TValue>;
   readonly isCellEmpty?: (opts: { value: RowData; rowIndex: number }) => boolean;
   readonly deleteValue?: (opts: { value: RowData; rowIndex: number }) => TValue | Promise<TValue>;
 }
