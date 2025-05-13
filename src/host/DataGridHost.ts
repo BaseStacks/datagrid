@@ -66,11 +66,12 @@ export abstract class DataGridHost<TRow extends RowData = RowData> {
         this.options = { ...(defaultOptions as any), ...options, };
 
         this.state = new DataGridStates<TRow>(this.options);
-        this.modifier = new DataGridModifier(this.state);
+        this.helper = new DataGridHelper<TRow>(this.state);
+
+        this.modifier = new DataGridModifier(this.state, this.helper);
         this.events = new DataGridEvents<TRow>(this.state);
         this.selection = new DataGridSelection(this.state);
         this.renderer = new DataGridRenderer<TRow>(this.state, this.modifier);
-        this.helper = new DataGridHelper<TRow>(this.state);
 
         this.initialize();
     }

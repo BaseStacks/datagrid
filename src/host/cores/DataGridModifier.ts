@@ -3,15 +3,13 @@ import type { DataGridPlugin } from '../atomic/DataGridPlugin';
 import { calculateRangeBoundary } from '../utils/selectionUtils';
 import { DataGridStates } from './DataGridStates';
 import type { DataGridHelper } from './DataGridHelper';
-import { extractCellId } from '../utils/idUtils';
 
 export class DataGridModifier<TRow extends RowData = RowData> {
     constructor(private state: DataGridStates<TRow>, private helper: DataGridHelper<TRow>) {
     }
 
     public plugins: Map<string, DataGridPlugin<TRow>> = new Map();
-
-    private updateData = (rowIndex: number, item: TRow) => {
+    public updateData = (rowIndex: number, item: TRow) => {
         const { onChange, data } = this.state.options;
         onChange?.(
             [
@@ -146,34 +144,31 @@ export class DataGridModifier<TRow extends RowData = RowData> {
         );
     };
 
-    public applyPasteData = async (pasteData: string[][]) => {
-        const { selectedRanges, editing } = this.state;
-        const { createRow, onChange, columns, data, lockRows } = this.state.options;
-
-        const selectedRange = selectedRanges.value[0];
-        if (!selectedRange || editing.value) {
+    public setRangeData = async (range: CellSelectedRangeWithCells, rangeData: string[][]) => {
+        if (!rangeData.length) {
             return;
         }
 
-        const { min, max } = calculateRangeBoundary(selectedRange);
+        const { createRow, onChange, columns, data, lockRows } = this.state.options;
+        const { min, max } = calculateRangeBoundary(range);
 
         const results = await Promise.all(
-            pasteData[0].map((_, columnIndex) => {
+            rangeData[0].map((_, columnIndex) => {
                 const column = columns[min.columnIndex + columnIndex];
-                const values = pasteData.map((row) => row[columnIndex]);
+                const values = rangeData.map((row) => row[columnIndex]);
                 return column.prePasteValues?.(values) ?? values;
             })
         );
 
-        pasteData = pasteData.map((_, rowIndex) =>
+        rangeData = rangeData.map((_, rowIndex) =>
             results.map((column) => column[rowIndex])
         );
 
         // Paste single row
-        if (pasteData.length === 1) {
+        if (rangeData.length === 1) {
             const newData = [...data];
 
-            for (let columnIndex = 0; columnIndex < pasteData[0].length; columnIndex++) {
+            for (let columnIndex = 0; columnIndex < rangeData[0].length; columnIndex++) {
                 const column = columns[min.columnIndex + columnIndex];
                 const pasteValue = column?.pasteValue;
 
@@ -187,10 +182,10 @@ export class DataGridModifier<TRow extends RowData = RowData> {
                             pasteValue
                                 ? await pasteValue({
                                     rowData: newData[rowIndex],
-                                    value: pasteData[0][columnIndex],
+                                    value: rangeData[0][columnIndex],
                                     rowIndex,
                                 })
-                                : pasteData[0][columnIndex];
+                                : rangeData[0][columnIndex];
                     }
                 }
             }
@@ -208,26 +203,26 @@ export class DataGridModifier<TRow extends RowData = RowData> {
 
         // Paste multiple rows
         let newData = [...data];
-        const missingRows = min.rowIndex + pasteData.length - data.length;
+        const missingRows = min.rowIndex + rangeData.length - data.length;
 
         if (missingRows > 0) {
             if (!lockRows) {
                 const newRowData = new Array(missingRows).fill(0).map(() => createRow ? createRow() : {} as TRow);
                 newData = [...newData, ...newRowData];
             } else {
-                pasteData.splice(pasteData.length - missingRows, missingRows);
+                rangeData.splice(rangeData.length - missingRows, missingRows);
             }
         }
 
         for (
             let columnIndex = min.columnIndex;
-            (columnIndex < pasteData[0].length) && (columnIndex < columns.length - 1);
+            (columnIndex < rangeData[0].length) && (columnIndex < columns.length - 1);
             columnIndex++
         ) {
             const pasteValue = columns[columnIndex]?.pasteValue;
 
             if (pasteValue) {
-                for (let rowIndex = 0; rowIndex < pasteData.length; rowIndex++) {
+                for (let rowIndex = 0; rowIndex < rangeData.length; rowIndex++) {
                     const isCellDisabled = this.helper.isCellDisabled(min.rowIndex + rowIndex, columnIndex);
                     if (isCellDisabled) {
                         continue;
@@ -235,7 +230,7 @@ export class DataGridModifier<TRow extends RowData = RowData> {
 
                     newData[min.rowIndex + rowIndex] = await pasteValue({
                         rowData: newData[min.rowIndex + rowIndex],
-                        value: pasteData[rowIndex][columnIndex],
+                        value: rangeData[rowIndex][columnIndex],
                         rowIndex: min.rowIndex + rowIndex,
                     });
                 }
@@ -248,7 +243,7 @@ export class DataGridModifier<TRow extends RowData = RowData> {
                 fromRowIndex: min.rowIndex,
                 toRowIndex:
                     min.rowIndex +
-                    pasteData.length -
+                    rangeData.length -
                     (!lockRows && missingRows > 0 ? missingRows : 0),
             },
         ];
@@ -256,8 +251,8 @@ export class DataGridModifier<TRow extends RowData = RowData> {
         if (missingRows > 0 && !lockRows) {
             operations.push({
                 type: 'CREATE',
-                fromRowIndex: min.rowIndex + pasteData.length - missingRows,
-                toRowIndex: min.rowIndex + pasteData.length,
+                fromRowIndex: min.rowIndex + rangeData.length - missingRows,
+                toRowIndex: min.rowIndex + rangeData.length,
             });
         }
 
@@ -265,22 +260,16 @@ export class DataGridModifier<TRow extends RowData = RowData> {
     };
 
     public emptyRange = (range: CellSelectedRangeWithCells) => {
-        const { onChange, data } = this.state.options;
-        const newData = [];
-
-        for (const [cellId] of range.cells) {
-            const { rowIndex, columnIndex } = extractCellId(cellId);
-            const column = this.state.options.columns[columnIndex];
-            if (!column.key) {
-                continue;
-            }
-
-            const cellDisabled = this.helper.isCellDisabled(rowIndex, columnIndex);
-            if (cellDisabled) {
-                continue;
-            }
-            const modifiedRowData = { ...data[rowIndex] };
+        const { onChange } = this.state.options;
+        if (!onChange) {
+            return;
         }
 
+        const { min, max } = calculateRangeBoundary(range);
+        const totalRows = max.rowIndex - min.rowIndex + 1;
+        const totalColumns = max.columnIndex - min.columnIndex + 1;
+
+        const rangeData = new Array(totalRows).fill(0).map(() => new Array(totalColumns).fill(null));
+        this.setRangeData(range, rangeData);
     };
 };

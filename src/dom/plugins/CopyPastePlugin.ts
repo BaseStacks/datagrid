@@ -1,4 +1,4 @@
-import { extractCellId, type DataGridPluginOptions } from '../../host';
+import { type DataGridPluginOptions } from '../../host';
 import type { RowData } from '../../host';
 import { DataGridDomPlugin } from '../atomic/DataGridDomPlugin';
 import { formatCopyData, readClipboard, writeToClipboard } from '../utils/clipboardUtils';
@@ -35,7 +35,12 @@ export class CopyPastePlugin<TRow extends RowData> extends DataGridDomPlugin<TRo
 
     private handlePaste = async () => {
         const clipboardData = await readClipboard();
-        this.dataGrid.modifier.applyPasteData(clipboardData);
+        const range = this.getRange();
+        if (!range) {
+            return;
+        }
+
+        this.dataGrid.modifier.setRangeData(range, clipboardData);
     };
 
     private handleCut = async () => {
@@ -47,6 +52,7 @@ export class CopyPastePlugin<TRow extends RowData> extends DataGridDomPlugin<TRo
         const { textHtml, textPlain } = formatCopyData(clipboardData);
         await writeToClipboard(textPlain, textHtml);
         this.dataGrid.modifier.emptyRange(range);
+        debugger;
     };
 
     public handleActivate = () => {
