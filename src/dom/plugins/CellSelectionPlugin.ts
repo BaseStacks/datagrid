@@ -143,7 +143,7 @@ export class CellSelectionPlugin<TRow extends RowData> extends DataGridDomPlugin
             }
 
             dragging.set('dragging');
-        }, 150);
+        }, 100);
 
         event.preventDefault();
         clearAllTextSelection();

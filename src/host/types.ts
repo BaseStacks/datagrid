@@ -27,8 +27,9 @@ export type RowContainerId = `rowContainer:${string}`;
 export type RowId = `row:${RowDataKey}`;
 export type CellId = `cell:${RowDataKey}-${ColumnKey}`;
 export type EditorContainerId = 'editorContainer';
+export type FillHandlerId = 'fillHandler';
 
-export type Id = HeaderGroupId | HeaderId | RowContainerId | RowId | CellId | EditorContainerId;
+export type Id = HeaderGroupId | HeaderId | RowContainerId | RowId | CellId | EditorContainerId | FillHandlerId;
 
 export type WithId<TId, TData> = TData & { readonly id: TId };
 

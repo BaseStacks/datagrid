@@ -16,3 +16,5 @@ export * from './components/DataGridHeaderGroup';
 export * from './components/DataGridRowContainer';
 export * from './components/DataGridFloatingEditor';
 export * from './components/DataGridCellContent';
+export * from './components/DataGridFillHandle';
+export * from './components/DataGridFillRange';

@@ -1,4 +1,4 @@
-import { Column, DataGridProvider, useDataGrid, useDataGridState, DataGridContainer, DataGridCell, CellSelectionPlugin, DataGridHeader, DataGridHeaderGroup, DataGridRow, DataGridScrollArea, StayInViewPlugin, RowPinningPlugin, RowKey, DataGridRowContainer, ColumnPinningPlugin, usePlugin, LayoutPlugin, CellEditablePlugin, DataGridCellContent, DataGridFloatingEditor, CopyPastePlugin } from '@basestacks/data-grid';
+import { Column, DataGridProvider, useDataGrid, useDataGridState, DataGridContainer, DataGridCell, CellSelectionPlugin, DataGridHeader, DataGridHeaderGroup, DataGridRow, DataGridScrollArea, StayInViewPlugin, RowPinningPlugin, RowKey, DataGridRowContainer, ColumnPinningPlugin, usePlugin, LayoutPlugin, CellEditablePlugin, DataGridCellContent, DataGridFloatingEditor, CopyPastePlugin, CellFillPlugin, DataGridFillHandle, DataGridFillRange } from '@basestacks/data-grid';
 import { useMemo, useState } from 'react';
 import { generateData } from '@/helpers/dataHelpers';
 import { cn } from '@/utils/cn';
@@ -64,6 +64,7 @@ export function CellSelection() {
 
     usePlugin(dataGrid, LayoutPlugin);
     usePlugin(dataGrid, CellSelectionPlugin);
+    usePlugin(dataGrid, CellFillPlugin);
     usePlugin(dataGrid, StayInViewPlugin);
     usePlugin(dataGrid, CellEditablePlugin);
     usePlugin(dataGrid, ColumnPinningPlugin, {
@@ -75,7 +76,6 @@ export function CellSelection() {
         pinnedBottomRows
     });
     usePlugin(dataGrid, CopyPastePlugin);
-
 
     const headers = useDataGridState(dataGrid.state.headers);
     const rows = useDataGridState(dataGrid.state.rows);
@@ -101,6 +101,8 @@ export function CellSelection() {
                             </DataGridRow>
                         ))}
                     </DataGridRowContainer>
+                    <DataGridFillHandle className="size-2 bg-blue-500 z-99 cursor-cell" />
+                    <DataGridFillRange className="border border-dashed z-99 " />
                     <DataGridFloatingEditor className="!z-99" />
                 </DataGridScrollArea>
             </DataGridContainer>
@@ -115,8 +117,8 @@ const clxs = {
     row: 'overflow-hidden border-gray-200 dark:border-gray-600',
     rowPinned: `
         data-pinned:z-20
-        data-pinned-top-last:border-b-2
-        data-pinned-bottom-first:border-t-2
+        data-pinned-top-last:border-b
+        data-pinned-bottom-first:border-t
     `,
     cell: 'user-select-none bg-white flex items-center border border-transparent p-2 text-gray-500 outline-blue-600 dark:text-gray-400 dark:bg-gray-800',
     cellActive: `

@@ -1,10 +1,11 @@
-import type { CellId, Id, RowData, RowId, HeaderId, HeaderGroupId, RowContainerId, DeepPartial, EditorContainerId } from '../../host';
+import type { CellId, Id, RowData, RowId, HeaderId, HeaderGroupId, RowContainerId, DeepPartial, EditorContainerId, FillHandlerId } from '../../host';
 import { getIdType, DataGridMapState, DataGridState, DataGridStates } from '../../host';
 import { calculateScrollOffsets } from '..';
 import type { DataGridDomPlugin } from '../atomic/DataGridDomPlugin';
 
 export interface DataGridLayoutNodeBase {
     readonly element: HTMLElement;
+    readonly visible?: boolean;
     readonly pinned?: {
         readonly side?: 'top' | 'bottom' | 'left' | 'right' | 'all';
         readonly first?: boolean;
@@ -54,7 +55,12 @@ export interface DataGridEditorContainerNode extends DataGridLayoutNodeBase {
     readonly type: 'editorContainer';
 }
 
-export type DataGridLayoutNode = DataGridCellNode | DataGridHeaderGroupNode | DataGridHeaderNode | DataGridRowNode | DataGridRowContainerNode | DataGridEditorContainerNode;
+export interface DataGridFillHandleNode extends DataGridLayoutNodeBase {
+    readonly id: FillHandlerId;
+    readonly type: 'editorContainer';
+}
+
+export type DataGridLayoutNode = DataGridCellNode | DataGridHeaderGroupNode | DataGridHeaderNode | DataGridRowNode | DataGridRowContainerNode | DataGridEditorContainerNode | DataGridFillHandleNode;
 
 export class DataGridLayout<TRow extends RowData> {
     constructor(private state: DataGridStates<TRow>) { }
@@ -147,7 +153,7 @@ export class DataGridLayout<TRow extends RowData> {
         const type = getIdType(id);
 
         const nodeBase = {
-            attributes: {},
+            visible: true,
             element,
             size: {
                 height: element.clientHeight,
@@ -221,7 +227,7 @@ export class DataGridLayout<TRow extends RowData> {
             return;
         }
 
-        if(type === 'editorContainer') {
+        if (type === 'editorContainer') {
             const editorContainerId = id as EditorContainerId;
             this.layoutNodesState.addItem(editorContainerId, {
                 ...nodeBase,
@@ -231,7 +237,21 @@ export class DataGridLayout<TRow extends RowData> {
             return;
         }
 
-        throw new Error(`Invalid node type: ${type}`);
+        if (type === 'fillHandler') {
+            const fillHandlerId = id as FillHandlerId;
+            this.layoutNodesState.addItem(fillHandlerId, {
+                ...nodeBase,
+                id: fillHandlerId,
+                type,
+            });
+            return;
+        }
+
+        this.layoutNodesState.addItem(id, {
+            ...nodeBase,
+            id,
+            type,
+        });
     };
 
     /**
@@ -252,7 +272,7 @@ export class DataGridLayout<TRow extends RowData> {
         if (!node) {
             return null;
         }
-        
+
         return node;
     };
 
@@ -291,30 +311,31 @@ export class DataGridLayout<TRow extends RowData> {
         return calculateScrollOffsets(targetNode.element, scrollArea, viewport);
     };
 
-    public registerAttributes = (plugin: DataGridDomPlugin<TRow>, attributes: string[]) => {
-        this.pluginAttributesMap.set(plugin, attributes);
-    };
-
     public updateNode = (id: Id, partialNode: DeepPartial<DataGridLayoutNode>) => {
         const node = this.layoutNodesState.get(id);
         if (!node) {
             return;
         }
 
+        const offset = {
+            ...node.offset,
+            ...partialNode.offset
+        };
+
+        const size = {
+            ...node.size,
+            ...partialNode.size
+        };
+
         this.layoutNodesState.replaceItem(id, {
             ...node,
+            visible: partialNode.visible ?? node.visible,
             pinned: {
                 ...node.pinned,
                 ...partialNode.pinned
             },
-            offset: {
-                ...node.offset,
-                ...partialNode.offset
-            },
-            size: {
-                ...node.size,
-                ...partialNode.size
-            }
+            offset,
+            size
         });
     };
 }

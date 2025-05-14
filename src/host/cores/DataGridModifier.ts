@@ -149,7 +149,7 @@ export class DataGridModifier<TRow extends RowData = RowData> {
             return;
         }
 
-        const { createRow, onChange, columns, data, lockRows } = this.state.options;
+        const { onChange, columns, data, lockRows } = this.state.options;
         const { min, max } = calculateRangeBoundary(range);
 
         const results = await Promise.all(

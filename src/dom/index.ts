@@ -10,6 +10,7 @@ export * from './plugins/ColumnPinningPlugin';
 export * from './plugins/LayoutPlugin';
 export * from './plugins/CellEditablePlugin';
 export * from './plugins/CopyPastePlugin';
+export * from './plugins/CellFillPlugin';
 
 export * from './utils/elementUtils';
 export * from './utils/scrollUtils';
