@@ -59,7 +59,7 @@ export class DataGridSelection<TRow extends RowData> {
     public getCellsInRange(start: CellId, end: CellId): Map<CellId, SelectedCell> {
         const startCoord = getCoordinatesById(start);
         const endCoord = getCoordinatesById(end);
-        
+
         const cells = new Map<CellId, SelectedCell>();
         const startRow = Math.min(startCoord.rowIndex, endCoord.rowIndex);
         const endRow = Math.max(startCoord.rowIndex, endCoord.rowIndex);
@@ -183,39 +183,31 @@ export class DataGridSelection<TRow extends RowData> {
         this.navigate(topOfColumn);
     };
 
-    public selectRange = (start: CellId, end: CellId) => {
+    public selectRange = (startCell: CellId, endCell: CellId) => {
         const { selectedRanges } = this.state;
-        selectedRanges.set((prevSelectedRanges) => {
-            const newSelectedRange = {
-                start,
-                end,
-                cells: this.getCellsInRange(start, end),
-            };
-
-            const selectedRanges = [...prevSelectedRanges];
-            selectedRanges.push(newSelectedRange);
-            return selectedRanges;
-        });
+        const newSelectedRange = {
+            start: startCell,
+            end: endCell,
+            cells: this.getCellsInRange(startCell, endCell),
+        };
+        selectedRanges.set([newSelectedRange]);
     };
 
     public updateLastSelectedRange = (endCell: CellId) => {
         const { selectedRanges } = this.state;
-        
-        selectedRanges.set((prevSelectedRanges) => {
-            if (prevSelectedRanges.length === 0) {
-                return prevSelectedRanges;
-            }
-            const lastSelectedRange = prevSelectedRanges[prevSelectedRanges.length - 1];
-            const newSelectedRange = {
-                start: lastSelectedRange.start,
-                end: endCell,
-                cells: this.getCellsInRange(lastSelectedRange.start, endCell),
-            };
+        if (selectedRanges.value.length === 0) {
+            return;
+        }
 
-            const selectedRanges = [...prevSelectedRanges];
-            selectedRanges[selectedRanges.length - 1] = newSelectedRange;
-            return selectedRanges;
-        });
+        const lastSelectedRange = selectedRanges.value[selectedRanges.value.length - 1];
+
+        const newSelectedRange = {
+            start: lastSelectedRange.start,
+            end: endCell,
+            cells: this.getCellsInRange(lastSelectedRange.start, endCell),
+        };
+
+        selectedRanges.set([...selectedRanges.value.slice(0, -1), newSelectedRange]);
     };
 
     public expandLeft = () => {

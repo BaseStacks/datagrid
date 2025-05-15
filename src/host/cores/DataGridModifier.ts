@@ -1,8 +1,9 @@
-import type { CellSelectedRangeWithCells, RowData, RowOperation } from '../types';
+import type { CellSelectedRange, CellSelectedRangeWithCells, RowData, RowOperation } from '../types';
 import type { DataGridPlugin } from '../atomic/DataGridPlugin';
-import { calculateRangeBoundary } from '../utils/selectionUtils';
+import { calculateRangeBoundary, getQuadCorners } from '../utils/selectionUtils';
 import { DataGridStates } from './DataGridStates';
 import type { DataGridHelper } from './DataGridHelper';
+import { extractCellId } from '../utils/idUtils';
 
 export class DataGridModifier<TRow extends RowData = RowData> {
     constructor(private state: DataGridStates<TRow>, private helper: DataGridHelper<TRow>) {
@@ -144,7 +145,7 @@ export class DataGridModifier<TRow extends RowData = RowData> {
         );
     };
 
-    public setRangeData = async (range: CellSelectedRangeWithCells, rangeData: string[][]) => {
+    public setRangeData = async (range: CellSelectedRange, rangeData: string[][]) => {
         if (!rangeData.length) {
             return;
         }
@@ -272,6 +273,58 @@ export class DataGridModifier<TRow extends RowData = RowData> {
         ];
 
         onChange?.(newData, operations);
+    };
+
+    public cloneRangeData = async (source: CellSelectedRangeWithCells, target: CellSelectedRange) => {
+        const {
+            topLeft: selectedMinCell,
+            bottomRight: selectedMaxCell,
+        } = getQuadCorners(source.start, source.end);
+
+        const { rowIndex: selectedMinRowIndex, columnIndex: selectedMinColumnIndex } = extractCellId(selectedMinCell);
+        const { rowIndex: selectedMaxRowIndex, columnIndex: selectedMaxColumnIndex } = extractCellId(selectedMaxCell);
+
+        const totalRows = selectedMaxRowIndex - selectedMinRowIndex + 1;
+        const totalColumns = selectedMaxColumnIndex - selectedMinColumnIndex + 1;
+
+        const {
+            topLeft: fillMinCell,
+            bottomRight: fillMaxCell,
+        } = getQuadCorners(target.start, target.end);
+
+        const { rowIndex: fillMinRowIndex, columnIndex: fillMinColumnIndex } = extractCellId(fillMinCell);
+        const { rowIndex: fillMaxRowIndex, columnIndex: fillMaxColumnIndex } = extractCellId(fillMaxCell);
+
+        const fillTotalRows = fillMaxRowIndex - fillMinRowIndex + 1;
+        const fillTotalColumns = fillMaxColumnIndex - fillMinColumnIndex + 1;
+
+        const fillData: string[][] = [];
+        const selectedData = this.helper.getRangeData(source);
+
+        let copyingRow = 0;
+        let copyingColumn = 0;
+
+        for (let fillRow = 0; fillRow < fillTotalRows; ++fillRow) {
+            const fillRow: string[] = [];
+            const selectedRowData = selectedData[copyingRow];
+            for (let fillColumn = 0; fillColumn < fillTotalColumns; ++fillColumn) {
+                const cellValue = selectedRowData[copyingColumn];
+                fillRow.push(cellValue);
+                copyingColumn++;
+                if (copyingColumn === totalColumns) {
+                    copyingColumn = 0;
+                }
+            }
+
+            fillData.push(fillRow);
+
+            copyingRow++;
+            if (copyingRow === totalRows) {
+                copyingRow = 0;
+            }
+        }
+
+        await this.setRangeData({ start: fillMinCell, end: fillMaxCell, }, fillData);
     };
 
     public emptyRange = async (range: CellSelectedRangeWithCells) => {

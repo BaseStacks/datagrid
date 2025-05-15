@@ -1,4 +1,4 @@
-import { createCellId, extractCellId, type DataGridPluginOptions } from '../../host';
+import { createCellId, extractCellId, getMaxCellId, getMinCellId, getQuadCorners, type DataGridPluginOptions } from '../../host';
 import type { CellId, RowData } from '../../host';
 import { DataGridDomPlugin } from '../atomic/DataGridDomPlugin';
 import type { DataGridCellNode } from '../cores/DataGridLayout';
@@ -195,8 +195,8 @@ export class CellFillPlugin<TRow extends RowData> extends DataGridDomPlugin<TRow
         });
 
         this._fillRange = {
-            start: fillRangeStart,
-            end: fillRangeEnd,
+            start: fillRangeStart <= fillRangeEnd ? fillRangeStart : fillRangeEnd,
+            end: fillRangeStart >= fillRangeEnd ? fillRangeStart : fillRangeEnd,
         };
     };
 
@@ -209,9 +209,32 @@ export class CellFillPlugin<TRow extends RowData> extends DataGridDomPlugin<TRow
         this.dataGrid.layout.updateNode('fillRange', {
             visible: false
         });
-        this._fill = false;
+        this.dataGrid.layout.updateNode('fillHandle', {
+            visible: false
+        });
 
-        this.dataGrid.selection.selectRange(this._fillRange!.start, this._fillRange!.end);
+        const selectedRange = this.dataGrid.state.selectedRanges.value[0];
+
+        this.dataGrid.modifier.cloneRangeData(selectedRange, this._fillRange);
+
+        const {
+            topLeft: selectedTopLeft,
+            bottomRight: selectedBottomRight,
+        } = getQuadCorners(selectedRange.start, selectedRange.end);
+        const {
+            topLeft: fillTopLeft,
+            bottomRight: fillBottomRight,
+        } = getQuadCorners(this._fillRange.start, this._fillRange.end);
+
+        this.dataGrid.selection.selectRange(
+            getMinCellId(selectedTopLeft, fillTopLeft),
+            getMaxCellId(selectedBottomRight, fillBottomRight)
+        );
+
+        this._fill = false;
+        this._fillRange = null;
+        this._fillOffset = null;
+
         event.preventDefault();
     };
 
@@ -237,9 +260,9 @@ export class CellFillPlugin<TRow extends RowData> extends DataGridDomPlugin<TRow
 
             const range = ranges[0];
 
-            const startCell = range.start;
-            const endCell = range.end;
-            this.setHandleOffset(startCell > endCell ? startCell : endCell);
+            const cells = Array.from(range.cells.keys());
+            const cellId = cells[cells.length - 1];
+            this.setHandleOffset(cellId);
         });
 
         const unwatchCells = this.dataGrid.layout.layoutNodesState.watchItems(({ operation, item }) => {

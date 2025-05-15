@@ -1,4 +1,4 @@
-import type { CellCoordinates, CellSelectedRange, SelectionBoundary } from '../types';
+import type { CellCoordinates, CellId, CellSelectedRange, SelectionBoundary } from '../types';
 import { getCoordinatesById, createCellId } from './cellUtils';
 
 export const calculateRangeBoundary = ({ start, end }: CellSelectedRange): SelectionBoundary => {
@@ -265,3 +265,35 @@ export const tryRemoveDuplicates = <TRange extends CellSelectedRange>(ranges: TR
     return uniqueRanges;
 };
 
+/**
+ * Calculates the four corners of a rectangular selection area (quad) based on two cells.
+ * 
+ * Given any two cells in a grid, this function determines the corners of the smallest
+ * rectangle that contains both cells, regardless of their relative positions.
+ * 
+ * @param cellA - The ID of the first cell defining the selection area
+ * @param cellB - The ID of the second cell defining the selection area
+ * @returns An object containing the cell IDs of the four corners of the selection area:
+ *          topLeft, topRight, bottomLeft, and bottomRight
+ * 
+ * @example
+ * // Get the four corners of a selection from cell "A1" to "C3"
+ * const corners = getQuadCorners("A1", "C3");
+ * // Returns: { topLeft: "A1", topRight: "C1", bottomLeft: "A3", bottomRight: "C3" }
+ */
+export const getQuadCorners = (cellA: CellId, cellB: CellId) => {
+    const cellACoordinates = getCoordinatesById(cellA);
+    const cellBCoordinates = getCoordinatesById(cellB);
+
+    const minRow = Math.min(cellACoordinates.rowIndex, cellBCoordinates.rowIndex);
+    const maxRow = Math.max(cellACoordinates.rowIndex, cellBCoordinates.rowIndex);
+    const minCol = Math.min(cellACoordinates.columnIndex, cellBCoordinates.columnIndex);
+    const maxCol = Math.max(cellACoordinates.columnIndex, cellBCoordinates.columnIndex);
+
+    return {
+        topLeft: createCellId({ rowIndex: minRow, columnIndex: minCol }),
+        topRight: createCellId({ rowIndex: minRow, columnIndex: maxCol }),
+        bottomLeft: createCellId({ rowIndex: maxRow, columnIndex: minCol }),
+        bottomRight: createCellId({ rowIndex: maxRow, columnIndex: maxCol }),
+    };
+};

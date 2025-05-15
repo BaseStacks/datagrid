@@ -56,3 +56,13 @@ export const getIdType = (id: Id): IdType => {
     const [idType] = id.split(':');
     return idType as IdType;
 };
+
+export const getMinCellId = (...ids: CellId[]): CellId => {
+    ids.sort((a, b) => a.localeCompare(b));
+    return ids[0];
+};
+
+export const getMaxCellId = (...ids: CellId[]): CellId => {
+    ids.sort((a, b) => a.localeCompare(b));
+    return ids[ids.length - 1];
+};
