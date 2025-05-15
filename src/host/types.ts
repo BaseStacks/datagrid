@@ -27,9 +27,10 @@ export type RowContainerId = `rowContainer:${string}`;
 export type RowId = `row:${RowDataKey}`;
 export type CellId = `cell:${RowDataKey}-${ColumnKey}`;
 export type EditorContainerId = 'editorContainer';
-export type FillHandlerId = 'fillHandler';
+export type FillHandleId = 'fillHandle';
+export type FillRangeId = 'fillRange';
 
-export type Id = HeaderGroupId | HeaderId | RowContainerId | RowId | CellId | EditorContainerId | FillHandlerId;
+export type Id = HeaderGroupId | HeaderId | RowContainerId | RowId | CellId | EditorContainerId | FillHandleId | FillRangeId;
 
 export type WithId<TId, TData> = TData & { readonly id: TId };
 

@@ -1,6 +1,7 @@
 import { createCellId, extractCellId, type DataGridPluginOptions } from '../../host';
 import type { CellId, RowData } from '../../host';
 import { DataGridDomPlugin } from '../atomic/DataGridDomPlugin';
+import type { DataGridCellNode } from '../cores/DataGridLayout';
 import { getRect } from '../utils/domRectUtils';
 
 export interface CellFillPluginOptions extends DataGridPluginOptions {
@@ -12,50 +13,87 @@ interface FillRange {
     readonly end: CellId;
 }
 
+interface FillOffset {
+    readonly pinnedHorizontal: boolean;
+    readonly pinnedVertical: boolean;
+    readonly baseLeft: number;
+    readonly baseTop: number;
+    readonly baseScrollLeft: number;
+    readonly baseScrollTop: number;
+}
+
 export class CellFillPlugin<TRow extends RowData> extends DataGridDomPlugin<TRow, CellFillPluginOptions> {
     private _fill: boolean = false;
+    private _fillOffset: FillOffset | null = null;
     private _fillRange: FillRange | null = null;
 
-    private get fillHandler() {
-        return this.dataGrid.layout.getNode('fillHandler');
+    private get fillHandle() {
+        return this.dataGrid.layout.getNode('fillHandle');
     }
 
-    private hideFillHandler = () => {
-        if (!this.fillHandler) {
+    private hideFillHandle = () => {
+        if (!this.fillHandle) {
             return;
         }
 
-        this.dataGrid.layout.updateNode('fillHandler', {
+        this.dataGrid.layout.updateNode('fillHandle', {
             visible: false,
         });
     };
 
-    private setHandlerOffset = (cellId: CellId) => {
-        const cellNode = this.dataGrid.layout.getNode(cellId);
+    private setHandleOffset = (cellId: CellId) => {
+        const cellNode = this.dataGrid.layout.getNode(cellId) as DataGridCellNode;
         if (!cellNode) {
             return;
         }
 
-        const fillHandlerNode = this.dataGrid.layout.getNode('fillHandler');
-        if (!fillHandlerNode) {
+        const fillHandleNode = this.dataGrid.layout.getNode('fillHandle');
+        if (!fillHandleNode) {
             return;
         }
 
         const cellRect = getRect(this.scrollArea!, cellNode.element);
 
-        this.dataGrid.layout.updateNode('fillHandler', {
+        this.dataGrid.layout.updateNode('fillHandle', {
             visible: true,
         });
 
-        const handlerWidth = fillHandlerNode.element.offsetHeight;
-        const handlerHeight = fillHandlerNode.element.offsetHeight;
+        const handlerWidth = fillHandleNode.element.offsetHeight;
+        const handlerHeight = fillHandleNode.element.offsetHeight;
 
-        const scrollTop = (cellNode.pinned?.side === 'top' || cellNode.pinned?.side === 'bottom') ? 0 : this.scrollArea!.scrollTop;
-        
-        this.dataGrid.layout.updateNode('fillHandler', {
+        const baseLeft = cellRect.left + cellRect.width - handlerWidth;
+        const baseTop = cellRect.top + cellRect.height - handlerHeight;
+
+        this.dataGrid.layout.updateNode('fillHandle', {
             offset: {
-                left: cellRect.left + cellRect.width - handlerWidth + this.scrollArea!.scrollLeft,
-                top: cellRect.top + cellRect.height - handlerHeight + scrollTop
+                left: baseLeft + this.scrollArea!.scrollLeft,
+                top: baseTop + this.scrollArea!.scrollTop,
+            }
+        });
+
+        const rowNode = this.dataGrid.layout.getNode(cellNode.rowId)!;
+
+        this._fillOffset = {
+            pinnedHorizontal: cellNode.pinned?.side === 'left' || cellNode.pinned?.side === 'right',
+            pinnedVertical: rowNode.pinned?.side === 'top' || rowNode.pinned?.side === 'bottom',
+            baseLeft: baseLeft,
+            baseTop: baseTop,
+            baseScrollLeft: this.scrollArea!.scrollLeft,
+            baseScrollTop: this.scrollArea!.scrollTop
+        };
+    };
+
+    private updateHandleOffset = () => {
+        if (!this._fillOffset) {
+            return;
+        }
+
+        const { pinnedHorizontal, pinnedVertical, baseLeft, baseTop, baseScrollLeft, baseScrollTop } = this._fillOffset;
+
+        this.dataGrid.layout.updateNode('fillHandle', {
+            offset: {
+                left: pinnedHorizontal ? baseLeft + this.scrollArea!.scrollLeft : baseLeft + baseScrollLeft,
+                top: pinnedVertical ? baseTop + this.scrollArea!.scrollTop : baseTop + baseScrollTop
             }
         });
     };
@@ -178,7 +216,7 @@ export class CellFillPlugin<TRow extends RowData> extends DataGridDomPlugin<TRow
     };
 
     public handleActivate = () => {
-        const unwatchFillHandler = this.dataGrid.layout.layoutNodesState.watchItem('fillHandler', ({ operation, item }) => {
+        const unwatchFillHandle = this.dataGrid.layout.layoutNodesState.watchItem('fillHandle', ({ operation, item }) => {
             if (!item) {
                 return;
             }
@@ -193,13 +231,15 @@ export class CellFillPlugin<TRow extends RowData> extends DataGridDomPlugin<TRow
 
         const unwatchRanges = this.dataGrid.state.selectedRanges.watch((ranges) => {
             if (ranges.length != 1) {
-                this.hideFillHandler();
+                this.hideFillHandle();
                 return;
             }
 
             const range = ranges[0];
+
+            const startCell = range.start;
             const endCell = range.end;
-            this.setHandlerOffset(endCell);
+            this.setHandleOffset(startCell > endCell ? startCell : endCell);
         });
 
         const unwatchCells = this.dataGrid.layout.layoutNodesState.watchItems(({ operation, item }) => {
@@ -215,12 +255,14 @@ export class CellFillPlugin<TRow extends RowData> extends DataGridDomPlugin<TRow
             item.element.addEventListener('mouseenter', this.moveFill);
         });
 
+        this.scrollArea!.addEventListener('scroll', this.updateHandleOffset);
         document.addEventListener('mouseup', this.endFill);
 
         this.unsubscribes.push(() => {
-            unwatchFillHandler();
+            unwatchFillHandle();
             unwatchRanges();
             unwatchCells();
+            this.scrollArea!.removeEventListener('scroll', this.updateHandleOffset);
             document.removeEventListener('mouseup', this.endFill);
         });
     };

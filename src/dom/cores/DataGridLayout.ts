@@ -1,4 +1,4 @@
-import type { CellId, Id, RowData, RowId, HeaderId, HeaderGroupId, RowContainerId, DeepPartial, EditorContainerId, FillHandlerId } from '../../host';
+import type { CellId, Id, RowData, RowId, HeaderId, HeaderGroupId, RowContainerId, DeepPartial, EditorContainerId, FillHandleId } from '../../host';
 import { getIdType, DataGridMapState, DataGridState, DataGridStates } from '../../host';
 import { calculateScrollOffsets } from '..';
 import type { DataGridDomPlugin } from '../atomic/DataGridDomPlugin';
@@ -56,7 +56,7 @@ export interface DataGridEditorContainerNode extends DataGridLayoutNodeBase {
 }
 
 export interface DataGridFillHandleNode extends DataGridLayoutNodeBase {
-    readonly id: FillHandlerId;
+    readonly id: FillHandleId;
     readonly type: 'editorContainer';
 }
 
@@ -237,11 +237,11 @@ export class DataGridLayout<TRow extends RowData> {
             return;
         }
 
-        if (type === 'fillHandler') {
-            const fillHandlerId = id as FillHandlerId;
-            this.layoutNodesState.addItem(fillHandlerId, {
+        if (type === 'fillHandle') {
+            const fillHandleId = id as FillHandleId;
+            this.layoutNodesState.addItem(fillHandleId, {
                 ...nodeBase,
-                id: fillHandlerId,
+                id: fillHandleId,
                 type,
             });
             return;
@@ -251,7 +251,7 @@ export class DataGridLayout<TRow extends RowData> {
             ...nodeBase,
             id,
             type,
-        });
+        } as any);
     };
 
     /**

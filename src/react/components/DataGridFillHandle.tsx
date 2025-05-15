@@ -17,7 +17,7 @@ function DataGridFillHandleImpl({
     const ref = useRef<HTMLElement>(null);
 
     useLayoutEffect(() => {
-        layout.layoutNodesState.watchItem('fillHandler', ({ item }) => {
+        layout.layoutNodesState.watchItem('fillHandle', ({ item }) => {
             if (!item || !ref.current) {
                 return;
             }
@@ -36,15 +36,15 @@ function DataGridFillHandleImpl({
     }, [layout.layoutNodesState]);
 
     useEffect(() => {
-        const fillHandler = ref.current!;
+        const fillHandle = ref.current!;
 
-        fillHandler.style.display = 'none';
-        fillHandler.style.position = 'absolute';
+        fillHandle.style.display = 'none';
+        fillHandle.style.position = 'absolute';
 
-        layout.registerNode('fillHandler', fillHandler!);
+        layout.registerNode('fillHandle', fillHandle!);
 
         return () => {
-            layout.removeNode('fillHandler');
+            layout.removeNode('fillHandle');
         };
     }, [layout]);
 
