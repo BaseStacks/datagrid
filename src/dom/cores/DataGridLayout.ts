@@ -16,6 +16,7 @@ export interface DataGridLayoutNodeBase {
         readonly width: number;
     },
     readonly offset: {
+        readonly z?: number;
         readonly top?: number;
         readonly left?: number;
     },

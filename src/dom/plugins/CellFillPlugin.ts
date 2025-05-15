@@ -64,14 +64,20 @@ export class CellFillPlugin<TRow extends RowData> extends DataGridDomPlugin<TRow
         const baseLeft = cellRect.left + cellRect.width - handlerWidth;
         const baseTop = cellRect.top + cellRect.height - handlerHeight;
 
+        const rowNode = this.dataGrid.layout.getNode(cellNode.rowId)!;
+
+        const cellZ =+getComputedStyle(cellNode.element).zIndex || 0;
+        const rowZ = +getComputedStyle(rowNode.element).zIndex || 0;
+
+        const z = Math.max(cellZ, rowZ);
+        
         this.dataGrid.layout.updateNode('fillHandle', {
             offset: {
+                z: (z + 1) || 1,
                 left: baseLeft + this.scrollArea!.scrollLeft,
                 top: baseTop + this.scrollArea!.scrollTop,
             }
         });
-
-        const rowNode = this.dataGrid.layout.getNode(cellNode.rowId)!;
 
         this._fillOffset = {
             pinnedHorizontal: cellNode.pinned?.side === 'left' || cellNode.pinned?.side === 'right',

@@ -32,6 +32,7 @@ function DataGridFillHandleImpl({
 
             ref.current.style.left = `${offset.left}px`;
             ref.current.style.top = `${offset.top}px`;
+            ref.current.style.zIndex = offset.z?.toString() ?? '0';
         });
     }, [layout.layoutNodesState]);
 
