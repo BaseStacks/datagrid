@@ -54,6 +54,7 @@ export class CopyPastePlugin<TRow extends RowData> extends DataGridDomPlugin<TRo
         await this.dataGrid.modifier.emptyRange(range);
     };
 
+
     public handleActivate = () => {
         this.dataGrid.keyBindings.add(this, {
             'copy': '$mod+C',

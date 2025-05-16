@@ -108,13 +108,19 @@ export class CellEditablePlugin<TRow extends RowData> extends DataGridDomPlugin<
     };
 
     private stopEditing = () => {
-        const {  editing } = this.dataGrid.state;
+        const { editing } = this.dataGrid.state;
         editing.set(false);
     };
 
     private handleDblClick = (event: MouseEvent) => {
         this.startEditing();
         event.stopPropagation();
+    };
+
+    private handleDelete = async () => {
+        for (const range of this.dataGrid.state.selectedRanges.value) {
+            await this.dataGrid.modifier.emptyRange(range);
+        }
     };
 
     public state = {
@@ -142,10 +148,12 @@ export class CellEditablePlugin<TRow extends RowData> extends DataGridDomPlugin<
             {
                 focus: ['Enter', 'F2'],
                 exit: 'Escape',
+                delete: 'Delete',
             },
             {
                 focus: this.startEditing,
-                exit: this.stopEditing
+                exit: this.stopEditing,
+                delete: this.handleDelete,
             }
         );
 

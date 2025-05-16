@@ -209,10 +209,14 @@ export type DataGridAction =
   | 'selectAll'
   | 'exit'
   | 'focus'
-
+  // Cell edit
   | 'copy'
   | 'cut'
   | 'paste'
+  | 'delete'
+  // History
+  | 'undo'
+  | 'redo'
   ;
 
 export type DataGridKeyMap<TAction extends DataGridAction> = Partial<Record<TAction, string | string[]>>;
