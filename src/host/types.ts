@@ -145,7 +145,7 @@ export interface Row<TRow extends RowData = RowData> {
 }
 
 export interface RowOperation {
-  readonly type: 'UPDATE' | 'DELETE' | 'CREATE'
+  readonly type: 'UPDATE' | 'DELETE' | 'CREATE' | 'RESTORE' | 'REVERT';
   readonly fromRowIndex: number
   readonly toRowIndex: number
 }

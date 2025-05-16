@@ -25,7 +25,7 @@ export class DataGridRenderer<TRow extends RowData> {
                 headerId: cell.headerId,
                 value: cellValue,
                 setValue: (newValue) => {
-                    this.modifier.updateData(cell.coordinates.rowIndex, {
+                    this.modifier.updateRowData(cell.coordinates.rowIndex, {
                         ...this.state.options.data[cell.coordinates.rowIndex],
                         [header!.column.key]: newValue,
                     });
@@ -57,7 +57,7 @@ export class DataGridRenderer<TRow extends RowData> {
                 id: activeCell.value.id as CellId,
                 defaultValue: cellValue,
                 setValue: (newValue) => {
-                    this.modifier.updateData(rowIndex, {
+                    this.modifier.updateRowData(rowIndex, {
                         ...this.state.options.data[rowIndex],
                         [column.key]: newValue,
                     });
@@ -69,7 +69,7 @@ export class DataGridRenderer<TRow extends RowData> {
             id: activeCell.value.id as CellId,
             defaultValue: cellValue,
             setValue: (newValue) => {
-                this.modifier.updateData(rowIndex, {
+                this.modifier.updateRowData(rowIndex, {
                     ...this.state.options.data[rowIndex],
                     [column.key]: newValue,
                 });

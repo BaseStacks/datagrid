@@ -4,80 +4,46 @@ import { calculateRangeBoundary, getQuadCorners } from '../utils/selectionUtils'
 import { DataGridStates } from './DataGridStates';
 import type { DataGridHelper } from './DataGridHelper';
 import { extractCellId } from '../utils/idUtils';
+import type { DataGridHistory } from './DataGridHistory';
 
 export class DataGridModifier<TRow extends RowData = RowData> {
-    constructor(private state: DataGridStates<TRow>, private helper: DataGridHelper<TRow>) {
+    constructor(
+        private state: DataGridStates<TRow>,
+        private history: DataGridHistory<TRow>,
+        private helper: DataGridHelper<TRow>) {
     }
 
     public plugins: Map<string, DataGridPlugin<TRow>> = new Map();
-    public updateData = (rowIndex: number, item: TRow) => {
-        const { onChange, data } = this.state.options;
-        onChange?.(
+
+    private handleChange = (newData: TRow[], operation: RowOperation) => {
+        const { onChange } = this.state.options;
+        if (!onChange) {
+            return;
+        }
+
+        this.history.addUndo(newData, operation);
+        onChange(newData, [operation]);
+    };
+
+    public updateRowData = (rowIndex: number, item: TRow) => {
+        const { data } = this.state.options;
+        this.handleChange(
             [
                 ...(data?.slice(0, rowIndex) ?? []),
                 item,
                 ...(data?.slice(rowIndex + 1) ?? []),
             ],
-            [
-                {
-                    type: 'UPDATE',
-                    fromRowIndex: rowIndex,
-                    toRowIndex: rowIndex + 1,
-                },
-            ]
-        );
-    };
-
-    public deleteSelection = () => {
-        const { activeCell, selectedRanges } = this.state;
-        const { onChange, columns, data } = this.state.options;
-        if (!onChange) {
-            return;
-        }
-
-        if (!activeCell.value) {
-            return;
-        }
-
-        const newData = [...data];
-        const operations: RowOperation[] = [];
-
-        for (const selectedRange of selectedRanges.value) {
-            const { min, max } = calculateRangeBoundary(selectedRange);
-
-            for (let row = min.rowIndex; row <= max.rowIndex; ++row) {
-                const modifiedRowData = { ...newData[row] };
-
-                for (let col = min.columnIndex; col <= max.columnIndex; ++col) {
-                    const column = columns[col];
-                    if (!column.key) {
-                        continue;
-                    }
-
-                    const cellDisabled = this.helper.isCellDisabled(row, col);
-                    if (cellDisabled) {
-                        continue;
-                    }
-
-                    delete modifiedRowData[column.key];
-                }
-
-                newData[row] = modifiedRowData;
-            }
-
-            operations.push({
+            {
                 type: 'UPDATE',
-                fromRowIndex: min.rowIndex,
-                toRowIndex: max.rowIndex + 1,
-            });
-        }
-
-        onChange(newData, operations);
+                fromRowIndex: rowIndex,
+                toRowIndex: rowIndex,
+            }
+        );
     };
 
     public insertRowAfter = (rowIndex: number, count = 1) => {
         const { editing } = this.state;
-        const { createRow, onChange, data, lockRows } = this.state.options;
+        const { createRow, data, lockRows } = this.state.options;
 
         if (lockRows) {
             return;
@@ -87,61 +53,59 @@ export class DataGridModifier<TRow extends RowData = RowData> {
 
         const newRows = new Array(count).fill(0).map(() => createRow ? createRow() : {} as TRow);
 
-        onChange?.(
+        this.handleChange(
             [
                 ...data.slice(0, rowIndex + 1),
                 ...newRows,
                 ...data.slice(rowIndex + 1),
             ],
-            [{
+            {
                 type: 'CREATE',
                 fromRowIndex: rowIndex + 1,
                 toRowIndex: rowIndex + 1 + count,
-            }]
+            }
         );
     };
 
     public duplicateRows = (rowMin: number, rowMax: number = rowMin) => {
-        const { onChange, duplicateRow, data, lockRows } = this.state.options;
+        const { duplicateRow, data, lockRows } = this.state.options;
         if (lockRows) {
             return;
         }
 
         const duplicatedData = data.slice(rowMin, rowMax + 1).map((rowData, i) => duplicateRow ? duplicateRow({ rowData, rowIndex: i + rowMin }) : { ...rowData });
 
-        onChange?.(
+        this.handleChange(
             [
                 ...data.slice(0, rowMax + 1),
                 ...duplicatedData,
                 ...data.slice(rowMax + 1),
             ],
-            [{
+            {
                 type: 'CREATE',
                 fromRowIndex: rowMax + 1,
                 toRowIndex: rowMax + 2 + rowMax - rowMin,
-            }]
+            }
         );
     };
 
     public deleteRows = (fromRow: number, toRow: number = fromRow) => {
-        const { onChange, data, lockRows } = this.state.options;
+        const { data, lockRows } = this.state.options;
 
         if (lockRows) {
             return;
         }
 
-        onChange?.(
+        this.handleChange(
             [
                 ...data.slice(0, fromRow),
                 ...data.slice(toRow + 1),
             ],
-            [
-                {
-                    type: 'DELETE',
-                    fromRowIndex: fromRow,
-                    toRowIndex: toRow + 1,
-                },
-            ]
+            {
+                type: 'DELETE',
+                fromRowIndex: fromRow,
+                toRowIndex: toRow + 1,
+            }
         );
     };
 
@@ -150,7 +114,7 @@ export class DataGridModifier<TRow extends RowData = RowData> {
             return;
         }
 
-        const { onChange, columns, data, lockRows } = this.state.options;
+        const { columns, data, lockRows } = this.state.options;
         const { min, max } = calculateRangeBoundary(range);
 
         const results = await Promise.all(
@@ -200,13 +164,12 @@ export class DataGridModifier<TRow extends RowData = RowData> {
                 ...data.slice(max.rowIndex + 1),
             ];
 
-            onChange?.(newData, [
+            this.handleChange(newData,
                 {
                     type: 'UPDATE',
                     fromRowIndex: min.rowIndex,
-                    toRowIndex: max.rowIndex + 1,
-                },
-            ]);
+                    toRowIndex: max.rowIndex,
+                });
 
             return;
         }
@@ -247,32 +210,17 @@ export class DataGridModifier<TRow extends RowData = RowData> {
             }
         }
 
-        const operations: RowOperation[] = [
-            {
-                type: 'UPDATE',
-                fromRowIndex: min.rowIndex,
-                toRowIndex:
-                    min.rowIndex +
-                    rangeData.length -
-                    (!lockRows && missingRows > 0 ? missingRows : 0),
-            },
-        ];
-
-        if (missingRows > 0 && !lockRows) {
-            operations.push({
-                type: 'CREATE',
-                fromRowIndex: min.rowIndex + rangeData.length - missingRows,
-                toRowIndex: min.rowIndex + rangeData.length,
-            });
-        }
-
         const newData = [
             ...data.slice(0, min.rowIndex),
             ...updatedRows.values(),
             ...data.slice(min.rowIndex + rangeData.length),
         ];
 
-        onChange?.(newData, operations);
+        this.handleChange(newData, {
+            type: 'UPDATE',
+            fromRowIndex: min.rowIndex,
+            toRowIndex: min.rowIndex + rangeData.length
+        });
     };
 
     public cloneRangeData = async (source: CellSelectedRangeWithCells, target: CellSelectedRange) => {
