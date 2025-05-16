@@ -6,7 +6,7 @@ export class DataGrid<TRow extends RowData = RowData> extends DataGridHost<TRow>
     constructor(options: DataGridOptions<TRow>) {
         super(options);
         this.layout = new DataGridLayout(this.state);
-        this.keyBindings = new DataGridKeyBindings(this.state, this.events);
+        this.keyBindings = new DataGridKeyBindings(this.commands);
     }
 
     public layout: DataGridLayout<TRow>;

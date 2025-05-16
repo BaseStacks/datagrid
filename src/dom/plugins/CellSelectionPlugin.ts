@@ -1,13 +1,13 @@
-import type { CellId, DataGridKeyMap, RowData } from '../../host';
+import type { CellId, RowData } from '../../host';
 import { getCoordinatesById, idTypeEquals, breakRangeToSmallerPart, isRangeInsideOthers, tryCombineRanges, tryRemoveDuplicates } from '../../host';
 import { DataGridDomPlugin, type DataGridDomPluginOptions } from '../atomic/DataGridDomPlugin';
 import { clearAllTextSelection } from '../utils/domUtils';
 
 type CellSelectionPluginShortcut =
-    | 'activeLower'
-    | 'activeUpper'
-    | 'activeLeft'
-    | 'activeRight'
+    | 'moveLower'
+    | 'moveUpper'
+    | 'moveLeft'
+    | 'moveRight'
     | 'jumpBottom'
     | 'jumpTop'
     | 'jumpLeft'
@@ -17,17 +17,17 @@ type CellSelectionPluginShortcut =
     | 'expandLower'
     | 'expandUpper'
     | 'selectAll'
-    | 'exit';
+    | 'cleanSelection';
 
 export interface CellSelectionPluginOptions extends DataGridDomPluginOptions {
-    readonly keyMap?: DataGridKeyMap<CellSelectionPluginShortcut>;
+    readonly keyMap?: Record<CellSelectionPluginShortcut, string | string[]>;
 }
 
-export const defaultKeyMap: DataGridKeyMap<CellSelectionPluginShortcut> = {
-    activeLower: 'ArrowDown',
-    activeUpper: 'ArrowUp',
-    activeLeft: 'ArrowLeft',
-    activeRight: 'ArrowRight',
+export const defaultKeyMap: Record<CellSelectionPluginShortcut, string | string[]> = {
+    moveLower: 'ArrowDown',
+    moveUpper: 'ArrowUp',
+    moveLeft: 'ArrowLeft',
+    moveRight: 'ArrowRight',
 
     jumpBottom: '$mod+ArrowDown',
     jumpTop: '$mod+ArrowUp',
@@ -40,7 +40,7 @@ export const defaultKeyMap: DataGridKeyMap<CellSelectionPluginShortcut> = {
     expandLower: 'Shift+ArrowDown',
 
     selectAll: '$mod+a',
-    exit: 'Escape'
+    cleanSelection: 'Escape'
 };
 
 export class CellSelectionPlugin<TRow extends RowData> extends DataGridDomPlugin<TRow, CellSelectionPluginOptions> {
@@ -190,34 +190,33 @@ export class CellSelectionPlugin<TRow extends RowData> extends DataGridDomPlugin
             element.addEventListener('mouseenter', this.handleCellMouseEnter);
         });
 
-        const handlers: Record<CellSelectionPluginShortcut, () => void> = {
-            activeLeft: this.dataGrid.selection.moveLeft,
-            activeRight: this.dataGrid.selection.moveRight,
-            activeUpper: this.dataGrid.selection.moveUp,
-            activeLower: this.dataGrid.selection.moveDown,
-            jumpBottom: this.dataGrid.selection.jumpBottom,
-            jumpTop: this.dataGrid.selection.jumpTop,
-            jumpLeft: this.dataGrid.selection.jumpLeft,
-            jumpRight: this.dataGrid.selection.jumpRight,
-            expandLeft: this.dataGrid.selection.expandLeft,
-            expandRight: this.dataGrid.selection.expandRight,
-            expandUpper: this.dataGrid.selection.expandUpper,
-            expandLower: this.dataGrid.selection.expandLower,
-            selectAll: this.dataGrid.selection.selectAll,
-            exit: this.dataGrid.selection.cleanSelection,
-        };
+        const pluginName = this.toString();
+        this.dataGrid.commands.register([
+            { id: 'moveLeft', source: pluginName, execute: this.dataGrid.selection.moveLeft },
+            { id: 'moveRight', source: pluginName, execute: this.dataGrid.selection.moveRight },
+            { id: 'moveUpper', source: pluginName, execute: this.dataGrid.selection.moveUp },
+            { id: 'moveLower', source: pluginName, execute: this.dataGrid.selection.moveDown },
+            { id: 'jumpBottom', source: pluginName, execute: this.dataGrid.selection.jumpBottom },
+            { id: 'jumpTop', source: pluginName, execute: this.dataGrid.selection.jumpTop },
+            { id: 'jumpLeft', source: pluginName, execute: this.dataGrid.selection.jumpLeft },
+            { id: 'jumpRight', source: pluginName, execute: this.dataGrid.selection.jumpRight },
+            { id: 'expandLeft', source: pluginName, execute: this.dataGrid.selection.expandLeft },
+            { id: 'expandRight', source: pluginName, execute: this.dataGrid.selection.expandRight },
+            { id: 'expandUpper', source: pluginName, execute: this.dataGrid.selection.expandUpper },
+            { id: 'expandLower', source: pluginName, execute: this.dataGrid.selection.expandLower },
+            { id: 'selectAll', source: pluginName, execute: this.dataGrid.selection.selectAll },
+            { id: 'cleanSelection', source: pluginName, execute: this.dataGrid.selection.cleanSelection }
+        ]);
 
-        // Define keybindings
-        const mergeKeyMap = {
+        this.dataGrid.keyBindings.add(this, {
             ...defaultKeyMap,
             ...keyMap
-        };
-
-        this.dataGrid.keyBindings.add(this, mergeKeyMap, handlers);
+        });
 
         this.unsubscribes.push(watchElements);
         this.unsubscribes.push(() => {
-            this.dataGrid.keyBindings.remove(this);
+            this.dataGrid.commands.unregister(pluginName);
+            this.dataGrid.keyBindings.removeAll(pluginName);
 
             window.removeEventListener('mousedown', this.handleContainerMouseDown);
             window.removeEventListener('mouseup', this.handleContainerMouseUp);

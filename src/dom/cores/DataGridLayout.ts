@@ -144,7 +144,7 @@ export class DataGridLayout<TRow extends RowData> {
      * @param id
      * @param element
      */
-    public registerNode = (id: Id, element: HTMLElement) => {
+    public registerNode = (id: Id, element: HTMLElement, visible: boolean = true) => {
         const existingNode = this.getNode(id);
 
         if (existingNode) {
@@ -154,7 +154,7 @@ export class DataGridLayout<TRow extends RowData> {
         const type = getIdType(id);
 
         const nodeBase = {
-            visible: true,
+            visible,
             element,
             size: {
                 height: element.clientHeight,

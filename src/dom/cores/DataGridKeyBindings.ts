@@ -1,56 +1,49 @@
 import { tinykeys } from 'tinykeys';
-import type { DataGridAction, DataGridKeyMap, RowData, DataGridStates, DataGridEvents, MaybePromise } from '../../host';
+import type { DataGridKeyMap, RowData, MaybePromise } from '../../host';
 import type { DataGridDomPlugin } from '../atomic/DataGridDomPlugin';
+import type { DataGridCommands } from '../../host/cores/DataGridCommands';
 
 export type KeyBindingHandler = (event: KeyboardEvent) => MaybePromise<void | boolean>;
 
 export class DataGridKeyBindings<TRow extends RowData> {
-    // @ts-expect-error - Unused state
-    private state: DataGridStates<TRow>;
-    private events: DataGridEvents<TRow>;
+    private unregisterMap = new Map<string, any>();
 
-    private deregisterMap = new Map<string, any>();
 
-    constructor(state: DataGridStates<TRow>, events: DataGridEvents<TRow>) {
-        this.state = state;
-        this.events = events;
+    constructor(private commands: DataGridCommands) {
     }
 
-    public add = <TKeyMap extends DataGridAction>(source: DataGridDomPlugin<TRow>, keyMap: DataGridKeyMap<TKeyMap>, handlers: Record<TKeyMap, KeyBindingHandler>) => {
+    public add = (source: DataGridDomPlugin<TRow>, keyMap: DataGridKeyMap) => {
+        const bindingCommands = Object.keys(keyMap);
         const keyBindingMap: Record<string, KeyBindingHandler> = {};
+        bindingCommands.forEach((commandId) => {
+            const command = this.commands.get(commandId);
+            if (!command) {
+                throw new Error(`Command ${commandId} not found`);
+            }
 
-        const addKeybinding = (action: TKeyMap, handler: (event: KeyboardEvent) => MaybePromise<void | boolean>) => {
-            const shortcutKeys = keyMap[action];
-            if (!shortcutKeys) return;
+            const keybinding = Array.isArray(keyMap[commandId]) ? keyMap[commandId] : [keyMap[commandId]];
 
-            const keys = Array.isArray(shortcutKeys) ? shortcutKeys : [shortcutKeys];
-
-            keys.forEach(key => {
-                keyBindingMap[key] = ((event: KeyboardEvent) => {
-                    const handled = handler(event);
-                    this.events.emit('action-executed', { action });
-                    if (handled === false) {
+            keybinding.forEach(key => {
+                keyBindingMap[key] = (async (event: KeyboardEvent) => {
+                    const executed = await this.commands.execute(commandId);
+                    if (!executed) {
                         return;
                     }
                     event.preventDefault();
                 });
             });
-        };
-
-        Object.entries(handlers).forEach(([action, handler]) => {
-            addKeybinding(action as TKeyMap, handler as KeyBindingHandler);
         });
 
         const cleanKeyBindings = tinykeys(window, keyBindingMap);
 
-        this.deregisterMap.set(source.toString(), cleanKeyBindings);
+        this.unregisterMap.set(source.toString(), cleanKeyBindings);
     };
 
-    public remove = (source: DataGridDomPlugin<TRow>) => {
-        const cleanKeyBindings = this.deregisterMap.get(source.toString());
+    public removeAll = (source: string) => {
+        const cleanKeyBindings = this.unregisterMap.get(source);
         if (cleanKeyBindings) {
             cleanKeyBindings();
-            this.deregisterMap.delete(source.toString());
+            this.unregisterMap.delete(source.toString());
         }
     };
 };

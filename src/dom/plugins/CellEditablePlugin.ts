@@ -107,7 +107,7 @@ export class CellEditablePlugin<TRow extends RowData> extends DataGridDomPlugin<
         this.setupFloatingEditor(cellNode);
     };
 
-    private stopEditing = () => {
+    private exitEditing = () => {
         const { editing } = this.dataGrid.state;
         editing.set(false);
     };
@@ -144,18 +144,31 @@ export class CellEditablePlugin<TRow extends RowData> extends DataGridDomPlugin<
 
         this.scrollArea?.addEventListener('scroll', this.handleScroll);
 
-        this.dataGrid.keyBindings.add(this,
-            {
-                focus: ['Enter', 'F2'],
-                exit: 'Escape',
-                delete: 'Delete',
-            },
-            {
-                focus: this.startEditing,
-                exit: this.stopEditing,
-                delete: this.handleDelete,
-            }
-        );
+        this.dataGrid.commands.register([{
+            id: 'focus',
+            source: 'CellEditablePlugin',
+            type: 'edit',
+            label: 'Edit',
+            execute: this.startEditing,
+        }, {
+            id: 'exitEditing',
+            source: 'CellEditablePlugin',
+            type: 'edit',
+            label: 'Stop Editing',
+            execute: this.exitEditing,
+        }, {
+            id: 'delete',
+            source: 'CellEditablePlugin',
+            type: 'edit',
+            label: 'Delete',
+            execute: this.handleDelete,
+        }]);
+
+        this.dataGrid.keyBindings.add(this, {
+            focus: ['Enter', 'F2'],
+            exitEditing: 'Escape',
+            delete: 'Delete',
+        });
 
         this.unsubscribes.push(unwatchEditing);
         this.unsubscribes.push(unwatchNodes);
@@ -164,7 +177,8 @@ export class CellEditablePlugin<TRow extends RowData> extends DataGridDomPlugin<
         });
 
         this.unsubscribes.push(() => {
-            this.dataGrid.keyBindings.remove(this);
+            this.dataGrid.commands.unregisterAll('CellEditablePlugin');
+            this.dataGrid.keyBindings.removeAll(this.toString());
         });
     };
 }

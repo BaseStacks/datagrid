@@ -56,18 +56,35 @@ export class CopyPastePlugin<TRow extends RowData> extends DataGridDomPlugin<TRo
 
 
     public handleActivate = () => {
+        this.dataGrid.commands.register([{
+            id: 'copy',
+            source: 'CopyPastePlugin',
+            type: 'copy',
+            label: 'Copy',
+            execute: this.handleCopy,
+        }, {
+            id: 'cut',
+            source: 'CopyPastePlugin',
+            type: 'cut',
+            label: 'Cut',
+            execute: this.handleCut,
+        }, {
+            id: 'paste',
+            source: 'CopyPastePlugin',
+            type: 'paste',
+            label: 'Paste',
+            execute: this.handlePaste,
+        }]);
+
         this.dataGrid.keyBindings.add(this, {
             'copy': '$mod+C',
             'cut': '$mod+X',
             'paste': '$mod+V',
-        }, {
-            'copy': this.handleCopy,
-            'cut': this.handleCut,
-            'paste': this.handlePaste,
         });
 
         this.unsubscribes.push(() => {
-            this.dataGrid.keyBindings.remove(this);
+            this.dataGrid.commands.unregisterAll(this.toString());
+            this.dataGrid.keyBindings.removeAll(this.toString());
         });
     };
 }

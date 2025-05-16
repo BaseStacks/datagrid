@@ -10,6 +10,7 @@ import { DataGridStates } from './cores/DataGridStates';
 import { DataGridRenderer } from './cores/DataGridRenderer';
 import { DataGridHelper } from './cores/DataGridHelper';
 import { DataGridHistory } from './cores/DataGridHistory';
+import { DataGridCommands } from './cores/DataGridCommands';
 
 export abstract class DataGridHost<TRow extends RowData = RowData> {
     public plugins: Map<string, DataGridPlugin<TRow, DataGridHost<TRow>>> = new Map();
@@ -66,12 +67,14 @@ export abstract class DataGridHost<TRow extends RowData = RowData> {
     constructor(options: DataGridOptions<TRow>) {
         this.options = { ...(defaultOptions as any), ...options, };
 
+        this.events = new DataGridEvents();
+        this.commands = new DataGridCommands(this.events);
+
         this.state = new DataGridStates<TRow>(this.options);
         this.helper = new DataGridHelper<TRow>(this.state);
         this.history = new DataGridHistory<TRow>(this.state);
 
         this.modifier = new DataGridModifier(this.state, this.history, this.helper);
-        this.events = new DataGridEvents<TRow>(this.state);
         this.selection = new DataGridSelection(this.state);
         this.renderer = new DataGridRenderer<TRow>(this.state, this.modifier);
 
@@ -79,11 +82,14 @@ export abstract class DataGridHost<TRow extends RowData = RowData> {
     }
 
     public options: Required<DataGridOptions<TRow>>;
+
+    public commands: DataGridCommands;
+    public events: DataGridEvents;
+
     public history: DataGridHistory<TRow>;
     public modifier: DataGridModifier<TRow>;
     public state: DataGridStates<TRow>;
     public selection: DataGridSelection<TRow>;
-    public events: DataGridEvents<TRow>;
     public renderer: DataGridRenderer<TRow>;
     public helper: DataGridHelper<TRow>;
 

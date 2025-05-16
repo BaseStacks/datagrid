@@ -1,18 +1,8 @@
-export type DeepPartial<T> = T extends object ? {
-  [P in keyof T]?: DeepPartial<T[P]>;
-} : T;
-
-export type DataGridEventTypes = {
-  readonly 'action-executed': {
-    readonly action: DataGridAction;
-  }
-};
+export type DeepPartial<T> = T extends object ? { [P in keyof T]?: DeepPartial<T[P]>; } : T;
 
 export type MaybePromise<T> = T | Promise<T>;
 
 export type CellSelectionDraggingStatus = 'start' | 'dragging' | false;
-
-export type DataGridEventType = keyof DataGridEventTypes;
 
 export type RowData = Record<string, any>;
 export type RowKey = string | number;
@@ -190,36 +180,7 @@ export interface DragSelection {
   readonly active: boolean;
 }
 
-export type DataGridAction =
-  | 'activeLower'
-  | 'activeUpper'
-  | 'activeLeft'
-  | 'activeRight'
-
-  | 'jumpBottom'
-  | 'jumpTop'
-  | 'jumpLeft'
-  | 'jumpRight'
-
-  | 'expandRight'
-  | 'expandLeft'
-  | 'expandLower'
-  | 'expandUpper'
-
-  | 'selectAll'
-  | 'exit'
-  | 'focus'
-  // Cell edit
-  | 'copy'
-  | 'cut'
-  | 'paste'
-  | 'delete'
-  // History
-  | 'undo'
-  | 'redo'
-  ;
-
-export type DataGridKeyMap<TAction extends DataGridAction> = Partial<Record<TAction, string | string[]>>;
+export type DataGridKeyMap = Record<string, string | string[]>;
 
 export interface RectType {
   readonly width: number;

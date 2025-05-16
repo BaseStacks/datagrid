@@ -1,15 +1,15 @@
 import { type DataGridPluginOptions } from '../../host';
-import type { DataGridEventTypes, RowData } from '../../host';
+import type { RowData } from '../../host';
 import { DataGridDomPlugin } from '../atomic/DataGridDomPlugin';
 export interface StayInViewPluginOptions extends DataGridPluginOptions {
     readonly scrollBehavior?: ScrollBehavior;
 }
 
 export class StayInViewPlugin<TRow extends RowData> extends DataGridDomPlugin<TRow, StayInViewPluginOptions> {
-    private handleActionExecuted = ({ action }: DataGridEventTypes['action-executed']) => {
+    private handleActionExecuted = ({ id }: { id: string; }) => {
         let cellId = this.dataGrid.state.activeCell.value?.id;
 
-        const isExpandSelected = ['expandUpper', 'expandLower', 'expandRight', 'expandLeft'].includes(action);
+        const isExpandSelected = ['expandUpper', 'expandLower', 'expandRight', 'expandLeft'].includes(id);
         if (isExpandSelected) {
             cellId = this.dataGrid.state.selectedRanges.value[0].end;
         }
@@ -23,7 +23,7 @@ export class StayInViewPlugin<TRow extends RowData> extends DataGridDomPlugin<TR
         if (!scrollDelta) {
             return;
         }
-        
+
         this.scrollArea!.scrollTo({
             left: scrollDelta.left,
             top: scrollDelta.top,
@@ -32,7 +32,9 @@ export class StayInViewPlugin<TRow extends RowData> extends DataGridDomPlugin<TR
     };
 
     public handleActivate = () => {
-        this.dataGrid.events.addListener('action-executed', this.handleActionExecuted);
-        this.unsubscribes.push(() => this.dataGrid.events.removeListener('action-executed', this.handleActionExecuted));
+        this.dataGrid.events.addListener('command-executed', this.handleActionExecuted);
+        this.unsubscribes.push(() => {
+            this.dataGrid.events.removeListener('command-executed', this.handleActionExecuted);
+        });
     };
 }

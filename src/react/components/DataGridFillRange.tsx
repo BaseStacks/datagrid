@@ -29,7 +29,6 @@ function DataGridFillRangeImpl({
             }
 
             ref.current.style.display = 'block';
-            ref.current.style.position = 'absolute';
             ref.current.style.left = `${offset.left}px`;
             ref.current.style.top = `${offset.top}px`;
             ref.current.style.width = `${size.width}px`;
@@ -42,7 +41,7 @@ function DataGridFillRangeImpl({
         fillRange.style.display = 'none';
         fillRange.style.position = 'absolute';
         fillRange.style.pointerEvents = 'none';
-        layout.registerNode('fillRange', fillRange!);
+        layout.registerNode('fillRange', fillRange!, false);
 
         return () => {
             layout.removeNode('fillRange');

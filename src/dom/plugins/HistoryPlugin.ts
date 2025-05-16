@@ -17,16 +17,27 @@ export class HistoryPlugin<TRow extends RowData> extends DataGridDomPlugin<TRow,
     };
 
     public handleActivate = () => {
+        this.dataGrid.commands.register([{
+            id: 'undo',
+            source: 'HistoryPlugin',
+            type: 'history',
+            label: 'Undo',
+            execute: this.handleUndo,
+        }, {
+            id: 'redo',
+            source: 'HistoryPlugin',
+            type: 'history',
+            label: 'Redo',
+            execute: this.handleRedo,
+        }]);
         this.dataGrid.keyBindings.add(this, {
             'undo': '$mod+Z',
             'redo': '$mod+Y',
-        }, {
-            'undo': this.handleUndo,
-            'redo': this.handleRedo
         });
 
         this.unsubscribes.push(() => {
-            this.dataGrid.keyBindings.remove(this);
+            this.dataGrid.commands.unregisterAll(this.toString());
+            this.dataGrid.keyBindings.removeAll(this.toString());
         });
     };
 }
