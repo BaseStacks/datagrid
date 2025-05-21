@@ -11,7 +11,7 @@ export default defineConfig({
     resolve: {
         alias: {
             '@': path.resolve(__dirname, 'src'),
-            '@basestacks/data-grid': path.resolve(__dirname, '../src')
+            '@basestacks/datagrid': path.resolve(__dirname, '../src')
         },
     },
     plugins: [

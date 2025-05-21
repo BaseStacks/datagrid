@@ -26,8 +26,8 @@ export default defineConfig({
             output: {
                 sourcemap: true,
                 manualChunks: (id) => {
-                    if (id.includes('@basestacks/data-grid')) {
-                        return 'data-grid';
+                    if (id.includes('@basestacks/datagrid')) {
+                        return 'datagrid';
                     }
                 },
             },

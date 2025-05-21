@@ -4,7 +4,7 @@
  *
  * @see https://nodejs.org/docs/latest/api/packages.html#packages_determining_module_system
  */
-const exported = require('@basestacks/data-grid');
+const exported = require('@basestacks/datagrid');
 const assert = require('assert');
 const fs = require('fs');
 

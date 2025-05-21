@@ -1,4 +1,4 @@
-import { CellEditorProps, useDataGridContext } from '@basestacks/data-grid';
+import { CellEditorProps, useDataGridContext } from '@basestacks/datagrid';
 import React, { } from 'react';
 import { useRef } from 'react';
 import { ResizableEditorContainer } from './ResizableEditorContainer';

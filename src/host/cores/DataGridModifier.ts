@@ -21,7 +21,7 @@ export class DataGridModifier<TRow extends RowData = RowData> {
             return;
         }
 
-        this.history.addUndo(newData, operation);
+        this.history.addUndo(operation);
         onChange(newData, [operation]);
     };
 

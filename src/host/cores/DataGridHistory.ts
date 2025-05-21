@@ -12,12 +12,9 @@ export class DataGridHistory<TRow extends RowData> {
     private undoItems: HistoryItem<TRow>[] = [];
     private redoItems: HistoryItem<TRow>[] = [];
 
-    private applyHistoryItem = (item: HistoryItem<TRow>) => {
-    };
-
     constructor(private state: DataGridStates<TRow>) { }
 
-    public addUndo = (newData: TRow[], operation: RowOperation) => {
+    public addUndo = (operation: RowOperation) => {
         const { data: oldData } = this.state.options;
 
         this.undoItems.push({

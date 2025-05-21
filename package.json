@@ -1,13 +1,13 @@
 {
-    "name": "@basestacks/data-grid",
+    "name": "@basestacks/datagrid",
     "version": "0.1.0",
     "description": "A template for creating packages with TypeScript, Rollup, and Jest",
     "author": "BaseStacks",
     "keywords": [],
-    "homepage": "https://github.com/BaseStacks/data-grid",
+    "homepage": "https://github.com/BaseStacks/datagrid",
     "repository": {
         "type": "git",
-        "url": "https://github.com/BaseStacks/data-grid"
+        "url": "https://github.com/BaseStacks/datagrid"
     },
     "license": "MIT",
     "sideEffects": false,

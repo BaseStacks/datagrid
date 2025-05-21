@@ -11,7 +11,7 @@ export function Header() {
                 <div className="flex h-14 items-center justify-between gap-8 px-4 sm:px-6">
                     <div className="flex items-center gap-4">
                         <h1 className="font-mono text-gray-950 dark:text-white">
-                            BaseStacks <span className="font-bold">data-grid</span>
+                            BaseStacks <span className="font-bold">datagrid</span>
                         </h1>
                         <button className="flex items-center gap-0.5 rounded-2xl bg-gray-950/5 py-0.5 pr-1.5 pl-2.5 text-xs/5 font-medium text-gray-950 tabular-nums hover:bg-gray-950/7.5 data-active:bg-gray-950/7.5 dark:bg-white/10 dark:text-white dark:hover:bg-white/12.5 dark:data-active:bg-white/12.5">
                             v0.1

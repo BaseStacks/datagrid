@@ -6,7 +6,7 @@
         "baseUrl": ".",
         "paths": {
             "@/*": ["./src/*"],
-            "@basestacks/data-grid": ["../src"]
+            "@basestacks/datagrid": ["../src"]
         },
         "outDir": "./dist",
         "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",

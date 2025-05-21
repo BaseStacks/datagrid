@@ -8,7 +8,7 @@ importers:
 
   .:
     dependencies:
-      '@basestacks/data-grid':
+      '@basestacks/datagrid':
         specifier: file:..
         version: file:..(react@19.1.0)
       '@mdx-js/react':
@@ -173,7 +173,7 @@ packages:
     resolution: {integrity: sha512-H45s8fVLYjbhFH62dIJ3WtmJ6RSPt/3DRO0ZcT2SUiYiQyz3BLVb9ADEnLl91m74aQPS3AzzeajZHYOalWe3bg==}
     engines: {node: '>=6.9.0'}
 
-  '@basestacks/data-grid@file:..':
+  '@basestacks/datagrid@file:..':
     resolution: {directory: .., type: directory}
     engines: {node: '>=18.0.0'}
     peerDependencies:
@@ -2021,7 +2021,7 @@ snapshots:
       '@babel/helper-string-parser': 7.25.9
       '@babel/helper-validator-identifier': 7.25.9
 
-  '@basestacks/data-grid@file:..(react@19.1.0)':
+  '@basestacks/datagrid@file:..(react@19.1.0)':
     dependencies:
       fast-deep-equal: 3.1.3
       react: 19.1.0

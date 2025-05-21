@@ -1,4 +1,4 @@
-import { CellEditorProps } from '@basestacks/data-grid';
+import { CellEditorProps } from '@basestacks/datagrid';
 import React, { } from 'react';
 import { useRef } from 'react';
 
