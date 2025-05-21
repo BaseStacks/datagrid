@@ -7,7 +7,7 @@
     "homepage": "https://github.com/BaseStacks/datagrid",
     "repository": {
         "type": "git",
-        "url": "https://github.com/BaseStacks/datagrid"
+        "url": "git+https://github.com/BaseStacks/datagrid.git"
     },
     "license": "MIT",
     "sideEffects": false,
