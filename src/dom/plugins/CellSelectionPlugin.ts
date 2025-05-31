@@ -190,7 +190,7 @@ export class CellSelectionPlugin<TRow extends RowData> extends DataGridDomPlugin
             element.addEventListener('mouseenter', this.handleCellMouseEnter);
         });
 
-        const pluginName = this.toString();
+        const pluginName = this.constructor.name;
         this.dataGrid.commands.register([
             { id: 'moveLeft', source: pluginName, execute: this.dataGrid.selection.moveLeft },
             { id: 'moveRight', source: pluginName, execute: this.dataGrid.selection.moveRight },

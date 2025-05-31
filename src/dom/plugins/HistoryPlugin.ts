@@ -36,8 +36,8 @@ export class HistoryPlugin<TRow extends RowData> extends DataGridDomPlugin<TRow,
         });
 
         this.unsubscribes.push(() => {
-            this.dataGrid.commands.unregisterAll(this.toString());
-            this.dataGrid.keyBindings.removeAll(this.toString());
+            this.dataGrid.commands.unregisterAll(this.constructor.name);
+            this.dataGrid.keyBindings.removeAll(this.constructor.name);
         });
     };
 }

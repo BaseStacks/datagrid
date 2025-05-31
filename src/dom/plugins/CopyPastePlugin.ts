@@ -83,8 +83,8 @@ export class CopyPastePlugin<TRow extends RowData> extends DataGridDomPlugin<TRo
         });
 
         this.unsubscribes.push(() => {
-            this.dataGrid.commands.unregisterAll(this.toString());
-            this.dataGrid.keyBindings.removeAll(this.toString());
+            this.dataGrid.commands.unregisterAll(this.constructor.name);
+            this.dataGrid.keyBindings.removeAll(this.constructor.name);
         });
     };
 }

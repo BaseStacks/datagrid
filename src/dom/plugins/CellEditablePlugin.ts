@@ -177,8 +177,8 @@ export class CellEditablePlugin<TRow extends RowData> extends DataGridDomPlugin<
         });
 
         this.unsubscribes.push(() => {
-            this.dataGrid.commands.unregisterAll('CellEditablePlugin');
-            this.dataGrid.keyBindings.removeAll(this.toString());
+            this.dataGrid.commands.unregisterAll(this.constructor.name);
+            this.dataGrid.keyBindings.removeAll(this.constructor.name);
         });
     };
 }
