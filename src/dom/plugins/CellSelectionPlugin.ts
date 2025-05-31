@@ -215,7 +215,7 @@ export class CellSelectionPlugin<TRow extends RowData> extends DataGridDomPlugin
 
         this.unsubscribes.push(watchElements);
         this.unsubscribes.push(() => {
-            this.dataGrid.commands.unregister(pluginName);
+            this.dataGrid.commands.unregisterAll(pluginName);
             this.dataGrid.keyBindings.removeAll(pluginName);
 
             window.removeEventListener('mousedown', this.handleContainerMouseDown);
