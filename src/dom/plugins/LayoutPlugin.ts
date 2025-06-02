@@ -25,9 +25,19 @@ export class LayoutPlugin<TRow extends RowData> extends DataGridDomPlugin<TRow, 
                 return;
             }
 
+            const { width, minWidth, maxWidth } = header.column;
+
+            let finalWidth = width ?? columnWidth;
+            if (minWidth !== undefined) {
+                finalWidth = Math.max(finalWidth, minWidth);
+            }
+            if (maxWidth !== undefined) {
+                finalWidth = Math.min(finalWidth, maxWidth);
+            }
+
             updateNode(headerId, {
                 size: {
-                    width: columnWidth,
+                    width: finalWidth,
                 }
             });
         });

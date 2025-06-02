@@ -20,7 +20,7 @@ const genderOptions = [{
 
 export function CellSelection() {
     const columns = useMemo((): Column[] => [
-        { key: 'id', header: 'ID' },
+        { key: 'id', header: 'ID', width: 100, selectable: false  },
         { key: 'firstName', header: 'First Name', editor: (props) => <TextEditor {...props} /> },
         { key: 'lastName', header: 'Last Name', editor: (props) => <TextEditor {...props} /> },
         { key: 'gender', header: 'Gender', editor: (props) => <SelectEditor {...props} options={genderOptions} /> },
@@ -35,7 +35,7 @@ export function CellSelection() {
     const [data, setData] = useState(() => {
         return generateData({
             fields: [
-                { name: 'id', type: 'uuid', required: true },
+                { name: 'id', type: 'uuid', required: true},
                 { name: 'firstName', type: 'firstName', required: true },
                 { name: 'lastName', type: 'lastName', required: true },
                 { name: 'gender', type: 'gender', required: false },

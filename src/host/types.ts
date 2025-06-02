@@ -94,10 +94,12 @@ export interface Column<TValue = any> {
   readonly footer?: string | (() => any);
   readonly editor?: ((opts: CellEditorProps<TValue>) => any) | CustomEditor<TValue>;
   readonly disabled?: boolean | ((opts: { value: RowData; rowIndex: number }) => boolean);
+  readonly width?: number;
+  readonly minWidth?: number;
+  readonly maxWidth?: number;
+  readonly selectable?: boolean;
   readonly prePasteValues?: (values: string[]) => TValue[];
   readonly pasteValue?: (value: TValue) => TValue | Promise<TValue>;
-  readonly isCellEmpty?: (opts: { value: RowData; rowIndex: number }) => boolean;
-  readonly deleteValue?: (opts: { value: RowData; rowIndex: number }) => TValue | Promise<TValue>;
 }
 
 export interface ColumnLayout {

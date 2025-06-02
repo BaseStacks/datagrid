@@ -16,18 +16,13 @@ export class ColumnPinningPlugin<TRow extends RowData> extends DataGridDomPlugin
     private _rightHeadersDesc: ColumnHeader[] = [];
 
     private setupHeaderNodes = () => {
-        const { headers } = this.dataGrid.state;
         const { layoutNodesState, updateNode } = this.dataGrid.layout;
 
-        // Set default column width based on scrollArea width
-        const scrollAreaWidth = this.scrollArea!.clientWidth;
-        const columnCount = headers.value.length;
-        const defaultColumnWidth = Math.floor(scrollAreaWidth / columnCount);
-        const columnWidth = Math.max(this.dataGrid.options.columnMinWidth, Math.min(defaultColumnWidth, this.dataGrid.options.columnMaxWidth));
-
+        let leftWidth = 0;
         this._leftHeaders.forEach((header, index, leftHeaders) => {
             const headerNode = layoutNodesState.get(header.id) as DataGridHeaderNode;
 
+            leftWidth += headerNode.size.width!;
             updateNode(headerNode.id, {
                 pinned: {
                     side: 'left',
@@ -37,14 +32,16 @@ export class ColumnPinningPlugin<TRow extends RowData> extends DataGridDomPlugin
             });
         });
 
-        this._bodyHeaders.forEach((header, index) => {
+        this._bodyHeaders.forEach((header) => {
             const headerNode = layoutNodesState.get(header.id) as DataGridHeaderNode;
 
             updateNode(headerNode.id, {
                 offset: {
-                    left: (index + this._leftHeaders.length) * columnWidth
+                    left: leftWidth
                 }
             });
+
+            leftWidth += headerNode.size.width!;
         });
 
         this._rightHeaders.forEach((header, index, rightHeaders) => {
