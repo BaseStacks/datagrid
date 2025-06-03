@@ -57,7 +57,7 @@ export interface SelectionBoundary {
 export interface CellProps<TValue = any> {
   readonly id: CellId;
   readonly rowId: RowId;
-  readonly headerId: HeaderId;
+  readonly rowIndex: number;
   readonly value?: TValue;
   readonly setValue: (value: TValue) => void;
 }
@@ -89,6 +89,7 @@ export type CustomEditor<TValue> = {
 
 export interface Column<TValue = any> {
   readonly key: string;
+  readonly dataKey?: string;
   readonly header?: string | (() => any);
   readonly cell?: ((opts: CellProps<TValue>) => any)
   readonly footer?: string | (() => any);

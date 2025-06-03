@@ -15,14 +15,15 @@ export class DataGridRenderer<TRow extends RowData> {
         }
 
         const header = this.state.headers.value.find((header) => header.id === cell.headerId);
-        const cellValue = row?.data[header!.column.key as keyof TRow];
+        const dataKey = header?.column.dataKey ?? header?.column.key;
+        const cellValue = row?.data[dataKey as keyof TRow];
 
         const column = header!.column;
         if (typeof column.cell === 'function') {
             return column.cell({
                 id: cell.id,
                 rowId: cell.rowId,
-                headerId: cell.headerId,
+                rowIndex: cell.coordinates.rowIndex,
                 value: cellValue,
                 setValue: (newValue) => {
                     this.modifier.updateRowData(cell.coordinates.rowIndex, {
