@@ -1,6 +1,7 @@
 import type { CellId, RowData } from '../../host';
 import { getCoordinatesById, idTypeEquals, breakRangeToSmallerPart, isRangeInsideOthers, tryCombineRanges, tryRemoveDuplicates } from '../../host';
 import { DataGridDomPlugin, type DataGridDomPluginOptions } from '../atomic/DataGridDomPlugin';
+import type { DataGridCellNode } from '../cores/DataGridLayout';
 import { clearAllTextSelection } from '../utils/domUtils';
 
 type CellSelectionPluginShortcut =
@@ -94,19 +95,25 @@ export class CellSelectionPlugin<TRow extends RowData> extends DataGridDomPlugin
     };
 
     private handleCellMouseDown = (event: MouseEvent) => {
-        const nodeInfo = this.dataGrid.layout.getNodeByElement(event.currentTarget as HTMLElement);
+        const nodeInfo = this.dataGrid.layout.getNodeByElement(event.currentTarget as HTMLElement) as DataGridCellNode;
         if (!nodeInfo) {
             throw new Error('Node not found');
         }
+        const cellId = nodeInfo.id;
+        const header = this.dataGrid.state.headers.value.find((header) => header.id === nodeInfo.headerId);
+        if (!header) {
+            throw new Error(`Header not found for cell with id ${cellId}`);
+        }
 
-        const { dragging } = this.dataGrid.selection;
+        const { selectable } = header.column;
+        if(selectable === false) {
+            return;
+        }
+
+        const { dragging, cleanSelection, startSelection, updateLastSelectedRange } = this.dataGrid.selection;
         const { activeCell, editing } = this.dataGrid.state;
 
-        const cellId = nodeInfo.id as CellId;
         const isFocusing = activeCell.value?.id === cellId && editing.value;
-        const coordinates = getCoordinatesById(cellId);
-
-        const { cleanSelection, startSelection, updateLastSelectedRange } = this.dataGrid.selection;
 
         if (isFocusing) {
             cleanSelection({
@@ -118,6 +125,8 @@ export class CellSelectionPlugin<TRow extends RowData> extends DataGridDomPlugin
 
         const createNewRange = event.ctrlKey;
         const expandSelection = event.shiftKey;
+
+        const coordinates = getCoordinatesById(cellId);
 
         if (expandSelection) {
             if (activeCell.value) {
