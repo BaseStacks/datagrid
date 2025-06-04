@@ -12,5 +12,6 @@ export const defaultOptions: Required<DataGridOptions<RowData>> = {
     onChange: () => { },
     rowKey: 'id',
     headerHeight: 42,
-    rowHeight: 42
+    rowHeight: 42,
+    footerHeight: 42,
 };

@@ -18,3 +18,5 @@ export * from './components/DataGridFloatingEditor';
 export * from './components/DataGridCellContent';
 export * from './components/DataGridFillHandle';
 export * from './components/DataGridFillRange';
+export * from './components/DataGridFooterGroup';
+export * from './components/DataGridFooter';

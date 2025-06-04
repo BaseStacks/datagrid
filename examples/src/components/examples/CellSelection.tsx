@@ -1,4 +1,4 @@
-import { Column, DataGridProvider, useDataGrid, useDataGridState, DataGridContainer, DataGridCell, CellSelectionPlugin, DataGridHeader, DataGridHeaderGroup, DataGridRow, DataGridScrollArea, StayInViewPlugin, RowPinningPlugin, RowKey, DataGridRowContainer, ColumnPinningPlugin, usePlugin, LayoutPlugin, CellEditablePlugin, DataGridCellContent, DataGridFloatingEditor, CopyPastePlugin, CellFillPlugin, DataGridFillHandle, DataGridFillRange, HistoryPlugin } from '@basestacks/datagrid';
+import { Column, DataGridProvider, useDataGrid, useDataGridState, DataGridContainer, DataGridCell, CellSelectionPlugin, DataGridHeader, DataGridHeaderGroup, DataGridRow, DataGridScrollArea, StayInViewPlugin, RowPinningPlugin, RowKey, DataGridRowContainer, ColumnPinningPlugin, usePlugin, LayoutPlugin, CellEditablePlugin, DataGridCellContent, DataGridFloatingEditor, CopyPastePlugin, CellFillPlugin, DataGridFillHandle, DataGridFillRange, HistoryPlugin, DataGridFooterGroup, DataGridFooter } from '@basestacks/datagrid';
 import { useMemo, useState } from 'react';
 import { generateData } from '@/helpers/dataHelpers';
 import { cn } from '@/utils/cn';
@@ -21,9 +21,9 @@ const genderOptions = [{
 export function CellSelection() {
     const columns = useMemo((): Column[] => [
         { key: 'column-header', dataKey: 'id', header: '#' },
-        { key: 'id', header: 'ID', width: 100, selectable: false },
-        { key: 'firstName', header: 'First Name', editor: (props) => <TextEditor {...props} /> },
-        { key: 'lastName', header: 'Last Name', editor: (props) => <TextEditor {...props} /> },
+        { key: 'id', header: 'ID', width: 100, selectable: false, footer: 'id' },
+        { key: 'firstName', header: 'First Name', editor: (props) => <TextEditor {...props} />, footer: 'firstName' },
+        { key: 'lastName', header: 'Last Name', editor: (props) => <TextEditor {...props} />, footer: 'lastName' },
         { key: 'gender', header: 'Gender', editor: (props) => <SelectEditor {...props} options={genderOptions} /> },
         { key: 'age', header: 'Age', editor: (props) => <TextEditor {...props} type="number" min={1} /> },
         { key: 'address', header: 'Address', editor: { float: true, render: (props) => <TextAreaEditor {...props} /> } },
@@ -81,6 +81,7 @@ export function CellSelection() {
 
     const headers = useDataGridState(dataGrid.state.headers);
     const rows = useDataGridState(dataGrid.state.rows);
+    const footers = useDataGridState(dataGrid.state.footers);
 
     return (
         <DataGridProvider dataGrid={dataGrid}>
@@ -107,6 +108,15 @@ export function CellSelection() {
                     <DataGridFillRange className="border border-dashed z-99 " />
                     <DataGridFloatingEditor className="!z-99" />
                 </DataGridScrollArea>
+                <DataGridFooterGroup>
+                    {footers.map((footer, index) => (
+                        <DataGridFooter
+                            key={index}
+                            footer={footer}
+                            className={cn(clxs.header, clxs.cellPinned)}
+                        />
+                    ))}
+                </DataGridFooterGroup>
             </DataGridContainer>
         </DataGridProvider>
     );

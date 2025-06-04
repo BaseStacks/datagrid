@@ -1,4 +1,4 @@
-import type { CellId, Id, RowData, RowId, HeaderId, HeaderGroupId, RowContainerId, DeepPartial, EditorContainerId, FillHandleId } from '../../host';
+import type { CellId, Id, RowData, RowId, HeaderId, HeaderGroupId, RowContainerId, DeepPartial, EditorContainerId, FillHandleId, FooterGroupId, FooterId } from '../../host';
 import { getIdType, DataGridMapState, DataGridState, DataGridStates } from '../../host';
 import { calculateScrollOffsets } from '..';
 import type { DataGridDomPlugin } from '../atomic/DataGridDomPlugin';
@@ -31,6 +31,11 @@ export interface DataGridCellNode extends DataGridLayoutNodeBase {
     readonly focused?: boolean;
 }
 
+export interface DataGridHeaderGroupNode extends DataGridLayoutNodeBase {
+    readonly id: HeaderGroupId;
+    readonly type: 'headerGroup',
+}
+
 export interface DataGridHeaderNode extends DataGridLayoutNodeBase {
     readonly id: HeaderId;
     readonly type: 'header',
@@ -41,14 +46,19 @@ export interface DataGridRowNode extends DataGridLayoutNodeBase {
     readonly type: 'row',
 }
 
-export interface DataGridHeaderGroupNode extends DataGridLayoutNodeBase {
-    readonly id: HeaderGroupId;
-    readonly type: 'headerGroup',
-}
-
 export interface DataGridRowContainerNode extends DataGridLayoutNodeBase {
     readonly id: RowContainerId;
     readonly type: 'rowContainer';
+}
+
+export interface DataGridFooterGroupNode extends DataGridLayoutNodeBase {
+    readonly id: FooterGroupId;
+    readonly type: 'footerGroup',
+}
+
+export interface DataGridFooterNode extends DataGridLayoutNodeBase {
+    readonly id: FooterId;
+    readonly type: 'footer',
 }
 
 export interface DataGridEditorContainerNode extends DataGridLayoutNodeBase {
@@ -61,7 +71,7 @@ export interface DataGridFillHandleNode extends DataGridLayoutNodeBase {
     readonly type: 'editorContainer';
 }
 
-export type DataGridLayoutNode = DataGridCellNode | DataGridHeaderGroupNode | DataGridHeaderNode | DataGridRowNode | DataGridRowContainerNode | DataGridEditorContainerNode | DataGridFillHandleNode;
+export type DataGridLayoutNode = DataGridCellNode | DataGridHeaderGroupNode | DataGridHeaderNode | DataGridRowNode | DataGridRowContainerNode | DataGridEditorContainerNode | DataGridFillHandleNode | DataGridFooterGroupNode | DataGridFooterNode;
 
 export class DataGridLayout<TRow extends RowData> {
     constructor(private state: DataGridStates<TRow>) { }

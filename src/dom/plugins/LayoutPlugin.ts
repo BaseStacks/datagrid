@@ -1,4 +1,4 @@
-import type { Id, RowData } from '../../host';
+import { createId, type Id, type RowData } from '../../host';
 import { DataGridDomPlugin } from '../atomic/DataGridDomPlugin';
 
 export interface LayoutPluginOptions {
@@ -11,11 +11,14 @@ export class LayoutPlugin<TRow extends RowData> extends DataGridDomPlugin<TRow, 
         const { layoutNodesState, updateNode } = this.dataGrid.layout;
 
         const headerNodes = layoutNodesState.values().filter((node) => node.type === 'header').toArray();
+        const footerNodes = layoutNodesState.values().filter((node) => node.type === 'footer').toArray();
 
         const scrollAreaWidth = this.scrollArea!.clientWidth;
         const columnCount = headers.value.length;
         const defaultColumnWidth = Math.floor(scrollAreaWidth / columnCount);
         const columnWidth = Math.max(columnMinWidth, Math.min(defaultColumnWidth, columnMaxWidth));
+
+        let currentLeft = 0;
 
         headers.value.forEach((header) => {
             const headerId = header.id as Id;
@@ -35,11 +38,31 @@ export class LayoutPlugin<TRow extends RowData> extends DataGridDomPlugin<TRow, 
                 finalWidth = Math.min(finalWidth, maxWidth);
             }
 
+            // Update the header node with the new width and left offset
             updateNode(headerId, {
+                offset: {
+                    left: currentLeft,
+                },
                 size: {
                     width: finalWidth,
                 }
             });
+
+            // Update the footer node with the same width and left offset
+            const footerId = createId({ type: 'footer', columnKey: header.column.key }) as Id;
+            const footerNode = footerNodes.find((node) => node.id === footerId);
+            if (footerNode) {
+                updateNode(footerNode.id, {
+                    offset: {
+                        left: currentLeft,
+                    },
+                    size: {
+                        width: finalWidth,
+                    }
+                });
+            }
+
+            currentLeft += finalWidth;
         });
     };
 
@@ -95,13 +118,13 @@ export class LayoutPlugin<TRow extends RowData> extends DataGridDomPlugin<TRow, 
         const { layoutNodesState, updateNode } = this.dataGrid.layout;
 
         const cellNodes = layoutNodesState.values().filter((node) => node.type === 'cell');
-        
+
         cellNodes.forEach((cellNode) => {
             const headerNode = layoutNodesState.get(cellNode.headerId);
             if (!headerNode) {
                 return;
             }
-            
+
             updateNode(cellNode.id, {
                 size: {
                     width: headerNode.size.width

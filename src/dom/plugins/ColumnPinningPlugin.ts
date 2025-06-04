@@ -1,6 +1,6 @@
-import type { ColumnKey, ColumnHeader, RowData } from '../../host';
+import { type ColumnKey, type ColumnHeader, type RowData, createId, type Id } from '../../host';
 import { DataGridDomPlugin } from '../atomic/DataGridDomPlugin';
-import type { DataGridHeaderNode } from '../cores/DataGridLayout';
+import type { DataGridHeaderNode, DataGridLayoutNodeBase } from '../cores/DataGridLayout';
 
 export interface ColumnPinningPluginOptions {
     readonly pinnedLeftColumns?: ColumnKey[];
@@ -23,29 +23,47 @@ export class ColumnPinningPlugin<TRow extends RowData> extends DataGridDomPlugin
             const headerNode = layoutNodesState.get(header.id) as DataGridHeaderNode;
 
             leftWidth += headerNode.size.width!;
-            updateNode(headerNode.id, {
-                pinned: {
-                    side: 'left',
-                    first: (index === 0),
-                    last: (index === leftHeaders.length - 1)
-                }
-            });
+
+            const pinned: DataGridLayoutNodeBase['pinned'] = {
+                side: 'left',
+                first: (index === 0),
+                last: (index === leftHeaders.length - 1)
+            };
+
+            updateNode(headerNode.id, { pinned });
+
+            const footerId = createId({ type: 'footer', columnKey: header.column.key }) as Id;
+            const footerNode = layoutNodesState.get(footerId) as DataGridHeaderNode;
+            if (footerNode) {
+                updateNode(footerNode.id, { pinned });
+            }
         });
 
         this._bodyHeaders.forEach((header) => {
             const headerNode = layoutNodesState.get(header.id) as DataGridHeaderNode;
 
-            updateNode(headerNode.id, {
-                offset: {
-                    left: leftWidth
-                }
-            });
+            const offset = {
+                left: leftWidth
+            };
+            updateNode(headerNode.id, { offset });
+
+            const footerId = createId({ type: 'footer', columnKey: header.column.key }) as Id;
+            const footerNode = layoutNodesState.get(footerId) as DataGridHeaderNode;
+            if (footerNode) {
+                updateNode(footerNode.id, { offset });
+            }
 
             leftWidth += headerNode.size.width!;
         });
 
         this._rightHeaders.forEach((header, index, rightHeaders) => {
             const headerNode = layoutNodesState.get(header.id) as DataGridHeaderNode;
+
+            const pinned: DataGridLayoutNodeBase['pinned'] = {
+                side: 'right',
+                first: (index === 0),
+                last: (index === rightHeaders.length - 1)
+            };
 
             updateNode(headerNode.id, {
                 pinned: {
@@ -54,6 +72,12 @@ export class ColumnPinningPlugin<TRow extends RowData> extends DataGridDomPlugin
                     last: (index === rightHeaders.length - 1)
                 }
             });
+
+            const footerId = createId({ type: 'footer', columnKey: header.column.key }) as Id;
+            const footerNode = layoutNodesState.get(footerId) as DataGridHeaderNode;
+            if (footerNode) {
+                updateNode(footerNode.id, { pinned });
+            }
         });
     };
 
@@ -78,11 +102,16 @@ export class ColumnPinningPlugin<TRow extends RowData> extends DataGridDomPlugin
                 return;
             }
 
-            updateNode(header.id, {
-                offset: {
-                    left: nodeOffset
-                }
-            });
+            const offset = {
+                left: nodeOffset
+            };
+            updateNode(header.id, { offset });
+
+            const footerId = createId({ type: 'footer', columnKey: header.column.key }) as Id;
+            const footerNode = layoutNodesState.get(footerId);
+            if (footerNode) {
+                updateNode(footerId, { offset });
+            }
         });
 
         const viewportWidth = this.scrollArea!.clientWidth;
@@ -101,11 +130,17 @@ export class ColumnPinningPlugin<TRow extends RowData> extends DataGridDomPlugin
                 return;
             }
 
-            updateNode(header.id, {
-                offset: {
-                    left: nodeOffset
-                }
-            });
+            const offset = {
+                left: nodeOffset
+            };
+
+            updateNode(header.id, { offset });
+
+            const footerId = createId({ type: 'footer', columnKey: header.column.key }) as Id;
+            const footerNode = layoutNodesState.get(footerId);
+            if (footerNode) {
+                updateNode(footerId, { offset });
+            }
         });
     };
 

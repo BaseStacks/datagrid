@@ -19,8 +19,10 @@ export type CellId = `cell:${RowDataKey}-${ColumnKey}`;
 export type EditorContainerId = 'editorContainer';
 export type FillHandleId = 'fillHandle';
 export type FillRangeId = 'fillRange';
+export type FooterGroupId = `footerGroup:${string}`;
+export type FooterId = `footer:${ColumnKey}`;
 
-export type Id = HeaderGroupId | HeaderId | RowContainerId | RowId | CellId | EditorContainerId | FillHandleId | FillRangeId;
+export type Id = HeaderGroupId | HeaderId | RowContainerId | RowId | CellId | EditorContainerId | FillHandleId | FillRangeId | FooterGroupId | FooterId;
 
 export type WithId<TId, TData> = TData & { readonly id: TId };
 
@@ -76,6 +78,13 @@ export interface CellRender {
 }
 
 export interface ColumnHeader {
+  readonly id: HeaderId;
+  readonly index: number;
+  readonly column: Column;
+  readonly render: () => any;
+}
+
+export interface ColumnFooter {
   readonly id: HeaderId;
   readonly index: number;
   readonly column: Column;
@@ -155,6 +164,7 @@ export interface DataGridOptions<TRow extends RowData = RowData> {
   readonly columnMaxWidth?: number;
   readonly headerHeight?: number;
   readonly rowHeight?: number;
+  readonly footerHeight?: number;
 
   // Deleting an empty cell of an empty row will actually remove the row. 
   // This behavior is auto-disabled if the lockRows is enabled.

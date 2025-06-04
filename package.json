@@ -1,6 +1,6 @@
 {
     "name": "@basestacks/datagrid",
-    "version": "0.1.2",
+    "version": "0.1.4",
     "description": "A template for creating packages with TypeScript, Rollup, and Jest",
     "author": "BaseStacks",
     "keywords": [],

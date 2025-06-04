@@ -1,5 +1,5 @@
 [
-"CellEditablePlugin",
+    "CellEditablePlugin",
     "CellFillPlugin",
     "CellSelectionPlugin",
     "ColumnPinningPlugin",
@@ -14,6 +14,8 @@
     "DataGridFillHandle",
     "DataGridFillRange",
     "DataGridFloatingEditor",
+    "DataGridFooter",
+    "DataGridFooterGroup",
     "DataGridHeader",
     "DataGridHeaderGroup",
     "DataGridHost",

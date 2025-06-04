@@ -57,11 +57,22 @@ export abstract class DataGridHost<TRow extends RowData = RowData> {
         });
     };
 
+    private createFooters = (): ColumnHeader[] => {
+        const { columns } = this.state.options;
+        return columns.map((column, index) => ({
+            id: createId({ type: 'footer', columnKey: column.key }) as HeaderId,
+            index,
+            column,
+            render: () => typeof column.footer === 'function' ? column.footer() : column.footer,
+        }));
+    };
+
     private initialize = () => {
         const { data, columns } = this.state.options;
 
         this.state.rows.set(this.createRows(data, columns));
         this.state.headers.set(this.createHeaders());
+        this.state.footers.set(this.createFooters());
     };
 
     constructor(options: DataGridOptions<TRow>) {

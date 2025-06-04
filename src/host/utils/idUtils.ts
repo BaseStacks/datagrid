@@ -8,7 +8,7 @@ type CellIdData = {
     readonly columnIndex: number;
 }
 
-type ColumnIdData = {
+type HeaderIdData = {
     readonly type: 'header';
     readonly columnKey: ColumnKey;
 }
@@ -18,10 +18,15 @@ type RowIdData = {
     readonly row: RowDataKey;
 }
 
-type IdData = CellIdData | ColumnIdData | RowIdData;
+type FooterIdData = {
+    readonly type: 'footer';
+    readonly columnKey: ColumnKey;
+}
+
+type IdData = CellIdData | HeaderIdData | RowIdData | FooterIdData;
 
 export const createId = (idData: IdData): Id => {
-    if (idData.type === 'header') {
+    if (idData.type === 'header' || idData.type === 'footer') {
         return `${idData.type}:${idData.columnKey}`;
     }
 
