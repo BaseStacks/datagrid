@@ -6,8 +6,7 @@ import type { DataGridCommands } from '../../host/cores/DataGridCommands';
 export type KeyBindingHandler = (event: KeyboardEvent) => MaybePromise<void | boolean>;
 
 export class DataGridKeyBindings<TRow extends RowData> {
-    private unregisterMap = new Map<string, any>();
-
+    private readonly unregisterMap = new Map<string, any>();
 
     constructor(private commands: DataGridCommands) {
     }
@@ -36,14 +35,14 @@ export class DataGridKeyBindings<TRow extends RowData> {
 
         const cleanKeyBindings = tinykeys(window, keyBindingMap);
 
-        this.unregisterMap.set(source.toString(), cleanKeyBindings);
+        this.unregisterMap.set(source.constructor.name, cleanKeyBindings);
     };
 
     public removeAll = (source: string) => {
         const cleanKeyBindings = this.unregisterMap.get(source);
         if (cleanKeyBindings) {
             cleanKeyBindings();
-            this.unregisterMap.delete(source.toString());
+            this.unregisterMap.delete(source.constructor.name);
         }
     };
 };

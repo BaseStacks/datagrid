@@ -1,5 +1,4 @@
-import { createCellId, extractCellId, getMaxCellId, getMinCellId, getQuadCorners, type DataGridPluginOptions } from '../../host';
-import type { CellId, RowData } from '../../host';
+import { createCellId, extractCellId, getMaxCellId, getMinCellId, getQuadCorners, type DataGridPluginOptions, type CellId, type RowData } from '../../host';
 import { DataGridDomPlugin } from '../atomic/DataGridDomPlugin';
 import type { DataGridCellNode } from '../cores/DataGridLayout';
 import { getRect } from '../utils/domRectUtils';
@@ -27,11 +26,12 @@ export class CellFillPlugin<TRow extends RowData> extends DataGridDomPlugin<TRow
     private _fillOffset: FillOffset | null = null;
     private _fillRange: FillRange | null = null;
 
+
     private get fillHandle() {
         return this.dataGrid.layout.getNode('fillHandle');
     }
 
-    private hideFillHandle = () => {
+    private readonly hideFillHandle = () => {
         if (!this.fillHandle) {
             return;
         }
@@ -41,7 +41,7 @@ export class CellFillPlugin<TRow extends RowData> extends DataGridDomPlugin<TRow
         });
     };
 
-    private setHandleOffset = (cellId: CellId) => {
+    private readonly setHandleOffset = (cellId: CellId) => {
         const cellNode = this.dataGrid.layout.getNode(cellId) as DataGridCellNode;
         if (!cellNode) {
             return;
@@ -66,11 +66,11 @@ export class CellFillPlugin<TRow extends RowData> extends DataGridDomPlugin<TRow
 
         const rowNode = this.dataGrid.layout.getNode(cellNode.rowId)!;
 
-        const cellZ =+getComputedStyle(cellNode.element).zIndex || 0;
+        const cellZ = +getComputedStyle(cellNode.element).zIndex || 0;
         const rowZ = +getComputedStyle(rowNode.element).zIndex || 0;
 
         const z = Math.max(cellZ, rowZ);
-        
+
         this.dataGrid.layout.updateNode('fillHandle', {
             offset: {
                 z: (z + 1) || 1,
@@ -89,7 +89,7 @@ export class CellFillPlugin<TRow extends RowData> extends DataGridDomPlugin<TRow
         };
     };
 
-    private updateHandleOffset = () => {
+    private readonly updateHandleOffset = () => {
         if (!this._fillOffset) {
             return;
         }
@@ -104,7 +104,7 @@ export class CellFillPlugin<TRow extends RowData> extends DataGridDomPlugin<TRow
         });
     };
 
-    private startFill = (event: MouseEvent) => {
+    private readonly startFill = (event: MouseEvent) => {
         const range = this.dataGrid.state.selectedRanges.value[0];
         if (!range) {
             return;
@@ -116,13 +116,13 @@ export class CellFillPlugin<TRow extends RowData> extends DataGridDomPlugin<TRow
         event.stopPropagation();
     };
 
-    private moveFill = (event: MouseEvent) => {
+    private readonly moveFill = (event: MouseEvent) => {
         event.preventDefault();
         if (!this._fill) {
             return;
         }
 
-        const selectedRange = this.dataGrid.state.selectedRanges.value[0]!;
+        const selectedRange = this.dataGrid.state.selectedRanges.value[0];
         const overCell = this.dataGrid.layout.getNodeByElement(event.target as HTMLElement);
         if (!overCell) {
             return;
@@ -206,7 +206,7 @@ export class CellFillPlugin<TRow extends RowData> extends DataGridDomPlugin<TRow
         };
     };
 
-    private endFill = (event: MouseEvent) => {
+    private readonly endFill = (event: MouseEvent) => {
         if (!this._fill || !this._fillRange) {
             return;
         }
@@ -251,11 +251,10 @@ export class CellFillPlugin<TRow extends RowData> extends DataGridDomPlugin<TRow
             }
 
             if (operation === 'remove') {
-                item.element.removeEventListener('mousedown', this.startFill);
-                return;
+                return this.removeEventListener(item.element, 'mousedown', this.startFill);
             }
 
-            item.element.addEventListener('mousedown', this.startFill);
+            this.addEventListener(item.element, 'mousedown', this.startFill);
         });
 
         const unwatchRanges = this.dataGrid.state.selectedRanges.watch((ranges) => {
@@ -277,21 +276,19 @@ export class CellFillPlugin<TRow extends RowData> extends DataGridDomPlugin<TRow
             }
 
             if (operation === 'remove') {
-                item.element.removeEventListener('mouseenter', this.moveFill);
-                return;
+                return this.removeEventListener(item.element, 'mouseenter', this.moveFill);
             }
 
-            item.element.addEventListener('mouseenter', this.moveFill);
+            this.addEventListener(item.element, 'mouseenter', this.moveFill);
         });
 
-        this.scrollArea!.addEventListener('scroll', this.updateHandleOffset);
+        this.addEventListener(this.scrollArea!, 'scroll', this.updateHandleOffset);
         document.addEventListener('mouseup', this.endFill);
 
         this.unsubscribes.push(() => {
             unwatchFillHandle();
             unwatchRanges();
             unwatchCells();
-            this.scrollArea!.removeEventListener('scroll', this.updateHandleOffset);
             document.removeEventListener('mouseup', this.endFill);
         });
     };
