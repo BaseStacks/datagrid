@@ -7,11 +7,28 @@ export interface CellFillPluginOptions extends DataGridPluginOptions {
     readonly scrollBehavior?: ScrollBehavior;
 }
 
+/**
+ * Represents the direction of a fill operation
+ */
+enum FillDirection {
+    DOWN = 'down',
+    UP = 'up',
+    RIGHT = 'right',
+    LEFT = 'left',
+    NONE = 'none'
+}
+
+/**
+ * Represents a range of cells to be filled
+ */
 interface FillRange {
     readonly start: CellId;
     readonly end: CellId;
 }
 
+/**
+ * Represents the offset information for the fill handle
+ */
 interface FillOffset {
     readonly pinnedHorizontal: boolean;
     readonly pinnedVertical: boolean;
@@ -21,18 +38,96 @@ interface FillOffset {
     readonly baseScrollTop: number;
 }
 
+/**
+ * Configuration for fill range calculation
+ */
+interface FillRangeConfig {
+    readonly selectedMinRow: number;
+    readonly selectedMaxRow: number;
+    readonly selectedMinColumn: number;
+    readonly selectedMaxColumn: number;
+    readonly overRow: number;
+    readonly overColumn: number;
+}
+
+/**
+ * Plugin for handling cell fill operations (drag to fill cells with data)
+ */
 export class CellFillPlugin<TRow extends RowData> extends DataGridDomPlugin<TRow, CellFillPluginOptions> {
-    private _fill: boolean = false;
+    private _isFilling: boolean = false;
     private _fillOffset: FillOffset | null = null;
     private _fillRange: FillRange | null = null;
 
+    // #region Getters and Utilities
 
     private get fillHandle() {
         return this.dataGrid.layout.getNode('fillHandle');
     }
 
-    private readonly hideFillHandle = () => {
-        if (!this.fillHandle) {
+    private get currentSelectedRange() {
+        return this.dataGrid.state.selectedRanges.value[0];
+    }
+
+    /**
+     * Determines the fill direction based on cursor position relative to selected range
+     */
+    private readonly getFillDirection = (config: FillRangeConfig): FillDirection => {
+        const { selectedMinRow, selectedMaxRow, selectedMinColumn, selectedMaxColumn, overRow, overColumn } = config;
+
+        if (overRow > selectedMaxRow) return FillDirection.DOWN;
+        if (overRow < selectedMinRow) return FillDirection.UP;
+        if (overColumn > selectedMaxColumn) return FillDirection.RIGHT;
+        if (overColumn < selectedMinColumn) return FillDirection.LEFT;
+
+        return FillDirection.NONE;
+    };
+
+    /**
+     * Calculates the fill range based on direction and cursor position
+     */
+    private readonly calculateFillRange = (direction: FillDirection, config: FillRangeConfig): { start: CellId; end: CellId } | null => {
+        const { selectedMinRow, selectedMaxRow, selectedMinColumn, selectedMaxColumn, overRow, overColumn } = config;
+
+        switch (direction) {
+            case FillDirection.DOWN:
+                return {
+                    start: createCellId({ rowIndex: selectedMaxRow + 1, columnIndex: selectedMinColumn }),
+                    end: createCellId({ rowIndex: overRow, columnIndex: selectedMaxColumn })
+                };
+
+            case FillDirection.UP:
+                return {
+                    start: createCellId({ rowIndex: overRow, columnIndex: selectedMinColumn }),
+                    end: createCellId({ rowIndex: selectedMinRow - 1, columnIndex: selectedMaxColumn })
+                };
+
+            case FillDirection.RIGHT:
+                return {
+                    start: createCellId({ rowIndex: selectedMinRow, columnIndex: selectedMaxColumn + 1 }),
+                    end: createCellId({ rowIndex: selectedMaxRow, columnIndex: overColumn })
+                };
+
+            case FillDirection.LEFT:
+                return {
+                    start: createCellId({ rowIndex: selectedMinRow, columnIndex: overColumn }),
+                    end: createCellId({ rowIndex: selectedMaxRow, columnIndex: selectedMinColumn - 1 })
+                };
+
+            default:
+                return null;
+        }
+    };
+
+    // #endregion
+
+    // #region Fill Handle Management
+
+    /**
+     * Hides the fill handle
+     */
+    private readonly hideFillHandle = (): void => {
+        const handle = this.fillHandle;
+        if (!handle) {
             return;
         }
 
@@ -41,55 +136,55 @@ export class CellFillPlugin<TRow extends RowData> extends DataGridDomPlugin<TRow
         });
     };
 
-    private readonly setHandleOffset = (cellId: CellId) => {
+    /**
+     * Sets the position of the fill handle based on the given cell
+     */
+    private readonly setHandleOffset = (cellId: CellId): void => {
         const cellNode = this.dataGrid.layout.getNode(cellId) as DataGridCellNode;
-        if (!cellNode) {
-            return;
-        }
+        const fillHandleNode = this.fillHandle;
 
-        const fillHandleNode = this.dataGrid.layout.getNode('fillHandle');
-        if (!fillHandleNode) {
+        if (!cellNode || !fillHandleNode) {
             return;
         }
 
         const cellRect = getRect(this.scrollArea!, cellNode.element);
-
-        this.dataGrid.layout.updateNode('fillHandle', {
-            visible: true,
-        });
-
-        const handlerWidth = fillHandleNode.element.offsetHeight;
-        const handlerHeight = fillHandleNode.element.offsetHeight;
-
-        const baseLeft = cellRect.left + cellRect.width - handlerWidth;
-        const baseTop = cellRect.top + cellRect.height - handlerHeight;
-
         const rowNode = this.dataGrid.layout.getNode(cellNode.rowId)!;
 
+        // Calculate handle position
+        const handlerSize = fillHandleNode.element.offsetHeight;
+        const baseLeft = cellRect.left + cellRect.width - handlerSize;
+        const baseTop = cellRect.top + cellRect.height - handlerSize;
+
+        // Calculate z-index
         const cellZ = +getComputedStyle(cellNode.element).zIndex || 0;
         const rowZ = +getComputedStyle(rowNode.element).zIndex || 0;
+        const z = Math.max(cellZ, rowZ) + 1 || 1;
 
-        const z = Math.max(cellZ, rowZ);
-
+        // Update handle visibility and position
         this.dataGrid.layout.updateNode('fillHandle', {
+            visible: true,
             offset: {
-                z: (z + 1) || 1,
+                z,
                 left: baseLeft + this.scrollArea!.scrollLeft,
                 top: baseTop + this.scrollArea!.scrollTop,
             }
         });
 
+        // Store offset information for later updates
         this._fillOffset = {
             pinnedHorizontal: cellNode.pinned?.side === 'left' || cellNode.pinned?.side === 'right',
             pinnedVertical: rowNode.pinned?.side === 'top' || rowNode.pinned?.side === 'bottom',
-            baseLeft: baseLeft,
-            baseTop: baseTop,
+            baseLeft,
+            baseTop,
             baseScrollLeft: this.scrollArea!.scrollLeft,
             baseScrollTop: this.scrollArea!.scrollTop
         };
     };
 
-    private readonly updateHandleOffset = () => {
+    /**
+     * Updates the fill handle position when scrolling
+     */
+    private readonly updateHandleOffset = (): void => {
         if (!this._fillOffset) {
             return;
         }
@@ -104,83 +199,89 @@ export class CellFillPlugin<TRow extends RowData> extends DataGridDomPlugin<TRow
         });
     };
 
-    private readonly startFill = (event: MouseEvent) => {
-        const range = this.dataGrid.state.selectedRanges.value[0];
+    // #endregion
+
+    // #region Fill Operations
+
+    /**
+     * Starts a fill operation
+     */
+    private readonly startFill = (event: MouseEvent): void => {
+        const range = this.currentSelectedRange;
         if (!range) {
             return;
         }
 
-        this._fill = true;
-
+        this._isFilling = true;
         event.preventDefault();
         event.stopPropagation();
     };
 
-    private readonly moveFill = (event: MouseEvent) => {
+    /**
+     * Updates the fill range during drag operation
+     */
+    private readonly moveFill = (event: MouseEvent): void => {
         event.preventDefault();
-        if (!this._fill) {
+
+        if (!this._isFilling) {
             return;
         }
 
-        const selectedRange = this.dataGrid.state.selectedRanges.value[0];
+        const selectedRange = this.currentSelectedRange;
         const overCell = this.dataGrid.layout.getNodeByElement(event.target as HTMLElement);
-        if (!overCell) {
+
+        if (!selectedRange || !overCell) {
             return;
         }
 
-        const {
-            rowIndex: selectedMinRow,
-            columnIndex: selectedMinColumn,
-        } = extractCellId(selectedRange.start);
+        // Extract cell positions
+        const selectedStart = extractCellId(selectedRange.start);
+        const selectedEnd = extractCellId(selectedRange.end);
+        const overPosition = extractCellId(overCell.id as CellId);
 
-        const {
-            rowIndex: selectedMaxRow,
-            columnIndex: selectedMaxColumn,
-        } = extractCellId(selectedRange.end);
+        const config: FillRangeConfig = {
+            selectedMinRow: selectedStart.rowIndex,
+            selectedMaxRow: selectedEnd.rowIndex,
+            selectedMinColumn: selectedStart.columnIndex,
+            selectedMaxColumn: selectedEnd.columnIndex,
+            overRow: overPosition.rowIndex,
+            overColumn: overPosition.columnIndex
+        };
 
-        const {
-            rowIndex: overRow,
-            columnIndex: overColumn,
-        } = extractCellId(overCell.id as CellId);
+        // Determine fill direction and calculate range
+        const direction = this.getFillDirection(config);
 
-        const isDraggingDown = overRow > selectedMaxRow;
-        const isDraggingUp = overRow < selectedMinRow;
-        const isDraggingRight = overColumn > selectedMaxColumn;
-        const isDraggingLeft = overColumn < selectedMinColumn;
-
-        let fillRangeStart: CellId | null = null;
-        let fillRangeEnd: CellId | null = null;
-
-        if (isDraggingDown) {
-            fillRangeStart = createCellId({ rowIndex: selectedMaxRow + 1, columnIndex: selectedMinColumn });
-            fillRangeEnd = createCellId({ rowIndex: overRow, columnIndex: selectedMaxColumn });
-        }
-        else if (isDraggingUp) {
-            fillRangeStart = createCellId({ rowIndex: selectedMinRow - 1, columnIndex: selectedMinColumn });
-            fillRangeEnd = createCellId({ rowIndex: overRow, columnIndex: selectedMaxColumn });
-        }
-        else if (isDraggingRight) {
-            fillRangeStart = createCellId({ rowIndex: selectedMinRow, columnIndex: selectedMaxColumn + 1 });
-            fillRangeEnd = createCellId({ rowIndex: selectedMaxRow, columnIndex: overColumn });
-        }
-        else if (isDraggingLeft) {
-            fillRangeStart = createCellId({ rowIndex: selectedMinRow, columnIndex: selectedMinColumn });
-            fillRangeEnd = createCellId({ rowIndex: overRow, columnIndex: selectedMinColumn - 1 });
-        }
-        else {
-            this.dataGrid.layout.updateNode('fillRange', {
-                visible: false,
-            });
-            this._fillRange = null;
+        if (direction === FillDirection.NONE) {
+            this.hideFillRange();
             return;
         }
 
-        if (!fillRangeStart || !fillRangeEnd) {
+        const fillRange = this.calculateFillRange(direction, config);
+        if (!fillRange) {
             return;
         }
 
-        const fillRangeStartCell = this.dataGrid.layout.getNode(fillRangeStart)!;
-        const fillRangeEndCell = this.dataGrid.layout.getNode(fillRangeEnd)!;
+        this.updateFillRangeDisplay(fillRange);
+    };
+
+    /**
+     * Hides the fill range display
+     */
+    private readonly hideFillRange = (): void => {
+        this.dataGrid.layout.updateNode('fillRange', {
+            visible: false,
+        });
+        this._fillRange = null;
+    };
+
+    /**
+     * Updates the visual display of the fill range
+     */
+    private readonly updateFillRangeDisplay = (fillRange: { start: CellId; end: CellId }): void => {
+        const { start: fillRangeStart, end: fillRangeEnd } = fillRange;
+
+        const fillRangeStartCell = this.dataGrid.layout.getNode(fillRangeStart);
+        const fillRangeEndCell = this.dataGrid.layout.getNode(fillRangeEnd);
 
         if (!fillRangeStartCell || !fillRangeEndCell) {
             return;
@@ -201,95 +302,159 @@ export class CellFillPlugin<TRow extends RowData> extends DataGridDomPlugin<TRow
         });
 
         this._fillRange = {
-            start: fillRangeStart <= fillRangeEnd ? fillRangeStart : fillRangeEnd,
-            end: fillRangeStart >= fillRangeEnd ? fillRangeStart : fillRangeEnd,
+            start: getMinCellId(fillRangeStart, fillRangeEnd),
+            end: getMaxCellId(fillRangeStart, fillRangeEnd),
         };
     };
 
-    private readonly endFill = (event: MouseEvent) => {
-        if (!this._fill || !this._fillRange) {
+    /**
+     * Completes the fill operation
+     */
+    private readonly endFill = (event: MouseEvent): void => {
+        if (!this._isFilling || !this._fillRange) {
             return;
         }
 
-        // Clean
-        this.dataGrid.layout.updateNode('fillRange', {
-            visible: false
-        });
-        this.dataGrid.layout.updateNode('fillHandle', {
-            visible: false
-        });
+        // Hide UI elements
+        this.dataGrid.layout.updateNode('fillRange', { visible: false });
+        this.dataGrid.layout.updateNode('fillHandle', { visible: false });
 
-        const selectedRange = this.dataGrid.state.selectedRanges.value[0];
+        // Perform the actual data cloning
+        const selectedRange = this.currentSelectedRange;
+        if (selectedRange) {
+            this.dataGrid.modifier.cloneRangeData(selectedRange, this._fillRange);
+            this.updateSelectionAfterFill(selectedRange);
+        }
 
-        this.dataGrid.modifier.cloneRangeData(selectedRange, this._fillRange);
-
-        const {
-            topLeft: selectedTopLeft,
-            bottomRight: selectedBottomRight,
-        } = getQuadCorners(selectedRange.start, selectedRange.end);
-        const {
-            topLeft: fillTopLeft,
-            bottomRight: fillBottomRight,
-        } = getQuadCorners(this._fillRange.start, this._fillRange.end);
-
-        this.dataGrid.selection.selectRange(
-            getMinCellId(selectedTopLeft, fillTopLeft),
-            getMaxCellId(selectedBottomRight, fillBottomRight)
-        );
-
-        this._fill = false;
-        this._fillRange = null;
-        this._fillOffset = null;
-
+        // Reset state
+        this.resetFillState();
         event.preventDefault();
     };
 
-    public handleActivate = () => {
-        const unwatchFillHandle = this.dataGrid.layout.layoutNodesState.watchItem('fillHandle', ({ operation, item }) => {
+    /**
+     * Updates the selection to include both original and filled ranges
+     */
+    private readonly updateSelectionAfterFill = (selectedRange: any): void => {
+        if (!this._fillRange) {
+            return;
+        }
+
+        const selectedCorners = getQuadCorners(selectedRange.start, selectedRange.end);
+        const fillCorners = getQuadCorners(this._fillRange.start, this._fillRange.end);
+
+        this.dataGrid.selection.selectRange(
+            getMinCellId(selectedCorners.topLeft, fillCorners.topLeft),
+            getMaxCellId(selectedCorners.bottomRight, fillCorners.bottomRight)
+        );
+    };
+
+    /**
+     * Resets the fill operation state
+     */
+    private readonly resetFillState = (): void => {
+        this._isFilling = false;
+        this._fillRange = null;
+        this._fillOffset = null;
+    };
+
+    // #endregion
+
+    // #region Event Handlers and Activation
+
+    /**
+     * Sets up watcher for fill handle node changes
+     */
+    private readonly setupFillHandleWatcher = () => {
+        return this.dataGrid.layout.layoutNodesState.watchItem('fillHandle', ({ operation, item }) => {
             if (!item) {
                 return;
             }
 
             if (operation === 'remove') {
-                return this.removeEventListener(item.element, 'mousedown', this.startFill);
+                this.removeEventListener(item.element, 'mousedown', this.startFill);
+                return;
             }
 
             this.addEventListener(item.element, 'mousedown', this.startFill);
         });
+    };
 
-        const unwatchRanges = this.dataGrid.state.selectedRanges.watch((ranges) => {
-            if (ranges.length != 1) {
+    /**
+     * Sets up watcher for selected ranges changes
+     */
+    private readonly setupSelectedRangesWatcher = () => {
+        return this.dataGrid.state.selectedRanges.watch((ranges) => {
+            if (ranges.length !== 1) {
                 this.hideFillHandle();
                 return;
             }
 
             const range = ranges[0];
-
             const cells = Array.from(range.cells.keys());
-            const cellId = cells[cells.length - 1];
-            this.setHandleOffset(cellId);
-        });
+            const lastCellId = cells[cells.length - 1];
 
-        const unwatchCells = this.dataGrid.layout.layoutNodesState.watchItems(({ operation, item }) => {
+            if (lastCellId) {
+                this.setHandleOffset(lastCellId);
+            }
+        });
+    };
+
+    /**
+     * Sets up event listeners for cell mouse events
+     */
+    private readonly setupCellEventListeners = () => {
+        return this.dataGrid.layout.layoutNodesState.watchItems(({ operation, item }) => {
             if (item?.type !== 'cell') {
                 return;
             }
 
             if (operation === 'remove') {
-                return this.removeEventListener(item.element, 'mouseenter', this.moveFill);
+                this.removeEventListener(item.element, 'mouseenter', this.moveFill);
+                return;
             }
 
             this.addEventListener(item.element, 'mouseenter', this.moveFill);
         });
+    };
 
+    /**
+     * Sets up scroll event listener
+     */
+    private readonly setupScrollListener = () => {
         this.addEventListener(this.scrollArea!, 'scroll', this.updateHandleOffset);
+
+        return () => {
+            this.removeEventListener(this.scrollArea!, 'scroll', this.updateHandleOffset);
+        };
+    };
+
+    /**
+     * Sets up document-level event listeners
+     */
+    private readonly setupDocumentListeners = () => {
         document.addEventListener('mouseup', this.endFill);
 
-        this.unsubscribes.push(() => {
-            unwatchFillHandle();
-            unwatchRanges();
-            unwatchCells();
+        return () => {
             document.removeEventListener('mouseup', this.endFill);
+        };
+    };
+
+    // #endregion
+
+    /**
+     * Activates the cell fill plugin by setting up event listeners and watchers
+     */
+    public handleActivate = (): void => {
+        const cleanupFunctions = [
+            this.setupFillHandleWatcher(),
+            this.setupSelectedRangesWatcher(),
+            this.setupCellEventListeners(),
+            this.setupScrollListener(),
+            this.setupDocumentListeners()
+        ];
+
+        this.unsubscribes.push(() => {
+            cleanupFunctions.forEach(cleanup => cleanup());
         });
     };
 }
