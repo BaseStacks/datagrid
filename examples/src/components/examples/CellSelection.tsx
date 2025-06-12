@@ -20,8 +20,8 @@ const genderOptions = [{
 
 export function CellSelection() {
     const columns = useMemo((): Column[] => [
-        { key: 'column-header', dataKey: 'id', header: '#' },
-        { key: 'id', header: 'ID', width: 100, selectable: false, footer: 'id' },
+        { key: 'column-header', dataKey: 'id', header: '#', fillable: false },
+        { key: 'id', header: 'ID', width: 100, selectable: false, fillable: false , footer: 'id' },
         { key: 'firstName', header: 'First Name', editor: (props) => <TextEditor {...props} />, footer: 'firstName' },
         { key: 'lastName', header: 'Last Name', editor: (props) => <TextEditor {...props} />, footer: 'lastName' },
         { key: 'gender', header: 'Gender', editor: (props) => <SelectEditor {...props} options={genderOptions} /> },
@@ -104,14 +104,14 @@ export function CellSelection() {
                             </DataGridRow>
                         ))}
                     </DataGridRowContainer>
-                    <DataGridFillHandle className="size-2 bg-blue-500 z-99 cursor-cell" />
+                    <DataGridFillHandle className="size-2 bg-blue-500 z-99 cursor-cell -translate-full" />
                     <DataGridFillRange className="border border-dashed z-99 " />
                     <DataGridFloatingEditor className="!z-99" />
                 </DataGridScrollArea>
                 <DataGridFooterGroup>
-                    {footers.map((footer, index) => (
+                    {footers.map((footer) => (
                         <DataGridFooter
-                            key={index}
+                            key={footer.id}
                             footer={footer}
                             className={cn(clxs.header, clxs.cellPinned)}
                         />

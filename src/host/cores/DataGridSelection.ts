@@ -38,7 +38,7 @@ const findCellCoordinates = ({ maxRow, maxCol, from, offset }: GetCellCoordinate
 };
 
 export class DataGridSelection<TRow extends RowData> {
-    private state: DataGridStates<TRow>;
+    private readonly state: DataGridStates<TRow>;
 
     get rowLength() {
         return this.state.rows.value.length - 1;
@@ -94,14 +94,31 @@ export class DataGridSelection<TRow extends RowData> {
         if (!activeCell.value) {
             return;
         }
+
         const selectionStart = findCellCoordinates({
             maxRow: this.rowLength,
             maxCol: this.columnLength,
             from: activeCell.value.id,
             offset: relativeOffset,
         });
+
+        if (!selectionStart) {
+            return;
+        }
+
+        const cellId = createCellId(selectionStart);
+
+        const cellAttributes = this.state.getCellAttributes(cellId);
+        if (!cellAttributes) {
+            return;
+        }
+
+        if (cellAttributes.selectable === false) {
+            return;
+        }
+
         this.cleanSelection();
-        this.startSelection(selectionStart!);
+        this.startSelection(selectionStart);
     };
 
     public startSelection = (startPoint: CellCoordinates) => {
@@ -183,14 +200,30 @@ export class DataGridSelection<TRow extends RowData> {
         this.navigate(topOfColumn);
     };
 
-    public selectRange = (startCell: CellId, endCell: CellId) => {
+    public selectRange = (startCell: CellId, endCell: CellId, clear: boolean = true) => {
         const { selectedRanges } = this.state;
+
+        const startCellAttributes = this.state.getCellAttributes(startCell);
+        const endCellAttributes = this.state.getCellAttributes(endCell);
+        if (!startCellAttributes || !endCellAttributes) {
+            return;
+        }
+
+        if (startCellAttributes.selectable === false || endCellAttributes.selectable === false) {
+            return;
+        }
+
         const newSelectedRange = {
             start: startCell,
             end: endCell,
             cells: this.getCellsInRange(startCell, endCell),
         };
-        selectedRanges.set([newSelectedRange]);
+
+        if (clear) {
+            selectedRanges.set([newSelectedRange]);
+        }
+
+        selectedRanges.set([...selectedRanges.value.slice(0, -1), newSelectedRange]);
     };
 
     public updateLastSelectedRange = (endCell: CellId) => {
@@ -200,14 +233,7 @@ export class DataGridSelection<TRow extends RowData> {
         }
 
         const lastSelectedRange = selectedRanges.value[selectedRanges.value.length - 1];
-
-        const newSelectedRange = {
-            start: lastSelectedRange.start,
-            end: endCell,
-            cells: this.getCellsInRange(lastSelectedRange.start, endCell),
-        };
-
-        selectedRanges.set([...selectedRanges.value.slice(0, -1), newSelectedRange]);
+        this.selectRange(lastSelectedRange.start, endCell, false);
     };
 
     public expandLeft = () => {

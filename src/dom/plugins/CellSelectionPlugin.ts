@@ -1,4 +1,4 @@
-import type { CellId, RowData } from '../../host';
+import type { RowData } from '../../host';
 import { getCoordinatesById, idTypeEquals, breakRangeToSmallerPart, isRangeInsideOthers, tryCombineRanges, tryRemoveDuplicates } from '../../host';
 import { DataGridDomPlugin, type DataGridDomPluginOptions } from '../atomic/DataGridDomPlugin';
 import type { DataGridCellNode } from '../cores/DataGridLayout';
@@ -45,15 +45,14 @@ export const defaultKeyMap: Record<CellSelectionPluginShortcut, string | string[
 };
 
 export class CellSelectionPlugin<TRow extends RowData> extends DataGridDomPlugin<TRow, CellSelectionPluginOptions> {
-    private handleContainerMouseDown = (event: MouseEvent) => {
+    private readonly handleContainerMouseDown = (event: MouseEvent) => {
         const isClickOutside = !this.container?.contains(event.target as Node);
         if (isClickOutside) {
             this.dataGrid.selection.cleanSelection();
-            return;
         }
     };
 
-    private handleContainerMouseUp = () => {
+    private readonly handleContainerMouseUp = () => {
         const { dragging } = this.dataGrid.selection;
 
         if (!dragging.value) {
@@ -94,7 +93,7 @@ export class CellSelectionPlugin<TRow extends RowData> extends DataGridDomPlugin
         }
     };
 
-    private handleCellMouseDown = (event: MouseEvent) => {
+    private readonly handleCellMouseDown = (event: MouseEvent) => {
         const nodeInfo = this.dataGrid.layout.getNodeByElement(event.currentTarget as HTMLElement) as DataGridCellNode;
         if (!nodeInfo) {
             throw new Error('Node not found');
@@ -106,7 +105,7 @@ export class CellSelectionPlugin<TRow extends RowData> extends DataGridDomPlugin
         }
 
         const { selectable } = header.column;
-        if(selectable === false) {
+        if (selectable === false) {
             return;
         }
 
@@ -158,7 +157,7 @@ export class CellSelectionPlugin<TRow extends RowData> extends DataGridDomPlugin
         clearAllTextSelection();
     };
 
-    private handleCellMouseEnter = (event: MouseEvent) => {
+    private readonly handleCellMouseEnter = (event: MouseEvent) => {
         const { dragging } = this.dataGrid.selection;
 
         if (dragging.value !== 'dragging') {
@@ -172,7 +171,7 @@ export class CellSelectionPlugin<TRow extends RowData> extends DataGridDomPlugin
             return;
         }
 
-        selection.updateLastSelectedRange(node.id as CellId);
+        selection.updateLastSelectedRange(node.id);
     };
 
     public handleActivate = () => {

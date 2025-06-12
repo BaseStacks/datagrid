@@ -1,6 +1,5 @@
-import { memo, useEffect, useLayoutEffect, useRef } from 'react';
+import React, { memo, useEffect, useLayoutEffect, useRef } from 'react';
 import { useDataGridContext } from '../hooks/useDataGridContext';
-import React from 'react';
 
 export interface DataGridFillHandleProps extends React.HTMLAttributes<HTMLElement> {
     readonly as?: string;
@@ -42,7 +41,7 @@ function DataGridFillHandleImpl({
         fillHandle.style.display = 'none';
         fillHandle.style.position = 'absolute';
 
-        layout.registerNode('fillHandle', fillHandle!);
+        layout.registerNode('fillHandle', fillHandle);
 
         return () => {
             layout.removeNode('fillHandle');

@@ -108,6 +108,7 @@ export interface Column<TValue = any> {
   readonly minWidth?: number;
   readonly maxWidth?: number;
   readonly selectable?: boolean;
+  readonly fillable?: boolean;
   readonly prePasteValues?: (values: string[]) => TValue[];
   readonly pasteValue?: (value: TValue) => TValue | Promise<TValue>;
 }

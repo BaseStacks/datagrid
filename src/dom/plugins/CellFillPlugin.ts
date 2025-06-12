@@ -147,14 +147,18 @@ export class CellFillPlugin<TRow extends RowData> extends DataGridDomPlugin<TRow
             return;
         }
 
+        const attributes = this.dataGrid.state.getCellAttributes(cellId);
+        if(!attributes || attributes.fillable === false) {
+            this.hideFillHandle();
+            return;
+        };
+
         const cellRect = getRect(this.scrollArea!, cellNode.element);
         const rowNode = this.dataGrid.layout.getNode(cellNode.rowId)!;
 
-        // Calculate handle position
-        const handlerSize = fillHandleNode.element.offsetHeight;
-        const baseLeft = cellRect.left + cellRect.width - handlerSize;
-        const baseTop = cellRect.top + cellRect.height - handlerSize;
-
+        const baseLeft = cellRect.left + cellRect.width;
+        const baseTop = cellRect.top + cellRect.height;
+        
         // Calculate z-index
         const cellZ = +getComputedStyle(cellNode.element).zIndex || 0;
         const rowZ = +getComputedStyle(rowNode.element).zIndex || 0;
